@@ -278,7 +278,7 @@ This document provides comprehensive API documentation for all concepts in the F
 {
   "user": "string",
   "title": "string",
-  "description": "string",
+  "description": "string (optional)" ,
   "dueDate": "Date (optional)"
 }
 ```

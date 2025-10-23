@@ -1,15 +1,13 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
-
-// Note: When copying to src/stores/taskStore.ts, this import path is correct
 
 // TypeScript interfaces
 export interface Task {
   _id: string
   user: string
   title: string
-  description: string
+  description?: string
   createdAt: Date | string
   startedAt?: Date | string
   completedAt?: Date | string
@@ -18,7 +16,7 @@ export interface Task {
 
 export interface CreateTaskPayload {
   title: string
-  description: string
+  description?: string
   dueDate?: Date | string
 }
 
@@ -47,6 +45,19 @@ export interface GetTasksResponse {
 
 // API Base URL
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
+
+/**
+ * Helper to handle API responses consistently
+ */
+async function handleResponse<T>(response: Response): Promise<T> {
+  const data = await response.json()
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'API request failed')
+  }
+  
+  return data as T
+}
 
 export const useTaskStore = defineStore('task', () => {
   // State
@@ -107,13 +118,7 @@ export const useTaskStore = defineStore('task', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch tasks')
-      }
-
-      const result: GetTasksResponse = data
+      const result = await handleResponse<GetTasksResponse>(response)
 
       // Update tasks in store
       tasks.value = result.tasks
@@ -151,18 +156,12 @@ export const useTaskStore = defineStore('task', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create task')
-      }
-
-      const taskId: string = data.task
+      const data = await handleResponse<{ task: string }>(response)
 
       // Refresh tasks to get the newly created task
       await fetchTasks()
 
-      return taskId
+      return data.task
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create task'
       console.error('Create task error:', err)
@@ -198,11 +197,7 @@ export const useTaskStore = defineStore('task', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update task')
-      }
+      await handleResponse(response)
 
       // Refresh tasks to get updated data
       await fetchTasks()
@@ -238,11 +233,7 @@ export const useTaskStore = defineStore('task', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete task')
-      }
+      await handleResponse(response)
 
       // Remove task from local state
       tasks.value = tasks.value.filter(task => task._id !== taskId)
@@ -279,11 +270,7 @@ export const useTaskStore = defineStore('task', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to mark task as started')
-      }
+      await handleResponse(response)
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
@@ -323,11 +310,7 @@ export const useTaskStore = defineStore('task', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to mark task as completed')
-      }
+      await handleResponse(response)
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
@@ -380,6 +363,16 @@ export const useTaskStore = defineStore('task', () => {
       }
     }
   }
+
+  // Watch for logout and clear tasks automatically
+  watch(
+    () => authStore.isAuthenticated,
+    (isAuthenticated) => {
+      if (!isAuthenticated) {
+        clearTasks()
+      }
+    }
+  )
 
   return {
     // State

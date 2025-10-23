@@ -2,14 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 // TypeScript interfaces
-interface AuthState {
-  userId: string | null
-  accessToken: string | null
-  refreshToken: string | null
-  username: string | null
-  email: string | null
-}
-
 interface LoginCredentials {
   username: string
   password: string
@@ -34,6 +26,19 @@ interface UserInfo {
 
 // API Base URL - adjust this based on your environment
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL
+
+/**
+ * Helper to handle API responses consistently
+ */
+async function handleResponse<T>(response: Response): Promise<T> {
+  const data = await response.json()
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'API request failed')
+  }
+  
+  return data as T
+}
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -75,13 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
         body: JSON.stringify(credentials)
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed')
-      }
-
-      const authResponse: AuthResponse = data
+      const authResponse = await handleResponse<AuthResponse>(response)
 
       // Store tokens
       accessToken.value = authResponse.accessToken
@@ -118,13 +117,7 @@ export const useAuthStore = defineStore('auth', () => {
         body: JSON.stringify(credentials)
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
-      }
-
-      const authResponse: AuthResponse = data
+      const authResponse = await handleResponse<AuthResponse>(response)
 
       // Store tokens
       accessToken.value = authResponse.accessToken
@@ -195,11 +188,7 @@ export const useAuthStore = defineStore('auth', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Token refresh failed')
-      }
+      const data = await handleResponse<{ accessToken: string }>(response)
 
       // Update access token
       accessToken.value = data.accessToken
@@ -233,11 +222,7 @@ export const useAuthStore = defineStore('auth', () => {
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch user info')
-      }
+      const data = await handleResponse<{ user: UserInfo }>(response)
 
       const userInfo: UserInfo = data.user
 
