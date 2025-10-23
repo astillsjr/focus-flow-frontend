@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
 import TaskForm from '../tasks/TaskForm.vue'
@@ -238,9 +238,20 @@ async function handleLogout() {
   }
 }
 
-// Initialize tasks on component mount
+// Initialize tasks on component mount (only if already authenticated)
 onMounted(async () => {
-  await handleRefresh()
+  if (isAuthenticated.value) {
+    await handleRefresh()
+  }
+})
+
+// Watch for authentication changes and fetch tasks when user logs in
+watch(isAuthenticated, async (newValue, oldValue) => {
+  if (newValue && !oldValue) {
+    // User just logged in
+    console.log('🔄 Authentication detected, loading tasks...')
+    await handleRefresh()
+  }
 })
 </script>
 
