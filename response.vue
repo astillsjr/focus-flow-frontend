@@ -1,269 +1,459 @@
 <template>
-  <div class="task-item" :class="{ 'task-completed': isCompleted }">
-    <div class="task-content">
-      <div class="task-header">
-        <h3 class="task-title">{{ task.title }}</h3>
-        <span class="task-status" :class="`status-${status}`">
-          {{ statusLabel }}
-        </span>
-      </div>
+  <div class="dashboard">
+    <!-- Header with username -->
+    <div class="dashboard-header">
+      <h1>Welcome, {{ displayUsername }}</h1>
+      <button @click="handleLogout" class="logout-button">Logout</button>
+    </div>
 
-      <p v-if="task.description" class="task-description">
-        {{ task.description }}
-      </p>
-
-      <div v-if="task.dueDate" class="task-due-date">
-        <strong>Due:</strong> {{ formattedDueDate }}
-      </div>
-
-      <div class="task-meta">
-        <span class="task-date">Created: {{ formattedCreatedDate }}</span>
-        <span v-if="task.startedAt" class="task-date">Started: {{ formattedStartedDate }}</span>
-        <span v-if="task.completedAt" class="task-date">Completed: {{ formattedCompletedDate }}</span>
+    <!-- Create Task Section -->
+    <div class="create-task-section">
+      <button @click="toggleTaskForm" class="toggle-form-button">
+        {{ showTaskForm ? 'Hide Task Form' : '+ Create New Task' }}
+      </button>
+      
+      <div v-if="showTaskForm" class="task-form-container">
+        <TaskForm @submit-task="handleTaskSubmit" />
       </div>
     </div>
 
-    <div class="task-actions">
-      <button
-        v-if="!isCompleted"
-        @click="handleToggleStart"
-        class="action-button start-button"
-        :disabled="isLoading"
-      >
-        {{ isStarted ? 'Mark Complete' : 'Start' }}
+    <!-- Controls -->
+    <div class="controls">
+      <button @click="handleRefresh" :disabled="isLoading" class="refresh-button">
+        {{ isLoading ? 'Loading...' : 'Refresh Tasks' }}
       </button>
+      <button @click="toggleHistory" class="history-button">
+        {{ showHistory ? 'Hide History' : 'Show History' }}
+      </button>
+    </div>
 
-      <button
-        @click="handleDelete"
-        class="action-button delete-button"
-        :disabled="isLoading"
-      >
-        Delete
-      </button>
+    <!-- Loading State -->
+    <div v-if="isLoading && !tasks.length" class="loading-state">
+      <p>Loading tasks...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button @click="handleRefresh" class="retry-button">Try Again</button>
+    </div>
+
+    <!-- Task List -->
+    <div v-else class="task-list-container">
+      <!-- Active Tasks (Pending + In Progress) -->
+      <div class="active-tasks">
+        <h2>Active Tasks</h2>
+        <div v-if="!pendingTasks.length && !inProgressTasks.length" class="empty-message">
+          <p>No active tasks. Create a task to get started!</p>
+        </div>
+        <div v-else>
+          <!-- Pending Tasks -->
+          <div v-if="pendingTasks.length > 0" class="task-group">
+            <h3 class="group-title">
+              Pending <span class="task-count">({{ pendingTasks.length }})</span>
+            </h3>
+            <div class="task-items">
+              <TaskItem
+                v-for="task in pendingTasks"
+                :key="task._id"
+                :task="task"
+                @toggle-start="handleToggleStart"
+                @toggle-complete="handleToggleComplete"
+                @delete-task="handleDeleteTask"
+              />
+            </div>
+          </div>
+
+          <!-- In Progress Tasks -->
+          <div v-if="inProgressTasks.length > 0" class="task-group">
+            <h3 class="group-title">
+              In Progress <span class="task-count">({{ inProgressTasks.length }})</span>
+            </h3>
+            <div class="task-items">
+              <TaskItem
+                v-for="task in inProgressTasks"
+                :key="task._id"
+                :task="task"
+                @toggle-start="handleToggleStart"
+                @toggle-complete="handleToggleComplete"
+                @delete-task="handleDeleteTask"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History (Completed Tasks) -->
+      <div v-if="showHistory" class="history-section">
+        <h2>History</h2>
+        <div v-if="!completedTasks.length" class="empty-message">
+          <p>No completed tasks yet.</p>
+        </div>
+        <div v-else class="task-group">
+          <h3 class="group-title">
+            Completed <span class="task-count">({{ completedTasks.length }})</span>
+          </h3>
+          <div class="task-items">
+            <TaskItem
+              v-for="task in completedTasks"
+              :key="task._id"
+              :task="task"
+              @toggle-start="handleToggleStart"
+              @toggle-complete="handleToggleComplete"
+              @delete-task="handleDeleteTask"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import type { Task } from '../../stores/taskStore'
+import { ref, computed, onMounted } from 'vue'
+import { useTaskStore } from '../stores/taskStore'
+import { useAuthStore } from '../stores/authStore'
+import TaskForm from '../components/tasks/TaskForm.vue'
+import TaskItem from '../components/tasks/TaskItem.vue'
 
-// Props
-const props = defineProps<{
-  task: Task
-}>()
+// Get stores
+const taskStore = useTaskStore()
+const authStore = useAuthStore()
 
-// Emits
-const emit = defineEmits<{
-  'toggle-start': [taskId: string]
-  'toggle-complete': [taskId: string]
-  'delete-task': [taskId: string]
-}>()
-
-// State
-const isLoading = ref(false)
+// Local state
+const showTaskForm = ref(false)
+const showHistory = ref(false)
 
 // Computed properties
-const status = computed((): 'pending' | 'in-progress' | 'completed' => {
-  if (props.task.completedAt) return 'completed'
-  if (props.task.startedAt) return 'in-progress'
-  return 'pending'
-})
+const tasks = computed(() => taskStore.tasks)
+const pendingTasks = computed(() => taskStore.pendingTasks)
+const inProgressTasks = computed(() => taskStore.inProgressTasks)
+const completedTasks = computed(() => taskStore.completedTasks)
+const isLoading = computed(() => taskStore.isLoading)
+const error = computed(() => taskStore.error)
+const displayUsername = computed(() => authStore.username || 'User')
 
-const statusLabel = computed(() => {
-  const labels = {
-    'pending': 'Pending',
-    'in-progress': 'In Progress',
-    'completed': 'Completed'
-  }
-  return labels[status.value]
-})
-
-const isStarted = computed(() => !!props.task.startedAt)
-const isCompleted = computed(() => !!props.task.completedAt)
-
-const formattedDueDate = computed(() => {
-  if (!props.task.dueDate) return ''
-  return formatDate(new Date(props.task.dueDate))
-})
-
-const formattedCreatedDate = computed(() => {
-  return formatDate(new Date(props.task.createdAt))
-})
-
-const formattedStartedDate = computed(() => {
-  if (!props.task.startedAt) return ''
-  return formatDate(new Date(props.task.startedAt))
-})
-
-const formattedCompletedDate = computed(() => {
-  if (!props.task.completedAt) return ''
-  return formatDate(new Date(props.task.completedAt))
-})
-
-// Methods
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  }).format(date)
+/**
+ * Toggle task form visibility
+ */
+function toggleTaskForm() {
+  showTaskForm.value = !showTaskForm.value
 }
 
-function handleToggleStart() {
-  if (isStarted.value) {
-    // If already started, mark as complete
-    emit('toggle-complete', props.task._id)
-  } else {
-    // If not started, mark as started
-    emit('toggle-start', props.task._id)
+/**
+ * Toggle history visibility
+ */
+function toggleHistory() {
+  showHistory.value = !showHistory.value
+}
+
+/**
+ * Handle task submission
+ */
+function handleTaskSubmit(taskId: string) {
+  console.log('✅ Task created:', taskId)
+  // Optionally hide the form after successful submission
+  showTaskForm.value = false
+}
+
+/**
+ * Refresh tasks
+ */
+async function handleRefresh() {
+  try {
+    await taskStore.fetchTasks()
+    console.log('✅ Tasks refreshed successfully')
+  } catch (err) {
+    console.error('❌ Failed to refresh tasks:', err)
   }
 }
 
-function handleDelete() {
-  emit('delete-task', props.task._id)
+/**
+ * Handle toggle start event
+ */
+async function handleToggleStart(taskId: string) {
+  try {
+    await taskStore.markStarted(taskId)
+    console.log('✅ Task started:', taskId)
+  } catch (err) {
+    console.error('❌ Failed to start task:', err)
+  }
 }
+
+/**
+ * Handle toggle complete event
+ */
+async function handleToggleComplete(taskId: string) {
+  try {
+    await taskStore.markCompleted(taskId)
+    console.log('✅ Task completed:', taskId)
+  } catch (err) {
+    console.error('❌ Failed to complete task:', err)
+  }
+}
+
+/**
+ * Handle delete task event
+ */
+async function handleDeleteTask(taskId: string) {
+  if (!confirm('Are you sure you want to delete this task?')) {
+    return
+  }
+
+  try {
+    await taskStore.deleteTask(taskId)
+    console.log('✅ Task deleted:', taskId)
+  } catch (err) {
+    console.error('❌ Failed to delete task:', err)
+  }
+}
+
+/**
+ * Handle logout
+ */
+async function handleLogout() {
+  try {
+    await authStore.logout()
+    console.log('✅ Logged out successfully')
+  } catch (err) {
+    console.error('❌ Logout error:', err)
+  }
+}
+
+// Initialize tasks on component mount
+onMounted(async () => {
+  await handleRefresh()
+})
 </script>
 
 <style scoped>
-.task-item {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #ffffff;
-  transition: all 0.2s;
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
-.task-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.task-completed {
-  opacity: 0.6;
-  background-color: #f5f5f5;
-}
-
-.task-completed .task-title,
-.task-completed .task-description {
-  text-decoration: line-through;
-  color: #757575;
-}
-
-.task-content {
-  flex: 1;
-}
-
-.task-header {
+/* Header */
+.dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.task-title {
+.dashboard-header h1 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 2rem;
   color: #333;
-  flex: 1;
 }
 
-.task-status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.status-pending {
-  background-color: #fff3e0;
-  color: #f57c00;
-}
-
-.status-in-progress {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.status-completed {
-  background-color: #e8f5e9;
-  color: #388e3c;
-}
-
-.task-description {
-  margin: 0.5rem 0;
-  color: #555;
-  line-height: 1.5;
-}
-
-.task-due-date {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  background-color: #fff9c4;
-  border-left: 3px solid #fbc02d;
+.logout-button {
+  padding: 0.5rem 1rem;
+  background-color: #757575;
+  color: white;
+  border: none;
   border-radius: 4px;
   font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.task-meta {
+.logout-button:hover {
+  background-color: #616161;
+}
+
+/* Create Task Section */
+.create-task-section {
+  margin-bottom: 2rem;
+}
+
+.toggle-form-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toggle-form-button:hover {
+  background-color: #45a049;
+}
+
+.task-form-container {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Controls */
+.controls {
   display: flex;
-  flex-wrap: wrap;
   gap: 1rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #e0e0e0;
+  margin-bottom: 2rem;
 }
 
-.task-date {
-  font-size: 0.85rem;
-  color: #757575;
-}
-
-.task-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-button {
-  flex: 1;
+.refresh-button,
+.history-button {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s;
 }
 
-.action-button:disabled {
-  opacity: 0.5;
+.refresh-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background-color: #1976D2;
+}
+
+.refresh-button:disabled {
+  background-color: #cccccc;
   cursor: not-allowed;
 }
 
-.start-button {
-  background-color: #4CAF50;
+.history-button {
+  background-color: #FF9800;
   color: white;
 }
 
-.start-button:hover:not(:disabled) {
-  background-color: #45a049;
+.history-button:hover {
+  background-color: #F57C00;
 }
 
-.delete-button {
+/* Loading and Error States */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.loading-state p {
+  font-size: 1.1rem;
+  color: #757575;
+}
+
+.error-state {
+  color: #d32f2f;
+}
+
+.error-state p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.retry-button {
+  padding: 0.5rem 1rem;
   background-color: #f44336;
   color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.delete-button:hover:not(:disabled) {
+.retry-button:hover {
   background-color: #d32f2f;
+}
+
+/* Task List Container */
+.task-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.active-tasks h2,
+.history-section h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #757575;
+  font-style: italic;
+}
+
+.task-group {
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.group-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-count {
+  font-size: 0.9rem;
+  color: #757575;
+  font-weight: normal;
+}
+
+.task-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* History Section */
+.history-section {
+  border-top: 2px solid #e0e0e0;
+  padding-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 1rem 0.5rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .logout-button {
+    width: 100%;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .refresh-button,
+  .history-button {
+    width: 100%;
+  }
+
+  .task-group {
+    padding: 1rem;
+  }
 }
 </style>
 
