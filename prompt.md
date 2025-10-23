@@ -4,23 +4,33 @@ You are assisting me in implementing the frontend for my FocusFlow app using Vue
 
 **Context:**
 
-* The app already has `authStore` and `taskStore` implemented.
-* `taskStore` exposes an action `createTask()` that adds a new task to the user’s task list.
-* The parent component listens for the submit-task event, which provides the new task’s details.
-* The user is already authenticated and `authStore.currentUser` is available.
+* The task store (`useTaskStore`) is already implemented with `markStarted()`, `markCompleted()`, `deleteTask()`, and `getTaskStatus()`.
+* Each task has the following structure:
+{
+  _id: string
+  user: string
+  title: string
+  description?: string
+  createdAt: Date | string
+  startedAt?: Date | string
+  completedAt?: Date | string
+  dueDate?: Date | string
+}
 
 
 **Task:**
-Create a Vue 3 component named `TaskForm.vue` using `<script setup>` syntax.
+Create a Vue 3 component named `TaskItem.vue` using `<script setup>` syntax.
 
 **Requirements:**
-1. Reactive form fields for title, description (optional), and dueDate (optional).
-2. When the user submits the form, call `taskStore.createTask(user, title, description?, dueDate?)` and clear the input field.
-3. Prevent submission if the title input is empty or whitespace.
-4. If creation succeeds, emit a `submit-task` event or redirect to the dashboard (you can stub navigation logic for now).
-5. Log a message to the console on successful task creation.
+1. Accept a single `task` prop with the structure above.
+2. Display the task’s title, description (if any), due date (if any, formatted nicely), and status (pending, in-progress, complete).
+3. Include two buttons:
+   - "Start" (or "Complete" if already started)
+   - "Delete"
+4. When the user clicks these buttons, emit `toggle-start`, `toggle-complete` and `delete-task` events with the task’s `id` and updated status.
+5. Add minimal styling to differentiate completed tasks (e.g., faded text or background color).
 6. Keep the design minimal — focus on functionality, not appearance.
 
 
-Use best practices with `ref()`, `v-model`, and `@submit.prevent`.
-Return only the complete `TaskForm.vue` file.
+Use best practices with `ref()`, `v-model`, and reactive data (if applicable).
+Return only the complete `TaskItem.vue` file.
