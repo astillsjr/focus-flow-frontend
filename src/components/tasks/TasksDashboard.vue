@@ -1,9 +1,11 @@
 <template>
   <div class="dashboard">
+    <!-- Navigation -->
+    <AppNavigation />
+    
     <!-- Header with username -->
     <div class="dashboard-header">
       <h1>Welcome, {{ displayUsername }}</h1>
-      <button @click="handleLogout" class="logout-button">Logout</button>
     </div>
 
     <!-- Create Task Section -->
@@ -120,14 +122,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
-import TaskForm from '../tasks/TaskForm.vue'
-import TaskItem from '../tasks/TaskItem.vue'
+import AppNavigation from '../layout/AppNavigation.vue'
+import TaskForm from './TaskForm.vue'
+import TaskItem from './TaskItem.vue'
 
-// Get stores and router
-const router = useRouter()
+// Get stores
 const taskStore = useTaskStore()
 const authStore = useAuthStore()
 
@@ -228,19 +229,6 @@ async function handleDeleteTask(taskId: string) {
   }
 }
 
-/**
- * Handle logout
- */
-async function handleLogout() {
-  try {
-    await authStore.logout()
-    router.push('/login')
-    console.log('✅ Logged out successfully')
-  } catch (err) {
-    console.error('❌ Logout error:', err)
-  }
-}
-
 // Initialize tasks on component mount
 onMounted(async () => {
   await handleRefresh()
@@ -261,33 +249,13 @@ onUnmounted(() => {
 
 /* Header */
 .dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
 }
 
 .dashboard-header h1 {
   margin: 0;
   font-size: 2rem;
   color: #333;
-}
-
-.logout-button {
-  padding: 0.5rem 1rem;
-  background-color: #757575;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.logout-button:hover {
-  background-color: #616161;
 }
 
 /* Create Task Section */
@@ -535,16 +503,6 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .dashboard {
     padding: 1rem 0.5rem;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .logout-button {
-    width: 100%;
   }
 
   .controls {

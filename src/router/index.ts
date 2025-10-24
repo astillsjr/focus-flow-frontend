@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
-import Dashboard from '../components/dashboard/Dashboard.vue'
+import TasksDashboard from '../components/tasks/TasksDashboard.vue'
 import LoginForm from '../components/auth/LoginForm.vue'
 import RegisterForm from '../components/auth/RegisterForm.vue'
 
@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: Dashboard,
+    component: TasksDashboard,
     meta: { requiresAuth: true }
   },
   // Future routes for other features
@@ -38,7 +38,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/emotions',
     name: 'Emotions',
-    component: () => import('../components/emotions/EmotionAnalysis.vue'),
+    component: () => import('../components/emotions/EmotionsDashboard.vue'),
     meta: { requiresAuth: true }
   }
 ]
@@ -49,7 +49,7 @@ const router = createRouter({
 })
 
 // Navigation guard for authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
 
