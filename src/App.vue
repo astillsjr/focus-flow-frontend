@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <Dashboard />
+    <router-view />
   </div>
 </template>
 
 <script setup lang="ts">
-import Dashboard from './components/dashboard/Dashboard.vue'
+// No imports needed - router-view is a global component from vue-router
 </script>

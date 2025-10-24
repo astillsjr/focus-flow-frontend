@@ -47,20 +47,27 @@
         {{ isLoading ? 'Creating account...' : 'Register' }}
       </button>
     </form>
+
+    <p class="login-link">
+      Already have an account? <router-link to="/login">Login here</router-link>
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
+
+// Get router and auth store
+const router = useRouter()
+const authStore = useAuthStore()
 
 // Define emits
 const emit = defineEmits<{
   'register-success': []
 }>()
 
-// Get auth store
-const authStore = useAuthStore()
 
 // Form state
 const username = ref('')
@@ -90,8 +97,8 @@ async function handleRegister() {
     // Registration succeeded - emit success event
     emit('register-success')
 
-    // Optional: Redirect to dashboard (uncomment when router is set up)
-    // router.push('/dashboard')
+    // Redirect to dashboard after successful registration
+    router.push('/dashboard')
   } catch (error) {
     // Registration failed - show error message
     if (error instanceof Error) {
@@ -175,6 +182,23 @@ input:focus {
 .submit-button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.login-link a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
 }
 </style>
 

@@ -1,12 +1,5 @@
 <template>
-  <!-- Show login form if not authenticated -->
-  <div v-if="!isAuthenticated" class="login-container">
-    <h1>FocusFlow</h1>
-    <LoginForm @login-success="handleLoginSuccess" />
-  </div>
-
-  <!-- Show dashboard if authenticated -->
-  <div v-else class="dashboard">
+  <div class="dashboard">
     <!-- Header with username -->
     <div class="dashboard-header">
       <h1>Welcome, {{ displayUsername }}</h1>
@@ -117,14 +110,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
 import TaskForm from '../tasks/TaskForm.vue'
 import TaskItem from '../tasks/TaskItem.vue'
-import LoginForm from '../auth/LoginForm.vue'
 
-// Get stores
+// Get stores and router
+const router = useRouter()
 const taskStore = useTaskStore()
 const authStore = useAuthStore()
 
@@ -140,7 +134,6 @@ const completedTasks = computed(() => taskStore.completedTasks)
 const isLoading = computed(() => taskStore.isLoading)
 const error = computed(() => taskStore.error)
 const displayUsername = computed(() => authStore.username || 'User')
-const isAuthenticated = computed(() => authStore.isAuthenticated)
 
 /**
  * Toggle task form visibility
@@ -163,15 +156,6 @@ function handleTaskSubmit(taskId: string) {
   console.log('✅ Task created:', taskId)
   // Optionally hide the form after successful submission
   showTaskForm.value = false
-}
-
-/**
- * Handle successful login
- */
-async function handleLoginSuccess() {
-  console.log('✅ User logged in successfully')
-  // Tasks will be loaded automatically
-  await handleRefresh()
 }
 
 /**
@@ -232,26 +216,16 @@ async function handleDeleteTask(taskId: string) {
 async function handleLogout() {
   try {
     await authStore.logout()
+    router.push('/login')
     console.log('✅ Logged out successfully')
   } catch (err) {
     console.error('❌ Logout error:', err)
   }
 }
 
-// Initialize tasks on component mount (only if already authenticated)
+// Initialize tasks on component mount
 onMounted(async () => {
-  if (isAuthenticated.value) {
-    await handleRefresh()
-  }
-})
-
-// Watch for authentication changes and fetch tasks when user logs in
-watch(isAuthenticated, async (newValue, oldValue) => {
-  if (newValue && !oldValue) {
-    // User just logged in
-    console.log('🔄 Authentication detected, loading tasks...')
-    await handleRefresh()
-  }
+  await handleRefresh()
 })
 </script>
 
@@ -483,20 +457,6 @@ watch(isAuthenticated, async (newValue, oldValue) => {
   .task-group {
     padding: 1rem;
   }
-}
-
-/* Login Container */
-.login-container {
-  max-width: 500px;
-  margin: 4rem auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.login-container h1 {
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
-  color: #333;
 }
 </style>
 
