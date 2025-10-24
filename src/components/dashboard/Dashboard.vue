@@ -9,11 +9,20 @@
     <!-- Create Task Section -->
     <div class="create-task-section">
       <button @click="toggleTaskForm" class="toggle-form-button">
-        {{ showTaskForm ? 'Hide Task Form' : '+ Create New Task' }}
+        + Create New Task
       </button>
       
-      <div v-if="showTaskForm" class="task-form-container">
-        <TaskForm @submit-task="handleTaskSubmit" />
+      <!-- Modal Overlay -->
+      <div v-if="showTaskForm" class="modal-overlay" @click.self="toggleTaskForm">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h2>Create New Task</h2>
+            <button @click="toggleTaskForm" class="close-button">&times;</button>
+          </div>
+          <div class="modal-body">
+            <TaskForm @submit-task="handleTaskSubmit" />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -288,12 +297,91 @@ onMounted(async () => {
   background-color: #45a049;
 }
 
-.task-form-container {
-  margin-top: 1rem;
-  padding: 1.5rem;
-  background-color: #f9f9f9;
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-container {
+  background-color: white;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #757575;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.close-button:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.modal-body {
+  padding: 0;
+}
+
+/* Adjust TaskForm styling when in modal */
+.modal-body :deep(.task-form) {
+  padding: 1.5rem;
+  max-width: none;
+}
+
+.modal-body :deep(.task-form h2) {
+  display: none; /* Hide the h2 since we have it in modal-header */
 }
 
 /* Controls */
