@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
@@ -143,6 +143,15 @@ const completedTasks = computed(() => taskStore.completedTasks)
 const isLoading = computed(() => taskStore.isLoading)
 const error = computed(() => taskStore.error)
 const displayUsername = computed(() => authStore.username || 'User')
+
+// Prevent body scroll when modal is open
+watch(showTaskForm, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+})
 
 /**
  * Toggle task form visibility
@@ -235,6 +244,11 @@ async function handleLogout() {
 // Initialize tasks on component mount
 onMounted(async () => {
   await handleRefresh()
+})
+
+// Cleanup: Restore body scroll when component unmounts
+onUnmounted(() => {
+  document.body.style.overflow = ''
 })
 </script>
 
