@@ -63,6 +63,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
     throw new Error(data.error || 'API request failed')
   }
   
+  // Check if the response contains an error field even with 200 status
+  if (data && typeof data === 'object' && 'error' in data) {
+    throw new Error(data.error || 'API returned an error')
+  }
+  
   return data as T
 }
 

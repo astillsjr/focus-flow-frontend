@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useBetStore } from './betStore'
 
 // TypeScript interfaces
 interface LoginCredentials {
@@ -35,6 +36,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
   
   if (!response.ok) {
     throw new Error(data.error || 'API request failed')
+  }
+  
+  // Check if the response contains an error field even with 200 status
+  if (data && typeof data === 'object' && 'error' in data) {
+    throw new Error(data.error || 'API returned an error')
   }
   
   return data as T
@@ -98,6 +104,10 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Start auto-refresh
       startAutoRefresh()
+
+      // Initialize bet store after successful registration
+      const betStore = useBetStore()
+      await betStore.initialize()
     } catch (error) {
       console.error('Registration error:', error)
       throw error
@@ -131,6 +141,10 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Start auto-refresh
       startAutoRefresh()
+
+      // Initialize bet store after successful login
+      const betStore = useBetStore()
+      await betStore.initialize()
     } catch (error) {
       console.error('Login error:', error)
       throw error
