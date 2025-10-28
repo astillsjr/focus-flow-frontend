@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
-import TasksDashboard from '../components/tasks/TasksDashboard.vue'
-import LoginForm from '../components/auth/LoginForm.vue'
-import RegisterForm from '../components/auth/RegisterForm.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -13,26 +10,25 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: LoginForm,
+    component: () => import('../components/auth/LoginForm.vue'),
     meta: { requiresGuest: true }
   },
   {
     path: '/register',
     name: 'Register',
-    component: RegisterForm,
+    component: () => import('../components/auth/RegisterForm.vue'),
     meta: { requiresGuest: true }
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: TasksDashboard,
+    component: () => import('../components/tasks/TasksDashboard.vue'),
     meta: { requiresAuth: true }
   },
-  // Future routes for other features
   {
     path: '/bets',
     name: 'Bets',
-    component: () => import('../components/bets/BetList.vue'),
+    component: () => import('../components/bets/BetsDashboard.vue'),
     meta: { requiresAuth: true }
   },
   {

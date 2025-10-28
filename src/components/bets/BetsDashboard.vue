@@ -1,0 +1,107 @@
+<template>
+  <div class="bets-dashboard">
+    <AppNavigation />
+    
+    <h1>Bets</h1>
+
+    <!-- Initialize Profile Section -->
+    <div v-if="!isInitialized && !isLoading">
+      <p>Initialize your betting profile to get started.</p>
+      <button @click="handleInitialize" :disabled="isInitializing">
+        {{ isInitializing ? 'Initializing...' : 'Initialize Profile' }}
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div v-else-if="isLoading && !isInitialized">
+      <p>Loading...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error">
+      <p>{{ error }}</p>
+      <button @click="handleRefresh">Try Again</button>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div v-else-if="isInitialized">
+      <BetStats />
+      <BetList ref="betListRef" />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useBetStore } from '../../stores/betStore'
+import AppNavigation from '../layout/AppNavigation.vue'
+import BetStats from './BetStats.vue'
+import BetList from './BetList.vue'
+
+// Get bet store
+const betStore = useBetStore()
+
+// Local state
+const isInitializing = ref(false)
+const betListRef = ref<InstanceType<typeof BetList> | null>(null)
+
+// Computed properties from store
+const isInitialized = computed(() => betStore.isInitialized)
+const isLoading = computed(() => betStore.isLoading)
+const error = computed(() => betStore.error)
+
+/**
+ * Initialize betting profile for the user
+ */
+async function handleInitialize() {
+  try {
+    isInitializing.value = true
+    await betStore.initializeBettor()
+    console.log('✅ Betting profile initialized successfully')
+  } catch (err) {
+    console.error('❌ Failed to initialize betting profile:', err)
+  } finally {
+    isInitializing.value = false
+  }
+}
+
+/**
+ * Refresh betting data
+ */
+async function handleRefresh() {
+  try {
+    await betStore.initialize()
+    console.log('✅ Betting data refreshed successfully')
+  } catch (err) {
+    console.error('❌ Failed to refresh betting data:', err)
+  }
+}
+
+// Initialize on mount
+onMounted(async () => {
+  if (!isInitialized.value) {
+    await betStore.initialize()
+  }
+})
+</script>
+
+<style scoped>
+.bets-dashboard {
+  padding: 1rem;
+}
+
+h1 {
+  margin-bottom: 1rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>
+
