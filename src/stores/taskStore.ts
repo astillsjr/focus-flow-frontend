@@ -1,19 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
+import * as taskAPI from '@/api/tasks'
+import type { Task } from '@/api/tasks'
 
-// TypeScript interfaces
-export interface Task {
-  _id: string
-  user: string
-  title: string
-  description?: string
-  createdAt: Date | string
-  startedAt?: Date | string
-  completedAt?: Date | string
-  dueDate?: Date | string
-}
+// Re-export Task type for convenience
+export type { Task }
 
+// Local interfaces for store-specific payloads
 export interface CreateTaskPayload {
   title: string
   description?: string
@@ -34,34 +28,6 @@ export interface GetTasksParams {
   search?: string
   sortBy?: string
   sortOrder?: 1 | -1
-}
-
-export interface GetTasksResponse {
-  tasks: Task[]
-  total: number
-  page: number
-  totalPages: number
-}
-
-// API Base URL
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
-
-/**
- * Helper to handle API responses consistently
- */
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = await response.json()
-  
-  if (!response.ok) {
-    throw new Error(data.error || 'API request failed')
-  }
-  
-  // Check if the response contains an error field even with 200 status
-  if (data && typeof data === 'object' && 'error' in data) {
-    throw new Error(data.error || 'API returned an error')
-  }
-  
-  return data as T
 }
 
 export const useTaskStore = defineStore('task', () => {
@@ -107,23 +73,15 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/TaskManager/getTasks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          page: params.page || 1,
-          limit: params.limit || 100,
-          status: params.status,
-          search: params.search,
-          sortBy: params.sortBy || 'createdAt',
-          sortOrder: params.sortOrder || -1
-        })
+      const result = await taskAPI.getTasks({
+        user: authStore.userId,
+        page: params.page || 1,
+        limit: params.limit || 100,
+        status: params.status,
+        search: params.search,
+        sortBy: params.sortBy || 'createdAt',
+        sortOrder: params.sortOrder || -1
       })
-
-      const result = await handleResponse<GetTasksResponse>(response)
 
       // Update tasks in store
       tasks.value = result.tasks
@@ -148,20 +106,12 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/TaskManager/createTask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          title: payload.title,
-          description: payload.description,
-          dueDate: payload.dueDate
-        })
+      const data = await taskAPI.createTask({
+        user: authStore.userId,
+        title: payload.title,
+        description: payload.description,
+        dueDate: payload.dueDate
       })
-
-      const data = await handleResponse<{ task: string }>(response)
 
       // Refresh tasks to get the newly created task
       await fetchTasks()
@@ -188,21 +138,13 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/TaskManager/updateTask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: payload.taskId,
-          title: payload.title,
-          description: payload.description,
-          dueDate: payload.dueDate
-        })
+      await taskAPI.updateTask({
+        user: authStore.userId,
+        task: payload.taskId,
+        title: payload.title,
+        description: payload.description,
+        dueDate: payload.dueDate
       })
-
-      await handleResponse(response)
 
       // Refresh tasks to get updated data
       await fetchTasks()
@@ -227,18 +169,7 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/TaskManager/deleteTask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId
-        })
-      })
-
-      await handleResponse(response)
+      await taskAPI.deleteTask(authStore.userId, taskId)
 
       // Remove task from local state
       tasks.value = tasks.value.filter(task => task._id !== taskId)
@@ -263,19 +194,7 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/TaskManager/markStarted`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId,
-          timeStarted: new Date().toISOString()
-        })
-      })
-
-      await handleResponse(response)
+      await taskAPI.markStarted(authStore.userId, taskId, new Date().toISOString())
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
@@ -303,19 +222,7 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/TaskManager/markComplete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId,
-          timeCompleted: new Date().toISOString()
-        })
-      })
-
-      await handleResponse(response)
+      await taskAPI.markComplete(authStore.userId, taskId, new Date().toISOString())
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)

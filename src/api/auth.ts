@@ -1,4 +1,4 @@
-// API calls for authentication (login, register, refresh token, getUserInfo)
+// API calls for UserAuthentication
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
 

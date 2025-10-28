@@ -1,59 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
+import * as betAPI from '@/api/bets'
+import type { Bet, UserProfile as BettorProfile } from '@/api/bets'
 
-// TypeScript interfaces
-export interface Bet {
-  _id: string
-  user: string
-  task: string
-  wager: number
-  deadline: Date | string
-  taskDueDate?: Date | string
-  success?: boolean
-  createdAt: Date | string
-}
+// Re-export types for convenience
+export type { Bet, BettorProfile }
 
-export interface BettorProfile {
-  points: number
-  streak: number
-  totalBets: number
-  successfulBets: number
-  failedBets: number
-  pendingBets: number
-}
-
+// Local interfaces for store-specific payloads
 export interface PlaceBetPayload {
   taskId: string
   wager: number
   deadline: Date | string
   taskDueDate?: Date | string
-}
-
-export interface ResolveBetResponse {
-  status: 'already_resolved' | 'success'
-  reward?: number
-}
-
-// API Base URL
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
-
-/**
- * Helper to handle API responses consistently
- */
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = await response.json()
-  
-  if (!response.ok) {
-    throw new Error(data.error || 'API request failed')
-  }
-  
-  // Check if the response contains an error field even with 200 status
-  if (data && typeof data === 'object' && 'error' in data) {
-    throw new Error(data.error || 'API returned an error')
-  }
-  
-  return data as T
 }
 
 export const useBetStore = defineStore('bet', () => {
@@ -138,17 +97,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/initializeBettor`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      await handleResponse(response)
+      await betAPI.initializeBettor(authStore.userId)
 
       // Fetch the profile after initialization
       await fetchProfile()
@@ -176,17 +125,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/getUserProfile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      const data = await handleResponse<BettorProfile>(response)
+      const data = await betAPI.getUserProfile(authStore.userId)
       profile.value = data
       isInitialized.value = true
       
@@ -213,17 +152,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/getActiveBets`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      const data = await handleResponse<Bet[]>(response)
+      const data = await betAPI.getActiveBets(authStore.userId)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
@@ -264,17 +193,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/getExpiredBets`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      const data = await handleResponse<Bet[]>(response)
+      const data = await betAPI.getExpiredBets(authStore.userId)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
@@ -312,21 +231,13 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/placeBet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: payload.taskId,
-          wager: payload.wager,
-          deadline: payload.deadline,
-          taskDueDate: payload.taskDueDate
-        })
+      const data = await betAPI.placeBet({
+        user: authStore.userId,
+        task: payload.taskId,
+        wager: payload.wager,
+        deadline: payload.deadline,
+        taskDueDate: payload.taskDueDate
       })
-
-      const data = await handleResponse<{ bet: string }>(response)
 
       // Refresh active bets and profile
       await Promise.all([fetchActiveBets(), fetchProfile()])
@@ -353,18 +264,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/cancelBet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId
-        })
-      })
-
-      await handleResponse(response)
+      await betAPI.cancelBet(authStore.userId, taskId)
 
       // Remove bet from local state
       bets.value = bets.value.filter(bet => bet.task !== taskId)
@@ -386,7 +286,7 @@ export const useBetStore = defineStore('bet', () => {
   /**
    * Resolve a bet when a task is started/completed
    */
-  async function resolveBet(taskId: string, completionTime?: Date | string): Promise<ResolveBetResponse> {
+  async function resolveBet(taskId: string, completionTime?: Date | string): Promise<betAPI.ResolveBetResponse> {
     if (!authStore.userId) {
       throw new Error('User not authenticated')
     }
@@ -395,19 +295,11 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/resolveBet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId,
-          completionTime: completionTime || new Date().toISOString()
-        })
-      })
-
-      const data = await handleResponse<ResolveBetResponse>(response)
+      const data = await betAPI.resolveBet(
+        authStore.userId,
+        taskId,
+        completionTime || new Date().toISOString()
+      )
 
       // Refresh active bets and profile
       await Promise.all([fetchActiveBets(), fetchProfile()])
@@ -434,18 +326,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/resolveExpiredBet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId
-        })
-      })
-
-      await handleResponse(response)
+      await betAPI.resolveExpiredBet(authStore.userId, taskId)
 
       // Refresh active bets and profile
       await Promise.all([fetchActiveBets(), fetchProfile()])
@@ -470,18 +351,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/getBet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId
-        })
-      })
-
-      const data = await handleResponse<Bet>(response)
+      const data = await betAPI.getBet(authStore.userId, taskId)
       return data
     } catch (err) {
       // If bet doesn't exist, return null instead of throwing
@@ -508,18 +378,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/MicroBet/getRecentActivity`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          limit
-        })
-      })
-
-      const data = await handleResponse<Bet[]>(response)
+      const data = await betAPI.getRecentActivity(authStore.userId, limit)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {

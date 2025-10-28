@@ -1,50 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useBetStore } from './betStore'
-
-// TypeScript interfaces
-interface LoginCredentials {
-  username: string
-  password: string
-}
-
-interface RegisterCredentials {
-  username: string
-  password: string
-  email: string
-}
-
-interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-}
-
-interface UserInfo {
-  id: string
-  username: string
-  email: string
-}
-
-// API Base URL - adjust this based on your environment
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
-
-/**
- * Helper to handle API responses consistently
- */
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = await response.json()
-  
-  if (!response.ok) {
-    throw new Error(data.error || 'API request failed')
-  }
-  
-  // Check if the response contains an error field even with 200 status
-  if (data && typeof data === 'object' && 'error' in data) {
-    throw new Error(data.error || 'API returned an error')
-  }
-  
-  return data as T
-}
+import * as authAPI from '@/api/auth'
+import type { LoginCredentials, RegisterCredentials } from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -78,15 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function register(credentials: RegisterCredentials): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/UserAuthentication/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(credentials)
-      })
-
-      const authResponse = await handleResponse<AuthResponse>(response)
+      const authResponse = await authAPI.register(credentials)
 
       // Store tokens
       accessToken.value = authResponse.accessToken
@@ -119,15 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function login(credentials: LoginCredentials): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/UserAuthentication/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(credentials)
-      })
-
-      const authResponse = await handleResponse<AuthResponse>(response)
+      const authResponse = await authAPI.login(credentials)
 
       // Store tokens
       accessToken.value = authResponse.accessToken
@@ -158,15 +100,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       if (refreshToken.value) {
         // Call logout endpoint to invalidate refresh token on server
-        await fetch(`${API_BASE_URL}/UserAuthentication/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            refreshToken: refreshToken.value
-          })
-        })
+        await authAPI.logout(refreshToken.value)
       }
     } catch (error) {
       console.error('Logout error:', error)
@@ -192,17 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/UserAuthentication/refreshAccessToken`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          refreshToken: refreshToken.value
-        })
-      })
-
-      const data = await handleResponse<{ accessToken: string }>(response)
+      const data = await authAPI.refreshAccessToken(refreshToken.value)
 
       // Update access token
       accessToken.value = data.accessToken
@@ -226,24 +150,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/UserAuthentication/getUserInfo`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          accessToken: accessToken.value
-        })
-      })
-
-      const data = await handleResponse<{ user: UserInfo }>(response)
-
-      const userInfo: UserInfo = data.user
+      const data = await authAPI.getUserInfo(accessToken.value)
 
       // Store user information
-      userId.value = userInfo.id
-      username.value = userInfo.username
-      email.value = userInfo.email
+      userId.value = data.user.id
+      username.value = data.user.username
+      email.value = data.user.email
 
       // Persist to localStorage
       persistToLocalStorage()

@@ -2,33 +2,13 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from './authStore'
 import { VALID_EMOTIONS, EMOTION_LABELS, isValidEmotion, type Emotion } from '@/constants/emotions'
+import * as emotionAPI from '@/api/emotions'
+import type { EmotionLog, EmotionStats, TaskEmotions } from '@/api/emotions'
 
-// TypeScript interfaces
-export interface EmotionLog {
-  _id: string
-  user: string
-  task: string
-  phase: 'before' | 'after'
-  emotion: string
-  createdAt: Date | string
-}
+// Re-export types for convenience
+export type { EmotionLog, EmotionStats, TaskEmotions }
 
-export interface EmotionStats {
-  totalLogs: number
-  mostCommonEmotion: string | null
-  leastCommonEmotion: string | null
-  averageEmotionsPerDay: number
-  recentTrend: 'improving' | 'declining' | 'stable' | 'insufficient_data'
-}
-
-export interface TaskEmotions {
-  task: string
-  emotions: {
-    before?: string
-    after?: string
-  }
-}
-
+// Local interfaces for store-specific payloads
 export interface LogEmotionPayload {
   taskId: string
   emotion: string
@@ -41,34 +21,6 @@ export interface GetEmotionLogsParams {
   emotion?: string
   sortBy?: string
   sortOrder?: 1 | -1
-}
-
-export interface GetEmotionLogsResponse {
-  logs: EmotionLog[]
-  total: number
-  page: number
-  totalPages: number
-}
-
-// API Base URL
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
-
-/**
- * Helper to handle API responses consistently
- */
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = await response.json()
-  
-  if (!response.ok) {
-    throw new Error(data.error || 'API request failed')
-  }
-  
-  // Check if the response contains an error field even with 200 status
-  if (data && typeof data === 'object' && 'error' in data) {
-    throw new Error(data.error || 'API returned an error')
-  }
-  
-  return data as T
 }
 
 export const useEmotionStore = defineStore('emotion', () => {
@@ -120,19 +72,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/logBefore`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: payload.taskId,
-          emotion: payload.emotion
-        })
-      })
-
-      const data = await handleResponse<{ log: string }>(response)
+      const data = await emotionAPI.logBefore(authStore.userId, payload.taskId, payload.emotion)
 
       // Refresh emotion logs to get the newly created log
       await fetchEmotionLogs()
@@ -159,19 +99,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/logAfter`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: payload.taskId,
-          emotion: payload.emotion
-        })
-      })
-
-      const data = await handleResponse<{ log: string }>(response)
+      const data = await emotionAPI.logAfter(authStore.userId, payload.taskId, payload.emotion)
 
       // Refresh emotion logs to get the newly created log
       await fetchEmotionLogs()
@@ -198,18 +126,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/deleteTaskLogs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId
-        })
-      })
-
-      await handleResponse(response)
+      await emotionAPI.deleteTaskLogs(authStore.userId, taskId)
 
       // Remove logs from local state
       emotionLogs.value = emotionLogs.value.filter(log => log.task !== taskId)
@@ -234,17 +151,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/deleteUserLogs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      await handleResponse(response)
+      await emotionAPI.deleteUserLogs(authStore.userId)
 
       // Clear all logs from local state
       emotionLogs.value = []
@@ -271,17 +178,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionStats`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      const data = await handleResponse<EmotionStats>(response)
+      const data = await emotionAPI.getEmotionStats(authStore.userId)
 
       stats.value = data
     } catch (err) {
@@ -305,17 +202,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/analyzeRecentEmotions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId
-        })
-      })
-
-      const data = await handleResponse<{ analysis: string }>(response)
+      const data = await emotionAPI.analyzeRecentEmotions(authStore.userId)
 
       analysis.value = data.analysis
     } catch (err) {
@@ -339,18 +226,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionsForTask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          task: taskId
-        })
-      })
-
-      const data = await handleResponse<TaskEmotions>(response)
+      const data = await emotionAPI.getEmotionsForTask(authStore.userId, taskId)
 
       return data
     } catch (err) {
@@ -374,23 +250,15 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionLogs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: authStore.userId,
-          page: params.page || 1,
-          limit: params.limit || 100,
-          phase: params.phase,
-          emotion: params.emotion,
-          sortBy: params.sortBy || 'createdAt',
-          sortOrder: params.sortOrder || -1
-        })
+      const result = await emotionAPI.getEmotionLogs({
+        user: authStore.userId,
+        page: params.page || 1,
+        limit: params.limit || 100,
+        phase: params.phase,
+        emotion: params.emotion,
+        sortBy: params.sortBy || 'createdAt',
+        sortOrder: params.sortOrder || -1
       })
-
-      const result = await handleResponse<GetEmotionLogsResponse>(response)
 
       // Update emotion logs in store
       emotionLogs.value = result.logs
