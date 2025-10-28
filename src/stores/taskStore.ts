@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
+import { scheduleNudge } from '../api/nudges'
 import * as taskAPI from '@/api/tasks'
 import type { Task } from '@/api/tasks'
 
@@ -112,6 +113,45 @@ export const useTaskStore = defineStore('task', () => {
         description: payload.description,
         dueDate: payload.dueDate
       })
+
+      // ✨ Automatically schedule a nudge for the new task
+      try {
+        let deliveryTime: Date
+        
+        if (payload.dueDate) {
+          // Calculate halfway point between now and due date
+          const now = new Date()
+          const dueDate = new Date(payload.dueDate)
+          const timeDiff = dueDate.getTime() - now.getTime()
+          
+          if (timeDiff > 0) {
+            // Schedule at the halfway point
+            const halfwayPoint = now.getTime() + (timeDiff / 2)
+            deliveryTime = new Date(halfwayPoint)
+            
+            // Ensure minimum delay of 1 minute
+            const minDelay = new Date(now.getTime() + 60000) // 1 minute
+            if (deliveryTime < minDelay) {
+              deliveryTime = minDelay
+            }
+          } else {
+            // Due date is in the past, schedule for 5 minutes from now
+            deliveryTime = new Date()
+            deliveryTime.setMinutes(deliveryTime.getMinutes() + 5)
+          }
+        } else {
+          // No due date, schedule for 5 minutes from now
+          deliveryTime = new Date()
+          deliveryTime.setMinutes(deliveryTime.getMinutes() + 5)
+        }
+        
+        await scheduleNudge(authStore.userId, data.task, deliveryTime.toISOString())
+        
+        console.log('✅ Nudge scheduled successfully for task:', data.task, 'at', deliveryTime.toISOString())
+      } catch (nudgeError) {
+        // Don't fail task creation if nudge scheduling fails
+        console.warn('⚠️ Failed to schedule nudge:', nudgeError)
+      }
 
       // Refresh tasks to get the newly created task
       await fetchTasks()
