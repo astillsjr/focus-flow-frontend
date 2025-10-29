@@ -2,7 +2,7 @@
   <DashboardLayout>
     <!-- Header with username -->
     <div class="dashboard-header">
-      <h1>Welcome, {{ displayUsername }}</h1>
+      <h1>Your Bets</h1>
     </div>
 
     <!-- Initialize Profile Section -->

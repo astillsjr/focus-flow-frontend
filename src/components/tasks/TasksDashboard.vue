@@ -1,8 +1,9 @@
 <template>
   <DashboardLayout>
-    <!-- Header with username -->
+    <!-- Header with title and greeting -->
     <div class="dashboard-header">
-      <h1>Welcome, {{ displayUsername }}</h1>
+      <h1>Your Tasks</h1>
+      <p style="margin: 0.25rem 0 0; color: #B3B3B3;">Welcome, {{ displayUsername }}</p>
     </div>
 
     <!-- Create Task Section -->

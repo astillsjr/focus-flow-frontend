@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout>
-    <h1>Emotions Dashboard</h1>
+    <h1>Emotion Insights</h1>
 
     <!-- AI Analysis Section -->
     <section class="section">

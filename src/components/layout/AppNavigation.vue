@@ -6,7 +6,7 @@
       </div>
       
       <div class="nav-links">
-        <router-link to="/dashboard" class="nav-link">
+        <router-link to="/tasks" class="nav-link">
           Tasks
         </router-link>
         <router-link to="/emotions" class="nav-link">
@@ -17,9 +17,12 @@
         </router-link>
       </div>
       
-      <button @click="handleLogout" class="logout-button">
-        Logout
-      </button>
+      <div class="user-actions">
+        <span class="user-name" v-if="authStore.username">{{ authStore.username }}</span>
+        <button @click="handleLogout" class="logout-button">
+          Logout
+        </button>
+      </div>
     </div>
   </nav>
 </template>
@@ -109,7 +112,7 @@ const handleLogout = async () => {
 
 /* Logout Button */
 .logout-button {
-  margin-left: auto;
+  margin-left: 0;
   padding: 0.625rem 1.25rem;
   background-color: #4D4D4D;
   color: #FFFFFF;
@@ -128,6 +131,20 @@ const handleLogout = async () => {
 .logout-button:focus {
   outline: 2px solid #BB86FC;
   outline-offset: 2px;
+}
+
+.user-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-name {
+  color: #FFFFFF;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  opacity: 0.9;
 }
 
 /* Responsive Design */

@@ -187,7 +187,7 @@ function resetFlow() {
  * Navigate to dashboard
  */
 function goToDashboard() {
-  router.push('/dashboard')
+  router.push('/tasks')
 }
 
 // Initialize on mount

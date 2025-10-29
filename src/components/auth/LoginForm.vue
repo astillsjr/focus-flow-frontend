@@ -83,7 +83,7 @@ async function handleLogin() {
     emit('login-success')
 
     // Redirect to dashboard after successful login
-    router.push('/dashboard')
+    router.push('/tasks')
   } catch (error) {
     // Login failed - show error message
     if (error instanceof Error) {

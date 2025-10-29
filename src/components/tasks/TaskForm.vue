@@ -128,7 +128,7 @@ async function handleSubmit() {
     clearForm()
 
     // Optional: Redirect to dashboard (uncomment when router is set up)
-    // router.push('/dashboard')
+    // router.push('/tasks')
   } catch (error) {
     // Task creation failed - show error message
     if (error instanceof Error) {

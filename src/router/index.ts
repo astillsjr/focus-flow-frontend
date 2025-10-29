@@ -5,7 +5,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    redirect: '/dashboard'
+    redirect: '/tasks'
   },
   {
     path: '/login',
@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresGuest: true }
   },
   {
-    path: '/dashboard',
+    path: '/tasks',
     name: 'Dashboard',
     component: () => import('../components/tasks/TasksDashboard.vue'),
     meta: { requiresAuth: true }
@@ -41,12 +41,6 @@ const routes: RouteRecordRaw[] = [
     path: '/emotions',
     name: 'Emotions',
     component: () => import('../components/emotions/EmotionsDashboard.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/demo',
-    name: 'ComponentDemo',
-    component: () => import('../components/base/BaseComponentsDemo.vue'),
     meta: { requiresAuth: true }
   }
 ]

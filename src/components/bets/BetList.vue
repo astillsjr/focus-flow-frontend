@@ -1,7 +1,7 @@
 <template>
   <div class="bet-list">
     <div class="bet-list-header">
-      <h2>Your Bets</h2>
+      <h2>Active Bets</h2>
     </div>
 
     <div v-if="isLoading && !bets.length" class="loading-state">

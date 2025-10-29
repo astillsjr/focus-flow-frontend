@@ -96,7 +96,7 @@ async function handleRegister() {
     emit('register-success')
 
     // Redirect to dashboard after successful registration
-    router.push('/dashboard')
+    router.push('/tasks')
   } catch (error) {
     // Registration failed - show error message
     if (error instanceof Error) {
