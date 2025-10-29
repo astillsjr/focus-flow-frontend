@@ -17,24 +17,34 @@ When a user creates a task through `TaskForm.vue`, the system:
 
 **Location:** `src/stores/taskStore.ts` → `addTask()` function
 
-### 2. **Background Polling**
+### 2. **Background Polling & Queue Management**
 The system polls for ready nudges every 60 seconds (configurable):
 - Checks the backend for nudges where `deliveryTime` has arrived
 - Retrieves task details and recent emotions
 - Calls the AI to generate a personalized motivational message
-- Adds the nudge to the active notifications queue
+- Adds nudges to an internal **queue** (not directly to display)
+- Shows only **one nudge at a time** to avoid overwhelming the user
+- Automatically displays the next nudge when the current one is dismissed
 
-**Location:** `src/stores/nudgeStore.ts` → `checkForReadyNudges()` function
+**Location:** `src/stores/nudgeStore.ts` → `checkForReadyNudges()` and `showNextNudge()` functions
 
-### 3. **Notification Display**
-When a nudge is ready:
+### 3. **Queue Management & Display**
+The system uses a **queue system** to show nudges one at a time:
+- When multiple nudges are ready, they're added to a queue
+- Only **one nudge** is displayed at a time
+- When user dismisses or starts a task, the next nudge appears automatically (after 0.5s)
+- A blue badge shows how many nudges are waiting (e.g., "+2 more")
+
+### 4. **Notification Display**
+When a nudge is shown:
 - A notification card appears in the top-right corner
 - Displays the task title and AI-generated motivational message
+- Shows a badge indicating queued nudges if more are waiting
 - Provides two actions:
   - **Start Task**: Marks the task as started and dismisses the notification
-  - **Dismiss**: Simply removes the notification
+  - **Dismiss**: Removes the notification and shows the next one
 
-**Location:** `src/components/nudges/NudgeNotification.vue`
+**Location:** `src/components/nudges/NudgeNotification.vue`, `src/stores/nudgeStore.ts`
 
 ## Architecture
 
@@ -75,8 +85,16 @@ When a nudge is ready:
          │
          ▼
 ┌─────────────────────────────┐
+│  nudgeStore (queue)         │
+│  - Add to queue             │
+│  - Show one at a time       │
+└────────┬────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
 │  NudgeNotification.vue      │
 │  Display notification       │
+│  Show "+X more" badge       │
 └─────────────────────────────┘
 ```
 
@@ -95,11 +113,13 @@ When a nudge is ready:
 ### Created Files:
 1. **`src/stores/nudgeStore.ts`** (NEW)
    - Manages nudge polling lifecycle
-   - Stores active nudges
-   - Provides actions: `startPolling`, `stopPolling`, `checkForReadyNudges`, `dismissNudge`
+   - Implements queue system for one-at-a-time display
+   - Stores active nudges (max 1) and queued nudges
+   - Provides actions: `startPolling`, `stopPolling`, `checkForReadyNudges`, `dismissNudge`, `showNextNudge`
 
 2. **`src/components/nudges/NudgeNotification.vue`** (NEW)
    - Displays nudge notifications with animations
+   - Shows queue count badge ("+X more") when applicable
    - Handles user actions (Start Task, Dismiss)
    - Positioned top-right corner, responsive design
 
@@ -185,13 +205,15 @@ Schedule multiple reminders (e.g., at 75%, 50%, and 25% of time remaining).
    - No user interaction required
 
 3. **Nudge delivery time arrives**
-   - Background polling detects ready nudge
-   - AI generates personalized message based on task details
-   - Notification appears on screen with slide-in animation
+   - Background polling detects ready nudge(s)
+   - AI generates personalized message for each nudge
+   - Nudges are added to internal queue
+   - First nudge appears on screen with slide-in animation
+   - If multiple nudges ready, shows "+X more" badge
 
 4. **User responds to nudge**
-   - Option A: Clicks "Start Task" → Task marked as started, notification dismissed
-   - Option B: Clicks "Dismiss" → Notification removed
+   - Option A: Clicks "Start Task" → Task marked as started, notification dismissed, next nudge shows
+   - Option B: Clicks "Dismiss" → Notification removed, next nudge shows after 0.5 second delay
 
 ## API Endpoints Used
 
@@ -204,10 +226,26 @@ Schedule multiple reminders (e.g., at 75%, 50%, and 25% of time remaining).
 
 - **Smooth animations**: Slide-in from right, fade transitions
 - **Visual hierarchy**: Green accent color, clear typography
+- **Queue badge**: Blue badge showing remaining nudges ("+2 more")
 - **Hover effects**: Interactive button states
 - **Responsive**: Adapts to mobile screens
 - **z-index**: 1000 to appear above other content
 - **Pointer events**: Notifications don't block underlying content
+
+## Queue System Details
+
+### How It Works:
+1. **Multiple nudges ready** → All are processed and queued
+2. **First nudge displays** → User sees one notification
+3. **User dismisses** → After 0.5s delay, next nudge appears
+4. **Badge indicator** → Shows "+X more" so user knows what's coming
+5. **Prevents duplicates** → Checks both active and queue before adding
+
+### Benefits:
+- **No overwhelm**: User sees one thing at a time
+- **Clear progression**: Badge shows how many are waiting
+- **Smooth UX**: 0.5s delay between nudges feels natural
+- **No lost nudges**: All are queued and eventually shown
 
 ## Future Enhancements
 
@@ -218,6 +256,7 @@ Schedule multiple reminders (e.g., at 75%, 50%, and 25% of time remaining).
 5. **Nudge history**: View past nudges and their effectiveness
 6. **Customizable messages**: Let users set their own nudge templates
 7. **Sound effects**: Optional audio alerts when nudge appears
+8. **Queue management UI**: Allow users to view/reorder/skip queued nudges
 
 ## Testing the Feature
 
@@ -240,10 +279,28 @@ Schedule multiple reminders (e.g., at 75%, 50%, and 25% of time remaining).
 2. **Expected**: Nudge scheduled for 1 minute from now (minimum delay)
 3. **Verify** in console log
 
+### Test Scenario 4: Multiple Nudges (Queue System)
+1. **Create 3 tasks** all without due dates (or all with same near due date)
+2. **Expected**: All scheduled ~5 minutes from now
+3. **Wait** for scheduled time + polling interval
+4. **Expected behavior**:
+   - Console shows: "📬 Found 3 ready nudge(s)"
+   - Console shows: "✨ Nudge queued: [task1]" (3 times)
+   - Console shows: "📢 Showing next nudge from queue: [task1] (2 remaining)"
+   - Only ONE notification appears
+   - Badge shows "+2 more"
+5. **Dismiss first nudge**:
+   - After 0.5s, second nudge appears
+   - Badge now shows "+1 more"
+6. **Dismiss second nudge**:
+   - After 0.5s, third nudge appears
+   - No badge (last one)
+
 ### Testing Actions
 - Click "Start Task" to mark task as started
 - Click "Dismiss" to remove notification
 - Click "×" to close notification
+- Watch the queue badge update as you go through nudges
 
 ## Troubleshooting
 

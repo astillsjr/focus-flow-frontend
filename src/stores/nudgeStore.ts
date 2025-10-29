@@ -15,12 +15,26 @@ export interface ActiveNudge {
 export const useNudgeStore = defineStore('nudge', () => {
   // State
   const activeNudges = ref<ActiveNudge[]>([])
+  const nudgeQueue = ref<ActiveNudge[]>([])
   const isPolling = ref(false)
   const pollingInterval = ref<number | null>(null)
 
   // Get auth and task stores
   const authStore = useAuthStore()
   const taskStore = useTaskStore()
+
+  /**
+   * Show the next nudge from the queue
+   */
+  function showNextNudge(): void {
+    if (nudgeQueue.value.length > 0 && activeNudges.value.length === 0) {
+      const nextNudge = nudgeQueue.value.shift()
+      if (nextNudge) {
+        activeNudges.value.push(nextNudge)
+        console.log(`📢 Showing next nudge from queue: "${nextNudge.taskTitle}" (${nudgeQueue.value.length} remaining)`)
+      }
+    }
+  }
 
   /**
    * Check for ready nudges and trigger them
@@ -38,9 +52,11 @@ export const useNudgeStore = defineStore('nudge', () => {
 
       // Process each ready nudge
       for (const nudge of readyNudges) {
-        // Check if this nudge is already in active nudges
-        const alreadyActive = activeNudges.value.some(n => n.nudgeId === nudge._id)
-        if (alreadyActive) {
+        // Check if this nudge is already in queue or active
+        const alreadyQueued = nudgeQueue.value.some(n => n.taskId === nudge.task)
+        const alreadyActive = activeNudges.value.some(n => n.taskId === nudge.task)
+        
+        if (alreadyQueued || alreadyActive) {
           continue
         }
 
@@ -64,8 +80,8 @@ export const useNudgeStore = defineStore('nudge', () => {
             recentEmotions
           })
 
-          // Add to active nudges for display
-          activeNudges.value.push({
+          // Add to queue instead of directly to active nudges
+          nudgeQueue.value.push({
             nudgeId: result.nudge,
             taskId: nudge.task,
             taskTitle: task.title,
@@ -73,11 +89,15 @@ export const useNudgeStore = defineStore('nudge', () => {
             timestamp: new Date()
           })
 
-          console.log('✨ Nudge triggered:', result.message)
+          console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
         } catch (error) {
           console.error('Failed to trigger nudge:', error)
         }
       }
+      
+      // Show the first nudge if none are currently active
+      showNextNudge()
+      
     } catch (error) {
       console.error('Failed to check ready nudges:', error)
     }
@@ -126,6 +146,11 @@ export const useNudgeStore = defineStore('nudge', () => {
       const nudge = activeNudges.value[index]
       console.log('🔕 Dismissed nudge for task:', nudge.taskTitle)
       activeNudges.value.splice(index, 1)
+      
+      // Show next nudge in queue after a short delay for better UX
+      setTimeout(() => {
+        showNextNudge()
+      }, 500)
     }
   }
 
@@ -134,7 +159,8 @@ export const useNudgeStore = defineStore('nudge', () => {
    */
   function clearAllNudges(): void {
     activeNudges.value = []
-    console.log('🔕 Cleared all nudges')
+    nudgeQueue.value = []
+    console.log('🔕 Cleared all nudges and queue')
   }
 
   // Watch for logout and stop polling
@@ -154,6 +180,7 @@ export const useNudgeStore = defineStore('nudge', () => {
   return {
     // State
     activeNudges,
+    nudgeQueue,
     isPolling,
 
     // Actions
@@ -161,7 +188,8 @@ export const useNudgeStore = defineStore('nudge', () => {
     startPolling,
     stopPolling,
     dismissNudge,
-    clearAllNudges
+    clearAllNudges,
+    showNextNudge
   }
 })
 

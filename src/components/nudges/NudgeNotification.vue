@@ -8,7 +8,12 @@
       >
         <div class="nudge-header">
           <div class="nudge-icon">🔔</div>
-          <div class="nudge-title">Time to get started!</div>
+          <div class="nudge-title">
+            Time to get started!
+            <span v-if="nudgeStore.nudgeQueue.length > 0" class="queue-badge">
+              +{{ nudgeStore.nudgeQueue.length }} more
+            </span>
+          </div>
           <button class="nudge-close" @click="dismiss(nudge.nudgeId)" aria-label="Dismiss notification">
             ×
           </button>
@@ -214,6 +219,19 @@ async function handleStart(taskId: string, nudgeId: string) {
   transition: transform 0.3s ease;
 }
 
+/* Queue badge styling */
+.queue-badge {
+  display: inline-block;
+  background: #2196F3;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .nudge-container {
@@ -225,6 +243,11 @@ async function handleStart(taskId: string, nudgeId: string) {
   
   .nudge-card {
     padding: 12px;
+  }
+  
+  .queue-badge {
+    font-size: 10px;
+    padding: 1px 5px;
   }
 }
 </style>
