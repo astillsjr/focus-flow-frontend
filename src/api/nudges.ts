@@ -10,7 +10,6 @@ export interface Nudge {
   task: string
   deliveryTime: Date | string
   triggered: boolean
-  canceled: boolean
 }
 
 export interface NudgeUserRequest {
@@ -66,7 +65,7 @@ export async function scheduleNudge(
 }
 
 /**
- * Cancel a scheduled nudge
+ * Cancel (delete) a scheduled nudge
  */
 export async function cancelNudge(user: string, task: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/cancelNudge`, {
@@ -126,7 +125,7 @@ export async function getNudge(user: string, task: string): Promise<Nudge> {
  */
 export async function getUserNudges(
   user: string,
-  status?: 'pending' | 'triggered' | 'canceled',
+  status?: 'pending' | 'triggered',
   limit?: number
 ): Promise<Nudge[]> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/getUserNudges`, {

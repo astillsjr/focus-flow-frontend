@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
 import { useBetStore } from './betStore'
-import { scheduleNudge } from '../api/nudges'
+import { scheduleNudge, cancelNudge } from '../api/nudges'
 import * as taskAPI from '@/api/tasks'
 import type { Task } from '@/api/tasks'
 
@@ -221,6 +221,16 @@ export const useTaskStore = defineStore('task', () => {
           // Log the error but don't fail the task deletion
           console.warn('⚠️ Failed to cancel bet, but continuing with task deletion:', betErr)
         }
+      }
+
+      // Delete scheduled nudge for this task
+      try {
+        console.log('🔔 Attempting to delete nudge for task:', taskId)
+        await cancelNudge(authStore.userId, taskId)
+        console.log('✅ Nudge deleted successfully')
+      } catch (nudgeErr) {
+        // Log the error but don't fail the task deletion
+        console.warn('⚠️ Failed to delete nudge, but continuing with task deletion:', nudgeErr)
       }
 
       await taskAPI.deleteTask(authStore.userId, taskId)

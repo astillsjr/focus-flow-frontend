@@ -102,8 +102,9 @@ When a nudge is shown:
 
 ### Modified Files:
 1. **`src/stores/taskStore.ts`**
-   - Added import for `scheduleNudge` from nudges API
+   - Added import for `scheduleNudge` and `cancelNudge` from nudges API
    - Modified `addTask()` to automatically schedule a nudge after task creation
+   - Modified `deleteTask()` to delete associated nudges when a task is deleted
 
 2. **`src/App.vue`**
    - Added `NudgeNotification` component
@@ -220,7 +221,7 @@ Schedule multiple reminders (e.g., at 75%, 50%, and 25% of time remaining).
 - **POST** `/api/NudgeEngine/scheduleNudge` - Schedule a new nudge
 - **POST** `/api/NudgeEngine/getReadyNudges` - Get nudges ready for delivery
 - **POST** `/api/NudgeEngine/nudgeUser` - Trigger nudge and get AI message
-- **POST** `/api/NudgeEngine/cancelNudge` - Cancel a scheduled nudge
+- **POST** `/api/NudgeEngine/cancelNudge` - Delete a scheduled nudge from the database
 
 ## Styling Features
 
