@@ -7,19 +7,16 @@
 
     <!-- Create Task Section -->
     <div class="create-task-section">
-      <button @click="goToCreateTask" class="toggle-form-button">
+      <BaseButton @click="goToCreateTask" variant="primary" size="lg">
         + Create New Task
-      </button>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls">
-      <button @click="handleRefresh" :disabled="isLoading" class="refresh-button">
-        {{ isLoading ? 'Loading...' : 'Refresh Tasks' }}
-      </button>
-      <button @click="toggleHistory" class="history-button">
-        {{ showHistory ? 'Hide History' : 'Show History' }}
-      </button>
+      </BaseButton>
+      <BaseButton 
+        @click="toggleView"
+        variant="ghost"
+        size="lg"
+      >
+        {{ showHistory ? 'Show Active' : 'Show History' }}
+      </BaseButton>
     </div>
 
     <!-- Loading State -->
@@ -30,13 +27,15 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="handleRefresh" class="retry-button">Try Again</button>
+      <BaseButton @click="handleRefresh" variant="danger">
+        Try Again
+      </BaseButton>
     </div>
 
     <!-- Task List -->
     <div v-else class="task-list-container">
       <!-- Active Tasks (Pending + In Progress) -->
-      <div class="active-tasks">
+      <div v-if="!showHistory" class="active-tasks">
         <h2>Active Tasks</h2>
         <div v-if="!pendingTasks.length && !inProgressTasks.length" class="empty-message">
           <p>No active tasks. Create a task to get started!</p>
@@ -79,24 +78,53 @@
       </div>
 
       <!-- History (Completed Tasks) -->
-      <div v-if="showHistory" class="history-section">
-        <h2>History</h2>
+      <div v-else class="history-section">
+        <div class="history-header">
+          <h2>History</h2>
+          <span class="total-count">{{ completedTasks.length }} completed tasks</span>
+        </div>
+        
         <div v-if="!completedTasks.length" class="empty-message">
           <p>No completed tasks yet.</p>
         </div>
-        <div v-else class="task-group">
-          <h3 class="group-title">
-            Completed <span class="task-count">({{ completedTasks.length }})</span>
-          </h3>
-          <div class="task-items">
-            <TaskItem
-              v-for="task in completedTasks"
-              :key="task._id"
-              :task="task"
-              @toggle-start="handleToggleStart"
-              @toggle-complete="handleToggleComplete"
-              @delete-task="handleDeleteTask"
-            />
+        
+        <div v-else>
+          <div class="task-group">
+            <div class="task-items">
+              <TaskItem
+                v-for="task in paginatedCompletedTasks"
+                :key="task._id"
+                :task="task"
+                @toggle-start="handleToggleStart"
+                @toggle-complete="handleToggleComplete"
+                @delete-task="handleDeleteTask"
+              />
+            </div>
+          </div>
+          
+          <!-- Pagination Controls -->
+          <div v-if="totalPages > 1" class="pagination">
+            <BaseButton 
+              @click="previousPage"
+              :disabled="currentPage === 1"
+              variant="ghost"
+              size="sm"
+            >
+              Previous
+            </BaseButton>
+            
+            <span class="page-info">
+              Page {{ currentPage }} of {{ totalPages }}
+            </span>
+            
+            <BaseButton 
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              variant="ghost"
+              size="sm"
+            >
+              Next
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -111,6 +139,7 @@ import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskItem from './TaskItem.vue'
+import { BaseButton } from '../base'
 
 // Get stores and router
 const router = useRouter()
@@ -119,6 +148,8 @@ const authStore = useAuthStore()
 
 // Local state
 const showHistory = ref(false)
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 // Computed properties
 const tasks = computed(() => taskStore.tasks)
@@ -129,6 +160,14 @@ const isLoading = computed(() => taskStore.isLoading)
 const error = computed(() => taskStore.error)
 const displayUsername = computed(() => authStore.username || 'User')
 
+// Pagination computed properties
+const totalPages = computed(() => Math.ceil(completedTasks.value.length / itemsPerPage))
+const paginatedCompletedTasks = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return completedTasks.value.slice(start, end)
+})
+
 /**
  * Navigate to task creation flow
  */
@@ -137,10 +176,29 @@ function goToCreateTask() {
 }
 
 /**
- * Toggle history visibility
+ * Toggle between active tasks and history view
  */
-function toggleHistory() {
+function toggleView() {
   showHistory.value = !showHistory.value
+  currentPage.value = 1 // Reset to first page when switching views
+}
+
+/**
+ * Go to previous page
+ */
+function previousPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+/**
+ * Go to next page
+ */
+function nextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
 }
 
 /**
@@ -215,64 +273,9 @@ onMounted(async () => {
 
 /* Create Task Section */
 .create-task-section {
-  margin-bottom: 2rem;
-}
-
-.toggle-form-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.toggle-form-button:hover {
-  background-color: #45a049;
-}
-
-/* Controls */
-.controls {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-}
-
-.refresh-button,
-.history-button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.refresh-button {
-  background-color: #2196F3;
-  color: white;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background-color: #1976D2;
-}
-
-.refresh-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.history-button {
-  background-color: #FF9800;
-  color: white;
-}
-
-.history-button:hover {
-  background-color: #F57C00;
 }
 
 /* Loading and Error States */
@@ -288,27 +291,16 @@ onMounted(async () => {
 }
 
 .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   color: #d32f2f;
 }
 
 .error-state p {
   font-size: 1.1rem;
-  margin-bottom: 1rem;
-}
-
-.retry-button {
-  padding: 0.5rem 1rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.retry-button:hover {
-  background-color: #d32f2f;
+  margin: 0;
 }
 
 /* Task List Container */
@@ -316,6 +308,10 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+.active-tasks {
+  animation: fadeIn 0.3s ease-in;
 }
 
 .active-tasks h2,
@@ -363,23 +359,72 @@ onMounted(async () => {
 
 /* History Section */
 .history-section {
-  border-top: 2px solid #e0e0e0;
-  padding-top: 2rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.history-header h2 {
+  margin: 0;
+}
+
+.total-count {
+  color: #757575;
+  font-size: 0.9rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.page-info {
+  color: #666666;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .controls {
+  .create-task-section {
     flex-direction: column;
-  }
-
-  .refresh-button,
-  .history-button {
-    width: 100%;
   }
 
   .task-group {
     padding: 1rem;
+  }
+  
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 </style>

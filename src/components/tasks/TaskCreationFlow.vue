@@ -1,76 +1,79 @@
 <template>
   <DashboardLayout>
     <div class="flow-container">
-      <!-- Step 1: Create Task -->
-      <div v-if="currentStep === 'task'">
-        <h1>Create New Task</h1>
-        <TaskForm 
-          @submit-task="handleTaskCreated"
-          :show-title="false"
-        />
-      </div>
-
-      <!-- Step 2: Bet Prompt -->
-      <div v-else-if="currentStep === 'bet-prompt'">
-        <h1>Want to bet on this task?</h1>
-        <p><strong>Task created:</strong> {{ createdTaskTitle }}</p>
-        <p>Placing a bet increases accountability and can earn you points when you complete the task on time.</p>
-        
-        <div v-if="!betStore.hasProfile" class="warning-message">
-          <p>You need to initialize your betting profile first.</p>
-          <button @click="initializeBettor" :disabled="isInitializing">
-            {{ isInitializing ? 'Initializing...' : 'Initialize Betting Profile' }}
-          </button>
+      <Transition name="fade-slide" mode="out-in">
+        <!-- Step 1: Create Task -->
+        <div v-if="currentStep === 'task'" key="task">
+          <h1>Create New Task</h1>
+          <TaskForm 
+            @submit-task="handleTaskCreated"
+            :show-title="false"
+          />
         </div>
 
-        <div v-if="betInitError" class="error-message">
-          {{ betInitError }}
-        </div>
-        
-        <div class="button-group">
-          <button 
-            @click="showBetForm" 
-            :disabled="!betStore.hasProfile"
-          >
-            Yes, Place a Bet
-          </button>
-          <button @click="skipBetting">
-            Skip for Now
-          </button>
-        </div>
-      </div>
+        <!-- Step 2: Bet Prompt -->
+        <div v-else-if="currentStep === 'bet-prompt'" key="bet-prompt">
+          <h1>Want to bet on this task?</h1>
+          <p><strong>Task created:</strong> {{ createdTaskTitle }}</p>
+          <p>Placing a bet increases accountability and can earn you points when you complete the task on time.</p>
+          
+          <div v-if="!betStore.hasProfile" class="warning-message">
+            <p>You need to initialize your betting profile first.</p>
+            <BaseButton @click="initializeBettor" :loading="isInitializing">
+              Initialize Betting Profile
+            </BaseButton>
+          </div>
 
-      <!-- Step 3: Bet Form -->
-      <div v-else-if="currentStep === 'bet-form'">
-        <h1>Place Your Bet</h1>
-        <p>Set your wager and deadline for "{{ createdTaskTitle }}"</p>
-        <BetForm
-          :task-id="createdTaskId!"
-          :task-title="createdTaskTitle"
-          @bet-placed="handleBetPlaced"
-          @error="handleBetError"
-        />
-        <button @click="skipBetting" class="skip-button">
-          Skip Betting
-        </button>
-      </div>
-
-      <!-- Step 4: Completion -->
-      <div v-else-if="currentStep === 'complete'">
-        <h1>Task Created!</h1>
-        <p v-if="betPlaced">Your task has been created and your bet is active.</p>
-        <p v-else>Your task has been created successfully.</p>
-        <p><strong>{{ createdTaskTitle }}</strong></p>
-        
-        <div class="button-group">
-          <button @click="goToDashboard">
-            View Dashboard
-          </button>
-          <button @click="resetFlow">
-            Create Another Task
-          </button>
+          <div v-if="betInitError" class="error-message">
+            {{ betInitError }}
+          </div>
+          
+          <div class="button-group">
+            <BaseButton 
+              @click="showBetForm" 
+              :disabled="!betStore.hasProfile"
+              variant="primary"
+            >
+              Yes, Place a Bet
+            </BaseButton>
+            <BaseButton @click="skipBetting" variant="ghost">
+              Skip for Now
+            </BaseButton>
+          </div>
         </div>
-      </div>
+
+        <!-- Step 3: Bet Form -->
+        <div v-else-if="currentStep === 'bet-form'" key="bet-form">
+          <h1>Place Your Bet</h1>
+          <p>Set your wager and deadline for "{{ createdTaskTitle }}"</p>
+          <BetForm
+            :task-id="createdTaskId!"
+            :task-title="createdTaskTitle"
+            @bet-placed="handleBetPlaced"
+            @error="handleBetError"
+          />
+          <BaseButton @click="skipBetting" variant="ghost">
+            Skip Betting
+          </BaseButton>
+        </div>
+
+        <!-- Step 4: Completion -->
+        <div v-else-if="currentStep === 'complete'" key="complete">
+          <h1>Task Created!</h1>
+          <p v-if="betPlaced">Your task has been created and your bet is active.</p>
+          <p v-else>Your task has been created successfully.</p>
+          <p><strong>{{ createdTaskTitle }}</strong></p>
+          
+          <div class="button-group">
+            <BaseButton @click="goToDashboard" variant="primary">
+              View Dashboard
+            </BaseButton>
+            <BaseButton @click="resetFlow" variant="ghost">
+              Create Another Task
+            </BaseButton>
+          </div>
+        </div>
+      </Transition>
     </div>
   </DashboardLayout>
 </template>
@@ -83,6 +86,7 @@ import { useTaskStore } from '../../stores/taskStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskForm from './TaskForm.vue'
 import BetForm from '../bets/BetForm.vue'
+import { BaseButton } from '../base'
 
 type FlowStep = 'task' | 'bet-prompt' | 'bet-form' | 'complete'
 
@@ -199,6 +203,7 @@ onMounted(() => {
 .flow-container {
   max-width: 800px;
   margin: 0 auto;
+  min-height: 400px; /* Prevents jarring layout shifts between steps */
 }
 
 h1 {
@@ -208,6 +213,22 @@ h1 {
 
 p {
   margin: 0.5rem 0;
+}
+
+/* Fade + Slide Transition */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .warning-message {
@@ -222,16 +243,12 @@ p {
   margin: 0 0 0.5rem 0;
 }
 
-.warning-message button {
-  margin-top: 0.5rem;
-}
-
 .error-message {
   padding: 1rem;
   margin: 1rem 0;
   background-color: #ffebee;
   border: 1px solid #f44336;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #d32f2f;
 }
 
@@ -241,28 +258,10 @@ p {
   margin-top: 1.5rem;
 }
 
-button {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-button:hover:not(:disabled) {
-  background-color: #f5f5f5;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.skip-button {
-  width: 100%;
-  margin-top: 1rem;
-  background-color: #f5f5f5;
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+  }
 }
 
 /* Remove fancy styling from child components */

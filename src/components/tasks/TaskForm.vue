@@ -2,51 +2,48 @@
   <div class="task-form">
     <h2 v-if="showTitle">Create New Task</h2>
     
-    <form @submit.prevent="handleSubmit">
-      <div class="form-group">
-        <label for="title">Title <span class="required">*</span></label>
-        <input
-          id="title"
-          v-model="title"
-          type="text"
-          placeholder="Enter task title"
-          required
-          :disabled="isLoading"
-        />
-      </div>
+    <form @submit.prevent="handleSubmit" class="form">
+      <BaseInput
+        v-model="title"
+        label="Title"
+        placeholder="Enter task title"
+        required
+        :disabled="isLoading"
+        :error="errorMessage"
+      />
 
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea
-          id="description"
-          v-model="description"
-          placeholder="Enter task description (optional)"
-          rows="4"
-          :disabled="isLoading"
-        />
-      </div>
+      <BaseInput
+        v-model="description"
+        label="Description"
+        placeholder="Enter task description (optional)"
+        multiline
+        :rows="4"
+        :disabled="isLoading"
+      />
 
-      <div class="form-group">
-        <label for="dueDate">Due Date</label>
-        <input
-          id="dueDate"
-          v-model="dueDate"
-          type="datetime-local"
-          :disabled="isLoading"
-        />
-      </div>
-
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
+      <BaseInput
+        v-model="dueDate"
+        label="Due Date & Time"
+        type="datetime-local"
+        :disabled="isLoading"
+      />
 
       <div class="form-actions">
-        <button type="submit" :disabled="isLoading || !isFormValid" class="submit-button">
-          {{ isLoading ? 'Creating...' : 'Create Task' }}
-        </button>
-        <button type="button" @click="clearForm" :disabled="isLoading" class="clear-button">
+        <BaseButton 
+          type="submit" 
+          :disabled="!isFormValid"
+          :loading="isLoading"
+        >
+          Create Task
+        </BaseButton>
+        <BaseButton 
+          type="button" 
+          @click="clearForm" 
+          :disabled="isLoading"
+          variant="ghost"
+        >
           Clear
-        </button>
+        </BaseButton>
       </div>
     </form>
   </div>
@@ -55,6 +52,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
+import { BaseButton, BaseInput } from '../base'
 
 // Props
 const props = withDefaults(defineProps<{
@@ -154,105 +152,30 @@ async function handleSubmit() {
 }
 
 h2 {
-  margin-bottom: 1.5rem;
+  margin: 0 0 1.5rem 0;
   text-align: center;
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.required {
-  color: #f44336;
-}
-
-input,
-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
-}
-
-textarea {
-  resize: vertical;
-}
-
-input:disabled,
-textarea:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-}
-
-.error-message {
-  color: #d32f2f;
-  background-color: #ffebee;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .form-actions {
   display: flex;
   gap: 1rem;
+  margin-top: 0.5rem;
 }
 
-.submit-button,
-.clear-button {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.submit-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.submit-button:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.submit-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.clear-button {
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #ccc;
-}
-
-.clear-button:hover:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.clear-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+@media (max-width: 768px) {
+  .task-form {
+    padding: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
 }
 </style>
 

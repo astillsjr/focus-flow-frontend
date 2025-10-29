@@ -13,10 +13,12 @@
     </section>
 
     <!-- Info Section -->
-    <section class="section info-section">
-      <h3>About Emotion Tracking</h3>
-      <p>Log your emotions before and after completing tasks to track patterns and receive AI-powered insights.</p>
-      <p>Use the emotion forms on individual tasks in the Tasks dashboard to record how you feel.</p>
+    <section class="section">
+      <BaseCard padding="lg">
+        <h3>About Emotion Tracking</h3>
+        <p>Log your emotions before and after completing tasks to track patterns and receive AI-powered insights.</p>
+        <p>Use the emotion forms on individual tasks in the Tasks dashboard to record how you feel.</p>
+      </BaseCard>
     </section>
   </DashboardLayout>
 </template>
@@ -25,6 +27,7 @@
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import EmotionAnalysis from './EmotionAnalysis.vue'
 import EmotionStats from './EmotionStats.vue'
+import { BaseCard } from '../base'
 </script>
 
 <style scoped>
@@ -36,20 +39,14 @@ h1 {
   margin-bottom: 2rem;
 }
 
-.info-section {
-  background: #f5f5f5;
-  padding: 1.5rem;
-  border-radius: 4px;
-  border: 1px solid #ddd;
+h3 {
+  margin: 0 0 1rem 0;
 }
 
-.info-section h3 {
-  margin-top: 0;
-}
-
-.info-section p {
+p {
   margin: 0.5rem 0;
-  color: #666;
+  color: #666666;
+  line-height: 1.6;
 }
 </style>
 

@@ -3,19 +3,24 @@
     <h2>Emotion Statistics</h2>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="loading">
-      Loading statistics...
+    <div v-if="isLoading" class="loading-state">
+      <p>Loading statistics...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error">
-      {{ error }}
-    </div>
+    <BaseCard v-else-if="error" padding="lg" class="error-state">
+      <p class="error-message">{{ error }}</p>
+      <BaseButton @click="refreshStats" variant="danger">
+        Try Again
+      </BaseButton>
+    </BaseCard>
 
     <!-- No Data State -->
-    <div v-else-if="!stats || stats.totalLogs === 0" class="no-data">
-      <p>No emotion logs yet. Start tracking your emotions by logging how you feel before and after tasks!</p>
-    </div>
+    <BaseCard v-else-if="!stats || stats.totalLogs === 0" padding="lg" class="empty-state">
+      <h3>No Emotion Logs Yet</h3>
+      <p>Start tracking your emotions by logging how you feel before and after tasks!</p>
+      <p>Use the emotion forms on individual tasks in the Tasks dashboard to get started.</p>
+    </BaseCard>
 
     <!-- Stats Display -->
     <div v-else class="stats-content">
@@ -112,13 +117,13 @@
 
       <!-- Action Button -->
       <div class="action-buttons">
-        <button 
+        <BaseButton 
           @click="refreshStats" 
-          :disabled="isLoading"
-          class="btn-primary"
+          :loading="isLoading"
+          variant="secondary"
         >
           Refresh Stats
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -127,6 +132,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useEmotionStore, EMOTION_LABELS } from '@/stores/emotionStore'
+import { BaseButton, BaseCard } from '../base'
 
 // Store
 const emotionStore = useEmotionStore()
@@ -232,28 +238,42 @@ h3 {
 }
 
 /* Loading, Error, No Data States */
-.loading,
-.error,
-.no-data {
-  padding: 2rem;
+.loading-state,
+.error-state,
+.empty-state {
   text-align: center;
-  border-radius: 4px;
   margin: 1rem 0;
 }
 
-.loading {
+.loading-state {
+  padding: 2rem;
   background-color: #f5f5f5;
+  border-radius: 8px;
 }
 
-.error {
-  background-color: #fee;
-  color: #c00;
-  border: 1px solid #fcc;
+.loading-state p {
+  color: #666;
+  margin: 0;
 }
 
-.no-data {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
+.error-state {
+  background-color: #fff5f5;
+}
+
+.error-message {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.empty-state p {
+  color: #666;
+  line-height: 1.6;
+  margin: 0.5rem 0;
 }
 
 /* Stats Grid */
@@ -425,29 +445,6 @@ h3 {
   margin-top: 2rem;
 }
 
-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .stats-grid {
@@ -456,14 +453,6 @@ button:disabled {
 
   .comparison-grid {
     grid-template-columns: 1fr;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-  }
-
-  button {
-    width: 100%;
   }
 }
 </style>

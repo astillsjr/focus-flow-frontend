@@ -2,9 +2,14 @@
   <div class="task-list">
     <div class="task-list-header">
       <h2>Your Tasks</h2>
-      <button @click="refreshTasks" :disabled="isLoading" class="refresh-button">
-        {{ isLoading ? 'Loading...' : 'Refresh' }}
-      </button>
+      <BaseButton 
+        @click="refreshTasks" 
+        :loading="isLoading"
+        variant="secondary"
+        size="sm"
+      >
+        Refresh
+      </BaseButton>
     </div>
 
     <!-- Loading State -->
@@ -15,7 +20,9 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="refreshTasks" class="retry-button">Try Again</button>
+      <BaseButton @click="refreshTasks" variant="danger">
+        Try Again
+      </BaseButton>
     </div>
 
     <!-- Empty State -->
@@ -30,14 +37,14 @@
         <h3 class="group-title">
           Pending <span class="task-count">({{ pendingTasks.length }})</span>
         </h3>
-        <div class="task-items">
+        <TransitionGroup name="task-list" tag="div" class="task-items">
           <TaskItem
             v-for="task in pendingTasks"
             :key="task._id"
             :task="task"
             @delete-task="handleDeleteTask"
           />
-        </div>
+        </TransitionGroup>
       </div>
 
       <!-- In Progress Tasks -->
@@ -45,14 +52,14 @@
         <h3 class="group-title">
           In Progress <span class="task-count">({{ inProgressTasks.length }})</span>
         </h3>
-        <div class="task-items">
+        <TransitionGroup name="task-list" tag="div" class="task-items">
           <TaskItem
             v-for="task in inProgressTasks"
             :key="task._id"
             :task="task"
             @delete-task="handleDeleteTask"
           />
-        </div>
+        </TransitionGroup>
       </div>
 
       <!-- Completed Tasks -->
@@ -60,14 +67,14 @@
         <h3 class="group-title">
           Completed <span class="task-count">({{ completedTasks.length }})</span>
         </h3>
-        <div class="task-items">
+        <TransitionGroup name="task-list" tag="div" class="task-items">
           <TaskItem
             v-for="task in completedTasks"
             :key="task._id"
             :task="task"
             @delete-task="handleDeleteTask"
           />
-        </div>
+        </TransitionGroup>
       </div>
     </div>
   </div>
@@ -77,6 +84,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
 import TaskItem from './TaskItem.vue'
+import { BaseButton } from '../base'
 
 // Get task store
 const taskStore = useTaskStore()
@@ -149,6 +157,26 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Task List Transitions */
+.task-list-enter-active,
+.task-list-leave-active {
+  transition: all 0.4s ease;
+}
+
+.task-list-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.task-list-move {
+  transition: transform 0.4s ease;
+}
+
 .task-list {
   max-width: 1200px;
   margin: 0 auto;
@@ -167,28 +195,7 @@ defineExpose({
 .task-list-header h2 {
   margin: 0;
   font-size: 1.75rem;
-  color: #333;
-}
-
-.refresh-button {
-  padding: 0.5rem 1rem;
-  background-color: #2196F3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background-color: #1976D2;
-}
-
-.refresh-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+  color: #333333;
 }
 
 .loading-state,
@@ -206,28 +213,16 @@ defineExpose({
 }
 
 .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   color: #d32f2f;
 }
 
 .error-state p {
   font-size: 1.1rem;
-  margin-bottom: 1rem;
-}
-
-.retry-button {
-  padding: 0.5rem 1rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.retry-button:hover {
-  background-color: #d32f2f;
+  margin: 0;
 }
 
 .task-groups {
@@ -273,11 +268,7 @@ defineExpose({
   .task-list-header {
     flex-direction: column;
     gap: 1rem;
-    align-items: stretch;
-  }
-
-  .refresh-button {
-    width: 100%;
+    align-items: flex-start;
   }
 
   .task-group {

@@ -1,23 +1,24 @@
 <template>
   <div v-if="stats" class="bet-stats">
-    <div class="stat-card">
+    <BaseCard padding="md" class="stat-card">
       <span class="stat-label">Points</span>
       <span class="stat-value">{{ stats.points }}</span>
-    </div>
-    <div class="stat-card">
+    </BaseCard>
+    <BaseCard padding="md" class="stat-card">
       <span class="stat-label">Streak</span>
       <span class="stat-value">{{ stats.streak }}</span>
-    </div>
-    <div class="stat-card">
+    </BaseCard>
+    <BaseCard padding="md" class="stat-card">
       <span class="stat-label">Active Wagers</span>
       <span class="stat-value">{{ totalWagered }} pts</span>
-    </div>
+    </BaseCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBetStore } from '../../stores/betStore'
+import { BaseCard } from '../base'
 
 const betStore = useBetStore()
 
@@ -34,11 +35,7 @@ const totalWagered = computed(() => betStore.totalWagered)
 }
 
 .stat-card {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
   text-align: center;
-  border: 1px solid #e0e0e0;
 }
 
 .stat-label {

@@ -24,22 +24,24 @@
     </div>
 
     <div class="task-actions">
-      <button
+      <BaseButton
         v-if="!isCompleted"
         @click="handleToggleStart"
-        class="action-button start-button"
         :disabled="isLoading"
+        variant="primary"
+        size="sm"
       >
         {{ isStarted ? 'Mark Complete' : 'Start' }}
-      </button>
+      </BaseButton>
 
-      <button
+      <BaseButton
         @click="handleDelete"
-        class="action-button delete-button"
         :disabled="isLoading"
+        variant="danger"
+        size="sm"
       >
         Delete
-      </button>
+      </BaseButton>
     </div>
 
     <!-- Start Emotion Prompt Modal -->
@@ -75,6 +77,7 @@ import type { Emotion } from '@/stores/emotionStore'
 import { useTaskStore } from '../../stores/taskStore'
 import { useEmotionStore } from '../../stores/emotionStore'
 import EmotionPromptModal from '../emotions/EmotionPromptModal.vue'
+import { BaseButton } from '../base'
 
 // Props
 const props = defineProps<{
@@ -242,14 +245,8 @@ function handleDelete() {
 }
 
 .task-completed {
-  opacity: 0.6;
-  background-color: #f5f5f5;
-}
-
-.task-completed .task-title,
-.task-completed .task-description {
-  text-decoration: line-through;
-  color: #757575;
+  background-color: #f9f9f9;
+  border-left: 3px solid #4CAF50;
 }
 
 .task-content {
@@ -330,38 +327,10 @@ function handleDelete() {
   gap: 0.5rem;
 }
 
-.action-button {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.action-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.start-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.start-button:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.delete-button {
-  background-color: #f44336;
-  color: white;
-}
-
-.delete-button:hover:not(:disabled) {
-  background-color: #d32f2f;
+@media (max-width: 768px) {
+  .task-actions {
+    flex-direction: column;
+  }
 }
 </style>
 

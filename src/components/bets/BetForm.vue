@@ -1,5 +1,5 @@
 <template>
-  <div class="bet-form">
+  <BaseCard padding="lg" class="bet-form">
     <h3>Place a Bet on This Task</h3>
     
     <div v-if="betStore.hasProfile" class="profile-info">
@@ -11,105 +11,73 @@
       </span>
     </div>
 
-    <form @submit.prevent="handleSubmit">
-      <div class="form-group">
-        <label for="wager">
-          Wager Amount <span class="required">*</span>
-        </label>
-        <input
-          id="wager"
-          v-model.number="wager"
-          type="number"
-          min="1"
-          :max="betStore.points"
-          placeholder="Enter points to wager"
-          required
-          :disabled="isLoading || !betStore.hasProfile"
-        />
-        <span class="help-text">
-          Bet points on completing this task by the deadline
-        </span>
-      </div>
+    <form @submit.prevent="handleSubmit" class="form">
+      <BaseInput
+        v-model="wager"
+        label="Wager Amount"
+        type="number"
+        placeholder="Enter points to wager"
+        required
+        :disabled="isLoading || !betStore.hasProfile"
+        hint="Bet points on completing this task by the deadline"
+      />
 
-      <div class="form-group">
-        <label for="deadline">
-          Deadline <span class="required">*</span>
-        </label>
-        <input
-          id="deadline"
-          v-model="deadline"
-          type="datetime-local"
-          required
-          :disabled="isLoading || !betStore.hasProfile"
-        />
-        <span class="help-text">
-          When will you complete this task?
-        </span>
-      </div>
-
-      <div class="form-group">
-        <label for="taskDueDate">
-          Task Due Date (Optional)
-        </label>
-        <input
-          id="taskDueDate"
-          v-model="taskDueDate"
-          type="datetime-local"
-          :disabled="isLoading || !betStore.hasProfile"
-        />
-        <span class="help-text">
-          Optional: Actual due date for the task
-        </span>
-      </div>
+      <BaseInput
+        v-model="deadline"
+        label="Deadline"
+        type="datetime-local"
+        required
+        :disabled="isLoading || !betStore.hasProfile"
+        hint="When will you complete this task?"
+      />
 
       <div v-if="!betStore.hasProfile" class="warning-message">
-        ⚠️ You need to initialize your betting profile first
+        You need to initialize your betting profile first
       </div>
 
       <div v-if="error" class="error-message">
         {{ error }}
       </div>
 
-      <div class="bet-summary" v-if="isFormValid">
+      <BaseCard v-if="isFormValid" padding="md" class="bet-summary">
         <h4>Bet Summary</h4>
         <div class="summary-item">
           <span>Wager:</span>
           <strong>{{ wager }} points</strong>
         </div>
         <div class="summary-item">
-          <span>Potential Reward:</span>
-          <strong>{{ potentialReward }} points</strong>
-        </div>
-        <div class="summary-item">
           <span>Deadline:</span>
           <strong>{{ formattedDeadline }}</strong>
         </div>
-      </div>
+      </BaseCard>
 
       <div class="form-actions">
-        <button 
+        <BaseButton 
           type="submit" 
-          :disabled="isLoading || !isFormValid || !betStore.hasProfile"
-          class="submit-button"
+          :disabled="!isFormValid || !betStore.hasProfile"
+          :loading="isLoading"
+          full-width
         >
-          {{ isLoading ? 'Placing Bet...' : 'Place Bet' }}
-        </button>
-        <button 
+          Place Bet
+        </BaseButton>
+        <BaseButton 
           type="button" 
           @click="clearForm" 
           :disabled="isLoading"
-          class="clear-button"
+          variant="ghost"
+          full-width
         >
           Clear
-        </button>
+        </BaseButton>
       </div>
     </form>
-  </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBetStore } from '../../stores/betStore'
+import { BaseButton, BaseCard, BaseInput } from '../base'
 
 // Props
 const props = defineProps<{
@@ -127,25 +95,20 @@ const emit = defineEmits<{
 const betStore = useBetStore()
 
 // Form state
-const wager = ref<number>(10)
+const wager = ref<string>('10')
 const deadline = ref('')
-const taskDueDate = ref('')
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 // Computed
 const isFormValid = computed(() => {
+  const wagerNum = Number(wager.value)
   return (
-    wager.value > 0 &&
-    wager.value <= betStore.points &&
+    wagerNum > 0 &&
+    wagerNum <= betStore.points &&
     deadline.value !== '' &&
     new Date(deadline.value) > new Date()
   )
-})
-
-const potentialReward = computed(() => {
-  // Simple calculation: 2x the wager for successful completion
-  return wager.value * 2
 })
 
 const formattedDeadline = computed(() => {
@@ -155,9 +118,8 @@ const formattedDeadline = computed(() => {
 
 // Methods
 function clearForm() {
-  wager.value = 10
+  wager.value = '10'
   deadline.value = ''
-  taskDueDate.value = ''
   error.value = null
 }
 
@@ -172,8 +134,10 @@ async function handleSubmit() {
     return
   }
 
+  const wagerNum = Number(wager.value)
+
   // Validate wager amount
-  if (wager.value > betStore.points) {
+  if (wagerNum > betStore.points) {
     error.value = `Insufficient points. You only have ${betStore.points} points available.`
     return
   }
@@ -190,12 +154,11 @@ async function handleSubmit() {
   try {
     const betId = await betStore.placeBet({
       taskId: props.taskId,
-      wager: wager.value,
-      deadline: new Date(deadline.value).toISOString(),
-      taskDueDate: taskDueDate.value ? new Date(taskDueDate.value).toISOString() : undefined
+      wager: wagerNum,
+      deadline: new Date(deadline.value).toISOString()
     })
 
-    console.log('✅ Bet placed successfully!', { betId, wager: wager.value })
+    console.log('✅ Bet placed successfully!', { betId, wager: wagerNum })
 
     // Emit success event
     emit('bet-placed', betId)
@@ -216,10 +179,6 @@ async function handleSubmit() {
 <style scoped>
 .bet-form {
   max-width: 500px;
-  padding: 1.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #fafafa;
 }
 
 h3 {
@@ -227,13 +186,19 @@ h3 {
   color: #333;
 }
 
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .profile-info {
   display: flex;
   gap: 1.5rem;
   padding: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   background-color: #e3f2fd;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 0.9rem;
 }
 
@@ -242,84 +207,25 @@ h3 {
   color: #1565c0;
 }
 
-.form-group {
-  margin-bottom: 1.25rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.required {
-  color: #f44336;
-}
-
-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
-input:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-input:focus {
-  outline: none;
-  border-color: #2196F3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.help-text {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: 0.85rem;
-  color: #666;
-}
-
 .warning-message {
   padding: 0.75rem;
-  margin-bottom: 1rem;
   background-color: #fff3cd;
   border: 1px solid #ffc107;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #856404;
   font-size: 0.9rem;
 }
 
 .error-message {
   padding: 0.75rem;
-  margin-bottom: 1rem;
   background-color: #ffebee;
   border: 1px solid #f44336;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #d32f2f;
   font-size: 0.9rem;
 }
 
 .bet-summary {
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  background-color: #f5f5f5;
-  border-radius: 4px;
   border-left: 4px solid #2196F3;
 }
 
@@ -345,46 +251,6 @@ input[type="number"]::-webkit-outer-spin-button {
 .form-actions {
   display: flex;
   gap: 1rem;
-}
-
-.submit-button,
-.clear-button {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.submit-button {
-  background-color: #2196F3;
-  color: white;
-}
-
-.submit-button:hover:not(:disabled) {
-  background-color: #1976D2;
-}
-
-.submit-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.clear-button {
-  background-color: white;
-  color: #333;
-  border: 1px solid #ccc;
-}
-
-.clear-button:hover:not(:disabled) {
-  background-color: #f5f5f5;
-}
-
-.clear-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  margin-top: 0.5rem;
 }
 </style>

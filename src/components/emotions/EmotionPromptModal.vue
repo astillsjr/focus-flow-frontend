@@ -1,49 +1,51 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click.self="handleCancel">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>{{ headerTitle }}</h3>
-        <p class="modal-subtitle">{{ subtitleText }}</p>
-      </div>
-      
-      <div class="emotion-grid">
-        <button
-          v-for="emotion in VALID_EMOTIONS"
-          :key="emotion"
-          @click="selectEmotion(emotion)"
-          class="emotion-button"
-          :class="{ 'selected': selectedEmotion === emotion }"
-          type="button"
-        >
-          <span class="emotion-icon">{{ getEmotionIcon(emotion) }}</span>
-          <span class="emotion-label">{{ EMOTION_LABELS[emotion] }}</span>
-        </button>
-      </div>
+  <Transition name="modal">
+    <div v-if="isOpen" class="modal-overlay" @click.self="handleCancel">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ headerTitle }}</h3>
+          <p class="modal-subtitle">{{ subtitleText }}</p>
+        </div>
+        
+        <div class="emotion-grid">
+          <button
+            v-for="emotion in VALID_EMOTIONS"
+            :key="emotion"
+            @click="selectEmotion(emotion)"
+            class="emotion-button"
+            :class="{ 'selected': selectedEmotion === emotion }"
+            type="button"
+          >
+            <span class="emotion-icon">{{ getEmotionIcon(emotion) }}</span>
+            <span class="emotion-label">{{ EMOTION_LABELS[emotion] }}</span>
+          </button>
+        </div>
 
-      <div v-if="displayError" class="error-message">
-        {{ displayError }}
-      </div>
+        <div v-if="displayError" class="error-message">
+          {{ displayError }}
+        </div>
 
-      <div class="modal-actions">
-        <button 
-          @click="handleCancel" 
-          class="button-secondary"
-          :disabled="externalLoading"
-          type="button"
-        >
-          Cancel
-        </button>
-        <button 
-          @click="handleSubmit" 
-          class="button-primary"
-          :disabled="!selectedEmotion || externalLoading"
-          type="button"
-        >
-          {{ submitButtonText }}
-        </button>
+        <div class="modal-actions">
+          <button 
+            @click="handleCancel" 
+            class="button-secondary"
+            :disabled="externalLoading"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="handleSubmit" 
+            class="button-primary"
+            :disabled="!selectedEmotion || externalLoading"
+            type="button"
+          >
+            {{ submitButtonText }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -138,6 +140,32 @@ const getEmotionIcon = (emotion: Emotion): string => {
 </script>
 
 <style scoped>
+/* Modal Transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .modal-content,
+.modal-leave-active .modal-content {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-enter-from .modal-content {
+  transform: translateY(-20px) scale(0.95);
+  opacity: 0;
+}
+
+.modal-leave-to .modal-content {
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -149,16 +177,6 @@ const getEmotionIcon = (emotion: Emotion): string => {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .modal-content {
@@ -169,19 +187,7 @@ const getEmotionIcon = (emotion: Emotion): string => {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  animation: slideUp 0.3s ease-out;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 
 .modal-header {

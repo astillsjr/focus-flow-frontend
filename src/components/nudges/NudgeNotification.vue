@@ -7,7 +7,6 @@
         class="nudge-card"
       >
         <div class="nudge-header">
-          <div class="nudge-icon">🔔</div>
           <div class="nudge-title">
             Time to get started!
             <span v-if="nudgeStore.nudgeQueue.length > 0" class="queue-badge">
@@ -25,41 +24,103 @@
         </div>
         
         <div class="nudge-actions">
-          <button class="btn-start" @click="handleStart(nudge.taskId, nudge.nudgeId)">
+          <BaseButton 
+            @click="handleStart(nudge.taskId, nudge.taskTitle, nudge.nudgeId)"
+            variant="primary"
+            size="sm"
+          >
             Start Task
-          </button>
-          <button class="btn-dismiss" @click="dismiss(nudge.nudgeId)">
+          </BaseButton>
+          <BaseButton 
+            @click="dismiss(nudge.nudgeId)"
+            variant="ghost"
+            size="sm"
+          >
             Dismiss
-          </button>
+          </BaseButton>
         </div>
       </div>
     </TransitionGroup>
+
+    <!-- Start Emotion Prompt Modal -->
+    <EmotionPromptModal
+      :is-open="showStartEmotionModal"
+      :task-id="currentTaskId"
+      :task-title="currentTaskTitle"
+      phase="before"
+      :external-loading="startEmotionLoading"
+      :external-error="startEmotionError"
+      @submit="handleStartEmotionSubmit"
+      @cancel="handleStartEmotionCancel"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useNudgeStore } from '../../stores/nudgeStore'
 import { useTaskStore } from '../../stores/taskStore'
+import { useEmotionStore } from '../../stores/emotionStore'
+import type { Emotion } from '@/stores/emotionStore'
+import { BaseButton } from '../base'
+import EmotionPromptModal from '../emotions/EmotionPromptModal.vue'
 
 const nudgeStore = useNudgeStore()
 const taskStore = useTaskStore()
+const emotionStore = useEmotionStore()
+
+// State for emotion modal
+const showStartEmotionModal = ref(false)
+const currentTaskId = ref('')
+const currentTaskTitle = ref('')
+const currentNudgeId = ref('')
+const startEmotionLoading = ref(false)
+const startEmotionError = ref<string | null>(null)
 
 function dismiss(nudgeId: string) {
   nudgeStore.dismissNudge(nudgeId)
 }
 
-async function handleStart(taskId: string, nudgeId: string) {
+function handleStart(taskId: string, taskTitle: string, nudgeId: string) {
+  // Store the task info and show emotion modal
+  currentTaskId.value = taskId
+  currentTaskTitle.value = taskTitle
+  currentNudgeId.value = nudgeId
+  showStartEmotionModal.value = true
+}
+
+async function handleStartEmotionSubmit(emotion: Emotion) {
+  startEmotionLoading.value = true
+  startEmotionError.value = null
+  
   try {
-    // Mark task as started
-    await taskStore.markStarted(taskId)
+    // First, log the "before" emotion
+    await emotionStore.logBefore({ 
+      taskId: currentTaskId.value, 
+      emotion 
+    })
+    console.log('✅ Before emotion logged:', emotion)
+    
+    // Then mark the task as started
+    await taskStore.markStarted(currentTaskId.value)
+    console.log('✅ Task started:', currentTaskId.value)
     
     // Dismiss the nudge
-    dismiss(nudgeId)
+    dismiss(currentNudgeId.value)
     
-    console.log('✅ Task started successfully')
-  } catch (error) {
-    console.error('Failed to start task:', error)
+    // Success - close modal
+    startEmotionLoading.value = false
+    showStartEmotionModal.value = false
+  } catch (err) {
+    console.error('❌ Failed to start task with emotion:', err)
+    startEmotionLoading.value = false
+    startEmotionError.value = err instanceof Error ? err.message : 'Failed to start task'
   }
+}
+
+function handleStartEmotionCancel() {
+  showStartEmotionModal.value = false
+  startEmotionError.value = null
 }
 </script>
 
@@ -107,15 +168,10 @@ async function handleStart(taskId: string, nudgeId: string) {
   margin-bottom: 12px;
 }
 
-.nudge-icon {
-  font-size: 24px;
-  line-height: 1;
-}
-
 .nudge-title {
   flex: 1;
   font-weight: 600;
-  color: #333;
+  color: #333333;
   font-size: 14px;
 }
 
@@ -136,23 +192,23 @@ async function handleStart(taskId: string, nudgeId: string) {
 }
 
 .nudge-close:hover {
-  color: #333;
+  color: #333333;
 }
 
 .nudge-body {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .task-title {
   margin: 0 0 8px 0;
   color: #4CAF50;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .nudge-message {
   margin: 0;
-  color: #666;
+  color: #666666;
   line-height: 1.5;
   font-size: 14px;
 }
@@ -160,43 +216,6 @@ async function handleStart(taskId: string, nudgeId: string) {
 .nudge-actions {
   display: flex;
   gap: 8px;
-}
-
-.btn-start,
-.btn-dismiss {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.btn-start {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.btn-start:hover {
-  background-color: #45a049;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn-start:active {
-  transform: translateY(0);
-}
-
-.btn-dismiss {
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #e0e0e0;
-}
-
-.btn-dismiss:hover {
-  background-color: #e0e0e0;
 }
 
 /* Transition animations */

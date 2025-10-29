@@ -1,0 +1,1 @@
+1. Starting a task from a notification does not prompt emotion log.

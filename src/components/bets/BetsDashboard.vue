@@ -3,12 +3,12 @@
     <h1>Bets</h1>
 
     <!-- Initialize Profile Section -->
-    <div v-if="!isInitialized && !isLoading">
+    <BaseCard v-if="!isInitialized && !isLoading" padding="lg">
       <p>Initialize your betting profile to get started.</p>
-      <button @click="handleInitialize" :disabled="isInitializing">
-        {{ isInitializing ? 'Initializing...' : 'Initialize Profile' }}
-      </button>
-    </div>
+      <BaseButton @click="handleInitialize" :loading="isInitializing">
+        Initialize Profile
+      </BaseButton>
+    </BaseCard>
 
     <!-- Loading State -->
     <div v-else-if="isLoading && !isInitialized">
@@ -16,10 +16,12 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error">
-      <p>{{ error }}</p>
-      <button @click="handleRefresh">Try Again</button>
-    </div>
+    <BaseCard v-else-if="error" padding="lg">
+      <p class="error-message">{{ error }}</p>
+      <BaseButton @click="handleRefresh" variant="danger">
+        Try Again
+      </BaseButton>
+    </BaseCard>
 
     <!-- Main Dashboard Content -->
     <div v-else-if="isInitialized">
@@ -35,6 +37,7 @@ import { useBetStore } from '../../stores/betStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import BetStats from './BetStats.vue'
 import BetList from './BetList.vue'
+import { BaseButton, BaseCard } from '../base'
 
 // Get bet store
 const betStore = useBetStore()
@@ -88,14 +91,9 @@ h1 {
   margin-bottom: 2rem;
 }
 
-button {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.error-message {
+  color: #d32f2f;
+  margin-bottom: 1rem;
 }
 </style>
 

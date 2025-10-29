@@ -45,7 +45,7 @@ import { computed } from 'vue'
 interface Props {
   modelValue: string | number
   label?: string
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'date'
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'date' | 'datetime-local'
   placeholder?: string
   disabled?: boolean
   required?: boolean

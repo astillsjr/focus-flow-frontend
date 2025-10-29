@@ -1,16 +1,18 @@
 <template>
-  <div class="bet-item">
+  <BaseCard padding="md" class="bet-item">
     <div class="bet-info">
       <div class="bet-row">
         <strong>Wager:</strong> {{ bet.wager }} pts
-        <span v-if="isResolved" class="status">{{ bet.success ? '✓ Won' : '✗ Lost' }}</span>
-        <span v-else-if="isExpired" class="status expired">⚠ Expired</span>
-        <span v-else class="status active">● Active</span>
+        <span v-if="isResolved" :class="['status', bet.success ? 'won' : 'lost']">
+          {{ bet.success ? 'Won' : 'Lost' }}
+        </span>
+        <span v-else-if="isExpired" class="status expired">Expired</span>
+        <span v-else class="status active">Active</span>
       </div>
       
       <div class="bet-row">
         <strong>Deadline:</strong> {{ formattedDeadline }}
-        <span v-if="timeRemaining">{{ timeRemaining }}</span>
+        <span v-if="timeRemaining" class="time-remaining">{{ timeRemaining }}</span>
       </div>
       
       <div v-if="bet.taskDueDate" class="bet-row">
@@ -21,12 +23,13 @@
         <strong>Task ID:</strong> {{ bet.task }}
       </div>
     </div>
-  </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Bet } from '../../stores/betStore'
+import { BaseCard } from '../base'
 
 const props = defineProps<{ bet: Bet }>()
 
@@ -65,8 +68,6 @@ const timeRemaining = computed(() => {
 
 <style scoped>
 .bet-item {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
   margin-bottom: 0.5rem;
 }
 
@@ -78,13 +79,34 @@ const timeRemaining = computed(() => {
 .status {
   margin-left: 1rem;
   font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
 }
 
 .status.active {
   color: #2196F3;
+  background-color: #e3f2fd;
 }
 
 .status.expired {
   color: #ff9800;
+  background-color: #fff3e0;
+}
+
+.status.won {
+  color: #4CAF50;
+  background-color: #e8f5e9;
+}
+
+.status.lost {
+  color: #f44336;
+  background-color: #ffebee;
+}
+
+.time-remaining {
+  margin-left: 0.5rem;
+  color: #666;
+  font-size: 0.85rem;
 }
 </style>

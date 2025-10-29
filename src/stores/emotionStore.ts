@@ -182,9 +182,18 @@ export const useEmotionStore = defineStore('emotion', () => {
 
       stats.value = data
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch emotion stats'
-      console.error('Fetch emotion stats error:', err)
-      throw err
+      // Handle "no logs" as a normal empty state, not an error
+      const errorMessage = err instanceof Error ? err.message : ''
+      if (errorMessage.toLowerCase().includes('no emotion logs')) {
+        // Set stats to indicate no data
+        stats.value = null
+        console.log('No emotion stats available yet - user has no logs')
+      } else {
+        // Only set error for actual errors
+        error.value = err instanceof Error ? err.message : 'Failed to fetch emotion stats'
+        console.error('Fetch emotion stats error:', err)
+        throw err
+      }
     } finally {
       isLoading.value = false
     }
@@ -206,9 +215,18 @@ export const useEmotionStore = defineStore('emotion', () => {
 
       analysis.value = data.analysis
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to analyze recent emotions'
-      console.error('Analyze recent emotions error:', err)
-      throw err
+      // Handle "no logs" as a normal empty state, not an error
+      const errorMessage = err instanceof Error ? err.message : ''
+      if (errorMessage.toLowerCase().includes('no') && errorMessage.toLowerCase().includes('emotion log')) {
+        // Clear analysis - user has no logs to analyze
+        analysis.value = null
+        console.log('No emotion analysis available yet - user has no recent logs')
+      } else {
+        // Only set error for actual errors
+        error.value = err instanceof Error ? err.message : 'Failed to analyze recent emotions'
+        console.error('Analyze recent emotions error:', err)
+        throw err
+      }
     } finally {
       isLoading.value = false
     }
@@ -263,9 +281,18 @@ export const useEmotionStore = defineStore('emotion', () => {
       // Update emotion logs in store
       emotionLogs.value = result.logs
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch emotion logs'
-      console.error('Fetch emotion logs error:', err)
-      throw err
+      // Handle "no logs" as a normal empty state, not an error
+      const errorMessage = err instanceof Error ? err.message : ''
+      if (errorMessage.toLowerCase().includes('no emotion logs')) {
+        // Set empty array - user has no logs yet
+        emotionLogs.value = []
+        console.log('No emotion logs available yet')
+      } else {
+        // Only set error for actual errors
+        error.value = err instanceof Error ? err.message : 'Failed to fetch emotion logs'
+        console.error('Fetch emotion logs error:', err)
+        throw err
+      }
     } finally {
       isLoading.value = false
     }

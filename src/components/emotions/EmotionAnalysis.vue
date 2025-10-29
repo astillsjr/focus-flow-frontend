@@ -2,35 +2,37 @@
   <div class="emotion-analysis">
     <div class="analysis-header">
       <h2>AI Emotional Analysis</h2>
-      <button 
+      <BaseButton 
         @click="refreshAnalysis" 
-        :disabled="isLoading"
-        class="btn-refresh"
-        title="Refresh Analysis"
+        :loading="isLoading"
+        variant="secondary"
+        size="sm"
+        title="New Analysis"
       >
-        🔄 {{ isLoading ? 'Analyzing...' : 'Refresh' }}
-      </button>
+        New Analysis
+      </BaseButton>
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading && !analysis" class="loading">
+    <div v-if="isLoading && !analysis" class="loading-state">
       <div class="spinner"></div>
       <p>Analyzing your recent emotional patterns...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error">
-      <span class="error-icon">⚠️</span>
-      <p>{{ error }}</p>
-      <button @click="refreshAnalysis" class="btn-retry">Try Again</button>
-    </div>
+    <BaseCard v-else-if="error" padding="lg" class="error-state">
+      <p class="error-message">{{ error }}</p>
+      <BaseButton @click="refreshAnalysis" variant="danger">
+        Try Again
+      </BaseButton>
+    </BaseCard>
 
     <!-- No Data State -->
-    <div v-else-if="!hasLogs" class="no-data">
-      <span class="info-icon">💭</span>
+    <BaseCard v-else-if="!hasLogs" padding="lg" class="empty-state">
       <h3>No Emotional Data Yet</h3>
       <p>Start logging your emotions before and after tasks to receive personalized AI insights about your emotional patterns.</p>
-    </div>
+      <p>Use the emotion forms on individual tasks in the Tasks dashboard to get started.</p>
+    </BaseCard>
 
     <!-- Analysis Display -->
     <div v-else-if="analysis" class="analysis-content">
@@ -52,16 +54,16 @@
     </div>
 
     <!-- Empty Analysis State (API returned but no analysis) -->
-    <div v-else class="no-analysis">
-      <span class="info-icon">📝</span>
-      <p>No analysis available yet. Click "Refresh" to generate insights.</p>
-    </div>
+    <BaseCard v-else padding="lg" class="no-analysis-state">
+      <p>No analysis available yet. Click "New Analysis" to generate insights.</p>
+    </BaseCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useEmotionStore } from '@/stores/emotionStore'
+import { BaseButton, BaseCard } from '../base'
 
 // Store
 const emotionStore = useEmotionStore()
@@ -81,6 +83,8 @@ const refreshAnalysis = async () => {
     await emotionStore.analyzeRecentEmotions()
     lastUpdated.value = new Date()
   } catch (err) {
+    // Error is already handled in the store
+    // Just log it here for debugging
     console.error('Failed to refresh analysis:', err)
   }
 }
@@ -131,33 +135,12 @@ onMounted(async () => {
   font-size: 1.75rem;
 }
 
-.btn-refresh {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.btn-refresh:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-}
-
-.btn-refresh:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  transform: none;
-}
-
 /* State Containers */
-.loading,
-.error,
-.no-data,
-.no-analysis {
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   padding: 3rem 2rem;
   text-align: center;
   border-radius: 8px;
@@ -165,11 +148,15 @@ onMounted(async () => {
   border: 1px solid #e0e0e0;
 }
 
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+.loading-state p {
+  color: #666;
+  margin: 0;
+}
+
+.error-state,
+.empty-state,
+.no-analysis-state {
+  text-align: center;
 }
 
 .spinner {
@@ -186,53 +173,27 @@ onMounted(async () => {
   100% { transform: rotate(360deg); }
 }
 
-.error {
+.error-state {
   background-color: #fff5f5;
-  border-color: #ffcdd2;
 }
 
-.error-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.error p {
+.error-message {
   color: #d32f2f;
-  margin: 0.5rem 0;
+  margin: 0 0 1rem 0;
 }
 
-.btn-retry {
-  margin-top: 1rem;
-  padding: 0.5rem 1.5rem;
-  background-color: #d32f2f;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.empty-state h3,
+.no-analysis-state h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
 }
 
-.btn-retry:hover {
-  background-color: #b71c1c;
-}
-
-.info-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.no-data h3 {
-  margin: 0.5rem 0;
-  color: #555;
-}
-
-.no-data p {
-  color: #777;
+.empty-state p,
+.no-analysis-state p {
+  color: #666;
   line-height: 1.6;
   max-width: 500px;
-  margin: 0 auto;
+  margin: 0.5rem auto;
 }
 
 /* Analysis Content */
@@ -309,10 +270,6 @@ onMounted(async () => {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-  }
-
-  .btn-refresh {
-    width: 100%;
   }
 
   .analysis-card {

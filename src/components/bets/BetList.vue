@@ -2,59 +2,71 @@
   <div class="bet-list">
     <div class="bet-list-header">
       <h2>Your Bets</h2>
-      <button @click="refreshBets" :disabled="isLoading">
-        {{ isLoading ? 'Loading...' : 'Refresh' }}
-      </button>
+      <BaseButton 
+        @click="refreshBets" 
+        :loading="isLoading"
+        variant="secondary"
+        size="sm"
+      >
+        Refresh
+      </BaseButton>
     </div>
 
-    <div v-if="isLoading && !bets.length">
+    <div v-if="isLoading && !bets.length" class="loading-state">
       <p>Loading bets...</p>
     </div>
 
-    <div v-else-if="error">
+    <BaseCard v-else-if="error" padding="lg" class="error-state">
       <p>{{ error }}</p>
-      <button @click="refreshBets">Try Again</button>
-    </div>
+      <BaseButton @click="refreshBets" variant="danger">
+        Try Again
+      </BaseButton>
+    </BaseCard>
 
-    <div v-else-if="!bets.length">
+    <BaseCard v-else-if="!bets.length" padding="lg" class="empty-state">
       <p>No active bets yet. Place your first bet on a task to get started!</p>
-    </div>
+    </BaseCard>
 
     <div v-else>
       <div v-if="pendingBets.length > 0" class="bet-group">
         <h3>Active Bets ({{ pendingBets.length }})</h3>
-        <div class="bet-items">
+        <TransitionGroup name="bet-list" tag="div" class="bet-items">
           <BetItem
             v-for="bet in pendingBets"
             :key="bet._id"
             :bet="bet"
           />
-        </div>
+        </TransitionGroup>
       </div>
 
       <div v-if="expiredBets.length > 0" class="bet-group">
         <h3>Expired - Needs Resolution ({{ expiredBets.length }})</h3>
-        <div class="bet-items">
+        <TransitionGroup name="bet-list" tag="div" class="bet-items">
           <BetItem
             v-for="bet in expiredBets"
             :key="bet._id"
             :bet="bet"
           />
-        </div>
-        <button @click="resolveExpiredBets" :disabled="isResolving">
-          {{ isResolving ? 'Resolving...' : 'Resolve All Expired Bets' }}
-        </button>
+        </TransitionGroup>
+        <BaseButton 
+          @click="resolveExpiredBets" 
+          :loading="isResolving"
+          variant="primary"
+          full-width
+        >
+          Resolve All Expired Bets
+        </BaseButton>
       </div>
 
       <div v-if="resolvedBets.length > 0" class="bet-group">
         <h3>Recently Resolved ({{ resolvedBets.length }})</h3>
-        <div class="bet-items">
+        <TransitionGroup name="bet-list" tag="div" class="bet-items">
           <BetItem
             v-for="bet in resolvedBets.slice(0, 10)"
             :key="bet._id"
             :bet="bet"
           />
-        </div>
+        </TransitionGroup>
       </div>
     </div>
   </div>
@@ -63,6 +75,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBetStore } from '../../stores/betStore'
+import { BaseButton, BaseCard } from '../base'
 import BetItem from './BetItem.vue'
 
 // Get bet store
@@ -123,6 +136,26 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Bet List Transitions */
+.bet-list-enter-active,
+.bet-list-leave-active {
+  transition: all 0.4s ease;
+}
+
+.bet-list-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.bet-list-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.bet-list-move {
+  transition: transform 0.4s ease;
+}
+
 .bet-list {
   padding: 1rem;
 }
@@ -141,9 +174,21 @@ defineExpose({
   font-size: 1.25rem;
 }
 
-.bet-list-header button {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.error-state p {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  color: #666;
+  line-height: 1.6;
 }
 
 .bet-group {
@@ -151,20 +196,16 @@ defineExpose({
 }
 
 .bet-group h3 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   font-size: 1rem;
+  font-weight: 600;
+  color: #333;
 }
 
 .bet-items {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.bet-group button {
-  padding: 0.5rem;
-  cursor: pointer;
-  width: 100%;
+  margin-bottom: 0.75rem;
 }
 </style>

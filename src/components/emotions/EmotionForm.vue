@@ -27,9 +27,13 @@
         {{ error }}
       </div>
 
-      <button type="submit" :disabled="isLoading || !selectedEmotion">
-        {{ isLoading ? 'Logging...' : 'Log Emotion' }}
-      </button>
+      <BaseButton 
+        type="submit" 
+        :disabled="!selectedEmotion"
+        :loading="isLoading"
+      >
+        Log Emotion
+      </BaseButton>
     </form>
   </div>
 </template>
@@ -37,6 +41,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useEmotionStore, VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/stores/emotionStore'
+import { BaseButton } from '../base'
 
 // Props
 const props = defineProps<{
@@ -115,25 +120,6 @@ select {
 
 select:disabled {
   background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-button:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-button:disabled {
-  background-color: #ccc;
   cursor: not-allowed;
 }
 

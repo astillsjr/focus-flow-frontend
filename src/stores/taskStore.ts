@@ -286,6 +286,16 @@ export const useTaskStore = defineStore('task', () => {
         }
       }
 
+      // ✨ Cancel scheduled nudge for this task (if it exists)
+      try {
+        console.log('🔔 Attempting to cancel nudge for started task:', taskId)
+        await cancelNudge(authStore.userId, taskId)
+        console.log('✅ Nudge cancelled successfully')
+      } catch (nudgeErr) {
+        // Don't fail the task start if nudge cancellation fails
+        console.warn('⚠️ Failed to cancel nudge, but task was started successfully:', nudgeErr)
+      }
+
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
       if (taskIndex !== -1) {
@@ -313,6 +323,16 @@ export const useTaskStore = defineStore('task', () => {
 
     try {
       await taskAPI.markComplete(authStore.userId, taskId, new Date().toISOString())
+
+      // ✨ Cancel scheduled nudge for this task (if it exists)
+      try {
+        console.log('🔔 Attempting to cancel nudge for completed task:', taskId)
+        await cancelNudge(authStore.userId, taskId)
+        console.log('✅ Nudge cancelled successfully')
+      } catch (nudgeErr) {
+        // Don't fail the task completion if nudge cancellation fails
+        console.warn('⚠️ Failed to cancel nudge, but task was completed successfully:', nudgeErr)
+      }
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
