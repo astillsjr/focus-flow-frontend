@@ -183,6 +183,43 @@ export const useBetStore = defineStore('bet', () => {
   }
 
   /**
+   * Fetch all bets (including resolved) for the current user
+   */
+  async function fetchAllBets(): Promise<void> {
+    if (!authStore.userId) {
+      throw new Error('User not authenticated')
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const data = await betAPI.getRecentActivity(authStore.userId, 1000) // Get up to 1000 bets
+      
+      // Sanity check - ensure data is an array
+      if (!Array.isArray(data)) {
+        console.error('API returned non-array data for bets:', data)
+        bets.value = []
+      } else {
+        bets.value = data
+      }
+      
+      // Persist to localStorage
+      persistBets()
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch all bets'
+      console.error('Fetch all bets error:', err)
+      // Ensure bets remains an array even on error
+      if (!Array.isArray(bets.value)) {
+        bets.value = []
+      }
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Fetch expired bets for the current user
    */
   async function fetchExpiredBets(): Promise<Bet[]> {
@@ -627,6 +664,7 @@ export const useBetStore = defineStore('bet', () => {
     initializeBettor,
     fetchProfile,
     fetchActiveBets,
+    fetchAllBets,
     fetchExpiredBets,
     placeBet,
     cancelBet,

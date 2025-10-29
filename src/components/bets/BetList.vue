@@ -2,14 +2,6 @@
   <div class="bet-list">
     <div class="bet-list-header">
       <h2>Your Bets</h2>
-      <BaseButton 
-        @click="refreshBets" 
-        :loading="isLoading"
-        variant="secondary"
-        size="sm"
-      >
-        Refresh
-      </BaseButton>
     </div>
 
     <div v-if="isLoading && !bets.length" class="loading-state">
@@ -58,16 +50,6 @@
         </BaseButton>
       </div>
 
-      <div v-if="resolvedBets.length > 0" class="bet-group">
-        <h3>Recently Resolved ({{ resolvedBets.length }})</h3>
-        <TransitionGroup name="bet-list" tag="div" class="bet-items">
-          <BetItem
-            v-for="bet in resolvedBets.slice(0, 10)"
-            :key="bet._id"
-            :bet="bet"
-          />
-        </TransitionGroup>
-      </div>
     </div>
   </div>
 </template>
@@ -101,9 +83,6 @@ async function refreshBets() {
     isRefreshing.value = true
     await betStore.fetchActiveBets()
     await betStore.checkAndResolveExpiredBets()
-    console.log('✅ Bets refreshed successfully')
-  } catch (err) {
-    console.error('❌ Failed to refresh bets:', err)
   } finally {
     isRefreshing.value = false
   }
@@ -130,9 +109,7 @@ onMounted(async () => {
 })
 
 // Expose refresh method so parent components can trigger refresh
-defineExpose({
-  refreshBets
-})
+defineExpose({})
 </script>
 
 <style scoped>
