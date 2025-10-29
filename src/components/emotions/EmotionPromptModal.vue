@@ -2,8 +2,8 @@
   <div v-if="isOpen" class="modal-overlay" @click.self="handleCancel">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Before You Start: "{{ taskTitle }}"</h3>
-        <p class="modal-subtitle">How do you feel about starting this task?</p>
+        <h3>{{ headerTitle }}</h3>
+        <p class="modal-subtitle">{{ subtitleText }}</p>
       </div>
       
       <div class="emotion-grid">
@@ -20,15 +20,15 @@
         </button>
       </div>
 
-      <div v-if="error" class="error-message">
-        {{ error }}
+      <div v-if="displayError" class="error-message">
+        {{ displayError }}
       </div>
 
       <div class="modal-actions">
         <button 
           @click="handleCancel" 
           class="button-secondary"
-          :disabled="isLoading"
+          :disabled="externalLoading"
           type="button"
         >
           Cancel
@@ -36,10 +36,10 @@
         <button 
           @click="handleSubmit" 
           class="button-primary"
-          :disabled="!selectedEmotion || isLoading"
+          :disabled="!selectedEmotion || externalLoading"
           type="button"
         >
-          {{ isLoading ? 'Logging...' : 'Start Task' }}
+          {{ submitButtonText }}
         </button>
       </div>
     </div>
@@ -47,14 +47,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/stores/emotionStore'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   isOpen: boolean
   taskId: string
   taskTitle: string
-}>()
+  phase: 'before' | 'after'
+  externalLoading?: boolean
+  externalError?: string | null
+}>(), {
+  externalLoading: false,
+  externalError: null
+})
 
 const emit = defineEmits<{
   submit: [emotion: Emotion]
@@ -62,26 +68,51 @@ const emit = defineEmits<{
 }>()
 
 const selectedEmotion = ref<Emotion | null>(null)
-const error = ref<string | null>(null)
-const isLoading = ref(false)
+
+// Reset selection when modal closes
+watch(() => props.isOpen, (newValue) => {
+  if (!newValue) {
+    selectedEmotion.value = null
+  }
+})
+
+// Computed properties for dynamic text
+const headerTitle = computed(() => {
+  return props.phase === 'before' 
+    ? `Before You Start: "${props.taskTitle}"`
+    : `Task Completed: "${props.taskTitle}"`
+})
+
+const subtitleText = computed(() => {
+  return props.phase === 'before'
+    ? 'How do you feel about starting this task?'
+    : 'How do you feel after completing this task?'
+})
+
+const submitButtonText = computed(() => {
+  if (props.externalLoading) return 'Logging...'
+  return props.phase === 'before' ? 'Start Task' : 'Complete Task'
+})
+
+// Use external error if provided
+const displayError = computed(() => props.externalError)
 
 const selectEmotion = (emotion: Emotion) => {
   selectedEmotion.value = emotion
-  error.value = null
 }
 
 const handleSubmit = () => {
-  if (selectedEmotion.value) {
+  if (selectedEmotion.value && !props.externalLoading) {
     emit('submit', selectedEmotion.value)
-    // Reset after submission
-    selectedEmotion.value = null
+    // Note: The watcher will reset when modal closes
   }
 }
 
 const handleCancel = () => {
-  emit('cancel')
-  selectedEmotion.value = null
-  error.value = null
+  if (!props.externalLoading) {
+    emit('cancel')
+    // Note: The watcher will reset when modal closes
+  }
 }
 
 // Add emoji/icons for emotions

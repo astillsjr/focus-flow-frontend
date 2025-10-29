@@ -42,13 +42,28 @@
       </button>
     </div>
 
-    <!-- Emotion Prompt Modal -->
+    <!-- Start Emotion Prompt Modal -->
     <EmotionPromptModal
-      :is-open="showEmotionModal"
+      :is-open="showStartEmotionModal"
       :task-id="task._id"
       :task-title="task.title"
-      @submit="handleEmotionSubmit"
-      @cancel="handleEmotionCancel"
+      phase="before"
+      :external-loading="startEmotionLoading"
+      :external-error="startEmotionError"
+      @submit="handleStartEmotionSubmit"
+      @cancel="handleStartEmotionCancel"
+    />
+
+    <!-- Complete Emotion Prompt Modal -->
+    <EmotionPromptModal
+      :is-open="showCompleteEmotionModal"
+      :task-id="task._id"
+      :task-title="task.title"
+      phase="after"
+      :external-loading="completeEmotionLoading"
+      :external-error="completeEmotionError"
+      @submit="handleCompleteEmotionSubmit"
+      @cancel="handleCompleteEmotionCancel"
     />
   </div>
 </template>
@@ -57,6 +72,8 @@
 import { computed, ref } from 'vue'
 import type { Task } from '../../stores/taskStore'
 import type { Emotion } from '@/stores/emotionStore'
+import { useTaskStore } from '../../stores/taskStore'
+import { useEmotionStore } from '../../stores/emotionStore'
 import EmotionPromptModal from '../emotions/EmotionPromptModal.vue'
 
 // Props
@@ -66,14 +83,21 @@ const props = defineProps<{
 
 // Emits
 const emit = defineEmits<{
-  'start-with-emotion': [taskId: string, emotion: Emotion]
-  'toggle-complete': [taskId: string]
   'delete-task': [taskId: string]
 }>()
 
+// Stores
+const taskStore = useTaskStore()
+const emotionStore = useEmotionStore()
+
 // State
 const isLoading = ref(false)
-const showEmotionModal = ref(false)
+const showStartEmotionModal = ref(false)
+const showCompleteEmotionModal = ref(false)
+const startEmotionLoading = ref(false)
+const completeEmotionLoading = ref(false)
+const startEmotionError = ref<string | null>(null)
+const completeEmotionError = ref<string | null>(null)
 
 // Computed properties
 const status = computed((): 'pending' | 'in-progress' | 'completed' => {
@@ -126,21 +150,74 @@ function formatDate(date: Date): string {
 
 function handleToggleStart() {
   if (isStarted.value) {
-    // If already started, mark as complete
-    emit('toggle-complete', props.task._id)
+    // If already started, show emotion prompt before completing
+    showCompleteEmotionModal.value = true
   } else {
-    // If not started, show emotion prompt first
-    showEmotionModal.value = true
+    // If not started, show emotion prompt before starting
+    showStartEmotionModal.value = true
   }
 }
 
-function handleEmotionSubmit(emotion: Emotion) {
-  showEmotionModal.value = false
-  emit('start-with-emotion', props.task._id, emotion)
+async function handleStartEmotionSubmit(emotion: Emotion) {
+  startEmotionLoading.value = true
+  startEmotionError.value = null
+  
+  try {
+    // First, log the "before" emotion
+    await emotionStore.logBefore({ 
+      taskId: props.task._id, 
+      emotion 
+    })
+    console.log('✅ Before emotion logged:', emotion)
+    
+    // Then mark the task as started
+    await taskStore.markStarted(props.task._id)
+    console.log('✅ Task started:', props.task._id)
+    
+    // Success - close modal
+    startEmotionLoading.value = false
+    showStartEmotionModal.value = false
+  } catch (err) {
+    console.error('❌ Failed to start task with emotion:', err)
+    startEmotionLoading.value = false
+    startEmotionError.value = err instanceof Error ? err.message : 'Failed to start task'
+  }
 }
 
-function handleEmotionCancel() {
-  showEmotionModal.value = false
+async function handleCompleteEmotionSubmit(emotion: Emotion) {
+  completeEmotionLoading.value = true
+  completeEmotionError.value = null
+  
+  try {
+    // First, log the "after" emotion
+    await emotionStore.logAfter({ 
+      taskId: props.task._id, 
+      emotion 
+    })
+    console.log('✅ After emotion logged:', emotion)
+    
+    // Then mark the task as completed
+    await taskStore.markCompleted(props.task._id)
+    console.log('✅ Task completed:', props.task._id)
+    
+    // Success - close modal
+    completeEmotionLoading.value = false
+    showCompleteEmotionModal.value = false
+  } catch (err) {
+    console.error('❌ Failed to complete task with emotion:', err)
+    completeEmotionLoading.value = false
+    completeEmotionError.value = err instanceof Error ? err.message : 'Failed to complete task'
+  }
+}
+
+function handleStartEmotionCancel() {
+  showStartEmotionModal.value = false
+  startEmotionError.value = null
+}
+
+function handleCompleteEmotionCancel() {
+  showCompleteEmotionModal.value = false
+  completeEmotionError.value = null
 }
 
 function handleDelete() {

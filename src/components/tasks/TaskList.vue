@@ -35,8 +35,6 @@
             v-for="task in pendingTasks"
             :key="task._id"
             :task="task"
-            @start-with-emotion="handleStartWithEmotion"
-            @toggle-complete="handleToggleComplete"
             @delete-task="handleDeleteTask"
           />
         </div>
@@ -52,8 +50,6 @@
             v-for="task in inProgressTasks"
             :key="task._id"
             :task="task"
-            @start-with-emotion="handleStartWithEmotion"
-            @toggle-complete="handleToggleComplete"
             @delete-task="handleDeleteTask"
           />
         </div>
@@ -69,8 +65,6 @@
             v-for="task in completedTasks"
             :key="task._id"
             :task="task"
-            @start-with-emotion="handleStartWithEmotion"
-            @toggle-complete="handleToggleComplete"
             @delete-task="handleDeleteTask"
           />
         </div>
@@ -82,13 +76,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
-import { useEmotionStore } from '../../stores/emotionStore'
-import type { Emotion } from '@/stores/emotionStore'
 import TaskItem from './TaskItem.vue'
 
-// Get stores
+// Get task store
 const taskStore = useTaskStore()
-const emotionStore = useEmotionStore()
 
 // Local state for tracking operations
 const isRefreshing = ref(false)
@@ -117,28 +108,7 @@ async function refreshTasks() {
 }
 
 /**
- * Handle start with emotion event from TaskItem
- */
-async function handleStartWithEmotion(taskId: string, emotion: Emotion) {
-  try {
-    // First, log the "before" emotion
-    await emotionStore.logBefore({ 
-      taskId, 
-      emotion 
-    })
-    console.log('✅ Before emotion logged:', emotion)
-    
-    // Then mark the task as started
-    await taskStore.markStarted(taskId)
-    console.log('✅ Task started:', taskId)
-  } catch (err) {
-    console.error('❌ Failed to start task with emotion:', err)
-    // Optionally show error notification to user
-  }
-}
-
-/**
- * Handle toggle complete event from TaskItem
+ * Handle toggle complete event from TaskItem (legacy - not used with emotion flow)
  */
 async function handleToggleComplete(taskId: string) {
   try {
