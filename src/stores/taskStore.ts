@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
 import { useBetStore } from './betStore'
+import { useEmotionStore } from './emotionStore'
 import { scheduleNudge, cancelNudge } from '../api/nudges'
 import * as taskAPI from '@/api/tasks'
 import type { Task } from '@/api/tasks'
@@ -231,6 +232,17 @@ export const useTaskStore = defineStore('task', () => {
       } catch (nudgeErr) {
         // Log the error but don't fail the task deletion
         console.warn('⚠️ Failed to delete nudge, but continuing with task deletion:', nudgeErr)
+      }
+
+      // Delete emotion logs for this task
+      try {
+        console.log('😊 Attempting to delete emotion logs for task:', taskId)
+        const emotionStore = useEmotionStore()
+        await emotionStore.deleteTaskLogs(taskId)
+        console.log('✅ Emotion logs deleted successfully')
+      } catch (emotionErr) {
+        // Log the error but don't fail the task deletion
+        console.warn('⚠️ Failed to delete emotion logs, but continuing with task deletion:', emotionErr)
       }
 
       await taskAPI.deleteTask(authStore.userId, taskId)
