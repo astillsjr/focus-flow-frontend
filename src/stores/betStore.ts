@@ -22,6 +22,7 @@ export const useBetStore = defineStore('bet', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const isInitialized = ref(false)
+  const expirationCheckInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
   // Get auth store
   const authStore = useAuthStore()
@@ -415,6 +416,36 @@ export const useBetStore = defineStore('bet', () => {
   }
 
   /**
+   * Start periodic monitoring for expired bets
+   * Checks every 2 minutes for bets that have expired
+   */
+  function startExpirationMonitoring(): void {
+    // Don't start if already running
+    if (expirationCheckInterval.value) {
+      return
+    }
+
+    console.log('🔄 Starting automatic bet expiration monitoring...')
+    
+    // Check every 2 minutes (120000 ms)
+    expirationCheckInterval.value = setInterval(async () => {
+      console.log('⏰ Checking for expired bets...')
+      await checkAndResolveExpiredBets()
+    }, 2 * 60 * 1000)
+  }
+
+  /**
+   * Stop periodic monitoring for expired bets
+   */
+  function stopExpirationMonitoring(): void {
+    if (expirationCheckInterval.value) {
+      console.log('⏹️ Stopping automatic bet expiration monitoring')
+      clearInterval(expirationCheckInterval.value)
+      expirationCheckInterval.value = null
+    }
+  }
+
+  /**
    * Find a bet by task ID in local state
    */
   function getBetByTaskId(taskId: string): Bet | undefined {
@@ -466,6 +497,7 @@ export const useBetStore = defineStore('bet', () => {
    * Clear store state
    */
   function clearState(): void {
+    stopExpirationMonitoring()
     bets.value = []
     profile.value = null
     error.value = null
@@ -554,6 +586,9 @@ export const useBetStore = defineStore('bet', () => {
     } catch (err) {
       console.error('Failed to check expired bets:', err)
     }
+
+    // Start periodic monitoring for bet expiration
+    startExpirationMonitoring()
   }
 
   // Watch for logout and clear state automatically

@@ -1,7 +1,5 @@
 <template>
-  <div class="task-creation-flow">
-    <AppNavigation />
-    
+  <DashboardLayout>
     <div class="flow-container">
       <!-- Step 1: Create Task -->
       <div v-if="currentStep === 'task'">
@@ -74,7 +72,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
@@ -82,7 +80,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBetStore } from '../../stores/betStore'
 import { useTaskStore } from '../../stores/taskStore'
-import AppNavigation from '../layout/AppNavigation.vue'
+import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskForm from './TaskForm.vue'
 import BetForm from '../bets/BetForm.vue'
 
@@ -198,14 +196,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.task-creation-flow {
+.flow-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-}
-
-.flow-container {
-  margin-top: 1rem;
 }
 
 h1 {

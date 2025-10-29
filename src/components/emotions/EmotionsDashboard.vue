@@ -1,7 +1,5 @@
 <template>
-  <div class="emotions-dashboard">
-    <AppNavigation />
-    
+  <DashboardLayout>
     <h1>Emotions Dashboard</h1>
 
     <!-- AI Analysis Section -->
@@ -20,25 +18,18 @@
       <p>Log your emotions before and after completing tasks to track patterns and receive AI-powered insights.</p>
       <p>Use the emotion forms on individual tasks in the Tasks dashboard to record how you feel.</p>
     </section>
-  </div>
+  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import AppNavigation from '../layout/AppNavigation.vue'
+import DashboardLayout from '../layout/DashboardLayout.vue'
 import EmotionAnalysis from './EmotionAnalysis.vue'
 import EmotionStats from './EmotionStats.vue'
 </script>
 
 <style scoped>
-.emotions-dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
 h1 {
   margin: 0 0 2rem 0;
-  font-size: 2rem;
 }
 
 .section {
@@ -59,16 +50,6 @@ h1 {
 .info-section p {
   margin: 0.5rem 0;
   color: #666;
-}
-
-@media (max-width: 768px) {
-  .emotions-dashboard {
-    padding: 0.5rem;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
 }
 </style>
 

@@ -1,8 +1,5 @@
 <template>
-  <div class="dashboard">
-    <!-- Navigation -->
-    <AppNavigation />
-    
+  <DashboardLayout>
     <!-- Header with username -->
     <div class="dashboard-header">
       <h1>Welcome, {{ displayUsername }}</h1>
@@ -104,7 +101,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
@@ -112,7 +109,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
-import AppNavigation from '../layout/AppNavigation.vue'
+import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskItem from './TaskItem.vue'
 
 // Get stores and router
@@ -205,12 +202,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-}
-
 /* Header */
 .dashboard-header {
   margin-bottom: 2rem;
@@ -378,10 +369,6 @@ onMounted(async () => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .dashboard {
-    padding: 1rem 0.5rem;
-  }
-
   .controls {
     flex-direction: column;
   }

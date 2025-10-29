@@ -1,7 +1,5 @@
 <template>
-  <div class="bets-dashboard">
-    <AppNavigation />
-    
+  <DashboardLayout>
     <h1>Bets</h1>
 
     <!-- Initialize Profile Section -->
@@ -28,13 +26,13 @@
       <BetStats />
       <BetList ref="betListRef" />
     </div>
-  </div>
+  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBetStore } from '../../stores/betStore'
-import AppNavigation from '../layout/AppNavigation.vue'
+import DashboardLayout from '../layout/DashboardLayout.vue'
 import BetStats from './BetStats.vue'
 import BetList from './BetList.vue'
 
@@ -86,12 +84,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.bets-dashboard {
-  padding: 1rem;
-}
-
 h1 {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 button {

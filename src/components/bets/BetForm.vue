@@ -39,7 +39,6 @@
           id="deadline"
           v-model="deadline"
           type="datetime-local"
-          :min="minDeadline"
           required
           :disabled="isLoading || !betStore.hasProfile"
         />
@@ -135,12 +134,6 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 // Computed
-const minDeadline = computed(() => {
-  const now = new Date()
-  now.setHours(now.getHours() + 1) // Minimum 1 hour from now
-  return now.toISOString().slice(0, 16)
-})
-
 const isFormValid = computed(() => {
   return (
     wager.value > 0 &&

@@ -270,12 +270,26 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      await taskAPI.markStarted(authStore.userId, taskId, new Date().toISOString())
+      const startTime = new Date().toISOString()
+      await taskAPI.markStarted(authStore.userId, taskId, startTime)
+
+      // ✨ Check if there's an active bet and resolve it
+      const betStore = useBetStore()
+      if (betStore.hasActiveBet(taskId)) {
+        try {
+          console.log('🎲 Resolving bet for started task:', taskId)
+          const result = await betStore.resolveBet(taskId, startTime)
+          console.log('✅ Bet resolved successfully:', result)
+        } catch (betErr) {
+          // Don't fail the task start if bet resolution fails
+          console.warn('⚠️ Failed to resolve bet, but task was started successfully:', betErr)
+        }
+      }
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
       if (taskIndex !== -1) {
-        tasks.value[taskIndex].startedAt = new Date().toISOString()
+        tasks.value[taskIndex].startedAt = startTime
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as started'
