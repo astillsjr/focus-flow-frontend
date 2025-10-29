@@ -35,7 +35,7 @@
             v-for="task in pendingTasks"
             :key="task._id"
             :task="task"
-            @toggle-start="handleToggleStart"
+            @start-with-emotion="handleStartWithEmotion"
             @toggle-complete="handleToggleComplete"
             @delete-task="handleDeleteTask"
           />
@@ -52,7 +52,7 @@
             v-for="task in inProgressTasks"
             :key="task._id"
             :task="task"
-            @toggle-start="handleToggleStart"
+            @start-with-emotion="handleStartWithEmotion"
             @toggle-complete="handleToggleComplete"
             @delete-task="handleDeleteTask"
           />
@@ -69,7 +69,7 @@
             v-for="task in completedTasks"
             :key="task._id"
             :task="task"
-            @toggle-start="handleToggleStart"
+            @start-with-emotion="handleStartWithEmotion"
             @toggle-complete="handleToggleComplete"
             @delete-task="handleDeleteTask"
           />
@@ -82,10 +82,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
+import { useEmotionStore } from '../../stores/emotionStore'
+import type { Emotion } from '@/stores/emotionStore'
 import TaskItem from './TaskItem.vue'
 
-// Get task store
+// Get stores
 const taskStore = useTaskStore()
+const emotionStore = useEmotionStore()
 
 // Local state for tracking operations
 const isRefreshing = ref(false)
@@ -114,15 +117,23 @@ async function refreshTasks() {
 }
 
 /**
- * Handle toggle start event from TaskItem
+ * Handle start with emotion event from TaskItem
  */
-async function handleToggleStart(taskId: string) {
+async function handleStartWithEmotion(taskId: string, emotion: Emotion) {
   try {
+    // First, log the "before" emotion
+    await emotionStore.logBefore({ 
+      taskId, 
+      emotion 
+    })
+    console.log('✅ Before emotion logged:', emotion)
+    
+    // Then mark the task as started
     await taskStore.markStarted(taskId)
     console.log('✅ Task started:', taskId)
   } catch (err) {
-    console.error('❌ Failed to start task:', err)
-    // Optionally show error notification
+    console.error('❌ Failed to start task with emotion:', err)
+    // Optionally show error notification to user
   }
 }
 

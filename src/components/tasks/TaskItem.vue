@@ -41,12 +41,23 @@
         Delete
       </button>
     </div>
+
+    <!-- Emotion Prompt Modal -->
+    <EmotionPromptModal
+      :is-open="showEmotionModal"
+      :task-id="task._id"
+      :task-title="task.title"
+      @submit="handleEmotionSubmit"
+      @cancel="handleEmotionCancel"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { Task } from '../../stores/taskStore'
+import type { Emotion } from '@/stores/emotionStore'
+import EmotionPromptModal from '../emotions/EmotionPromptModal.vue'
 
 // Props
 const props = defineProps<{
@@ -55,13 +66,14 @@ const props = defineProps<{
 
 // Emits
 const emit = defineEmits<{
-  'toggle-start': [taskId: string]
+  'start-with-emotion': [taskId: string, emotion: Emotion]
   'toggle-complete': [taskId: string]
   'delete-task': [taskId: string]
 }>()
 
 // State
 const isLoading = ref(false)
+const showEmotionModal = ref(false)
 
 // Computed properties
 const status = computed((): 'pending' | 'in-progress' | 'completed' => {
@@ -117,9 +129,18 @@ function handleToggleStart() {
     // If already started, mark as complete
     emit('toggle-complete', props.task._id)
   } else {
-    // If not started, mark as started
-    emit('toggle-start', props.task._id)
+    // If not started, show emotion prompt first
+    showEmotionModal.value = true
   }
+}
+
+function handleEmotionSubmit(emotion: Emotion) {
+  showEmotionModal.value = false
+  emit('start-with-emotion', props.task._id, emotion)
+}
+
+function handleEmotionCancel() {
+  showEmotionModal.value = false
 }
 
 function handleDelete() {

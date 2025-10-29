@@ -1,0 +1,301 @@
+<template>
+  <div v-if="isOpen" class="modal-overlay" @click.self="handleCancel">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Before You Start: "{{ taskTitle }}"</h3>
+        <p class="modal-subtitle">How do you feel about starting this task?</p>
+      </div>
+      
+      <div class="emotion-grid">
+        <button
+          v-for="emotion in VALID_EMOTIONS"
+          :key="emotion"
+          @click="selectEmotion(emotion)"
+          class="emotion-button"
+          :class="{ 'selected': selectedEmotion === emotion }"
+          type="button"
+        >
+          <span class="emotion-icon">{{ getEmotionIcon(emotion) }}</span>
+          <span class="emotion-label">{{ EMOTION_LABELS[emotion] }}</span>
+        </button>
+      </div>
+
+      <div v-if="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <div class="modal-actions">
+        <button 
+          @click="handleCancel" 
+          class="button-secondary"
+          :disabled="isLoading"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button 
+          @click="handleSubmit" 
+          class="button-primary"
+          :disabled="!selectedEmotion || isLoading"
+          type="button"
+        >
+          {{ isLoading ? 'Logging...' : 'Start Task' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/stores/emotionStore'
+
+const props = defineProps<{
+  isOpen: boolean
+  taskId: string
+  taskTitle: string
+}>()
+
+const emit = defineEmits<{
+  submit: [emotion: Emotion]
+  cancel: []
+}>()
+
+const selectedEmotion = ref<Emotion | null>(null)
+const error = ref<string | null>(null)
+const isLoading = ref(false)
+
+const selectEmotion = (emotion: Emotion) => {
+  selectedEmotion.value = emotion
+  error.value = null
+}
+
+const handleSubmit = () => {
+  if (selectedEmotion.value) {
+    emit('submit', selectedEmotion.value)
+    // Reset after submission
+    selectedEmotion.value = null
+  }
+}
+
+const handleCancel = () => {
+  emit('cancel')
+  selectedEmotion.value = null
+  error.value = null
+}
+
+// Add emoji/icons for emotions
+const getEmotionIcon = (emotion: Emotion): string => {
+  const icons: Record<Emotion, string> = {
+    excited: '🤩',
+    confident: '💪',
+    motivated: '🔥',
+    calm: '😌',
+    neutral: '😐',
+    nervous: '😬',
+    anxious: '😰',
+    overwhelmed: '😵',
+    frustrated: '😤',
+    dread: '😨',
+    satisfied: '😊',
+    relieved: '😮‍💨',
+    accomplished: '🎉',
+    disappointed: '😞'
+  }
+  return icons[emotion] || '💭'
+}
+</script>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #333;
+  word-break: break-word;
+}
+
+.modal-subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.emotion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.emotion-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emotion-button:hover {
+  border-color: #4CAF50;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emotion-button.selected {
+  border-color: #4CAF50;
+  background-color: #e8f5e9;
+  transform: translateY(-2px);
+}
+
+.emotion-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.emotion-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+}
+
+.error-message {
+  color: #d32f2f;
+  padding: 0.75rem;
+  background-color: #ffebee;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.button-primary,
+.button-secondary {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button-primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.button-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.button-secondary {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.button-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .modal-content {
+    padding: 1.5rem;
+    width: 95%;
+  }
+
+  .emotion-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .emotion-button {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .emotion-icon {
+    font-size: 1.5rem;
+  }
+
+  .emotion-label {
+    font-size: 0.8rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.25rem;
+  }
+}
+</style>
+
