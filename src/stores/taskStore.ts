@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
+import { useBetStore } from './betStore'
 import { scheduleNudge } from '../api/nudges'
 import * as taskAPI from '@/api/tasks'
 import type { Task } from '@/api/tasks'
@@ -209,6 +210,19 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
+      // Check if there's an active bet for this task and try to cancel it
+      const betStore = useBetStore()
+      if (betStore.hasActiveBet(taskId)) {
+        try {
+          console.log('🎲 Attempting to cancel bet for task:', taskId)
+          await betStore.cancelBet(taskId)
+          console.log('✅ Bet cancelled successfully')
+        } catch (betErr) {
+          // Log the error but don't fail the task deletion
+          console.warn('⚠️ Failed to cancel bet, but continuing with task deletion:', betErr)
+        }
+      }
+
       await taskAPI.deleteTask(authStore.userId, taskId)
 
       // Remove task from local state
