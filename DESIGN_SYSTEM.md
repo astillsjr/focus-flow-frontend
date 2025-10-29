@@ -295,15 +295,48 @@ When updating existing components to use the design system:
 
 ---
 
+## 🧩 Base Components
+
+Reusable, standardized UI components are available in `src/components/base/`:
+
+### Available Components
+
+- **BaseButton** - Versatile button with variants (primary, secondary, danger, ghost)
+- **BaseCard** - Simple card container with customizable padding
+- **BaseInput** - Standardized input/textarea with validation support
+
+### Usage
+
+```vue
+<script setup lang="ts">
+import { BaseButton, BaseCard, BaseInput } from '@/components/base'
+</script>
+
+<template>
+  <BaseCard>
+    <BaseInput v-model="name" label="Name" />
+    <BaseButton @click="save">Save</BaseButton>
+  </BaseCard>
+</template>
+```
+
+### Demo & Documentation
+
+- **Live Demo**: Navigate to `/demo` when logged in
+- **Full Documentation**: See `src/components/base/README.md`
+- **Usage Examples**: `src/components/base/BaseComponentsDemo.vue`
+
+---
+
 ## 🚀 Next Steps
 
 As the design system evolves, consider:
 
 1. **CSS Variables** - Convert design tokens to CSS custom properties
-2. **Component Library** - Build reusable UI components (Button, Card, Input)
+2. **More Components** - Add Badge, Modal, Toast, Dropdown components
 3. **Dark Mode** - Add dark theme support
 4. **Theme Variants** - Allow customization for different brands/use cases
-5. **Documentation Site** - Create visual documentation with examples
+5. **Animation Library** - Standardized transitions and animations
 
 ---
 

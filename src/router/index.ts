@@ -42,6 +42,12 @@ const routes: RouteRecordRaw[] = [
     name: 'Emotions',
     component: () => import('../components/emotions/EmotionsDashboard.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/demo',
+    name: 'ComponentDemo',
+    component: () => import('../components/base/BaseComponentsDemo.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
