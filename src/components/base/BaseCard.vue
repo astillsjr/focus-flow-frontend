@@ -30,8 +30,8 @@ function handleClick(event: MouseEvent) {
 
 <style scoped>
 .base-card {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
+  background-color: #1E1E1E;
+  border: 1px solid #4D4D4D;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
@@ -55,7 +55,8 @@ function handleClick(event: MouseEvent) {
 
 /* Hoverable */
 .hoverable:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background-color: #2A2A2A;
 }
 
 /* Clickable */
@@ -64,8 +65,9 @@ function handleClick(event: MouseEvent) {
 }
 
 .clickable:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-color: #cccccc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-color: #666666;
+  background-color: #2A2A2A;
 }
 
 .clickable:active {

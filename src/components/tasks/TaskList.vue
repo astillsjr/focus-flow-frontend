@@ -77,6 +77,17 @@
         </TransitionGroup>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <BaseConfirmModal
+      :is-open="showDeleteModal"
+      title="Delete Task"
+      :message="deleteMessage"
+      confirm-text="Delete"
+      :loading="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -84,13 +95,17 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
 import TaskItem from './TaskItem.vue'
-import { BaseButton } from '../base'
+import { BaseButton, BaseConfirmModal } from '../base'
 
 // Get task store
 const taskStore = useTaskStore()
 
 // Local state for tracking operations
 const isRefreshing = ref(false)
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const taskToDelete = ref<string | null>(null)
+const deleteMessage = ref('')
 
 // Computed properties from store
 const tasks = computed(() => taskStore.tasks)
@@ -129,20 +144,45 @@ async function handleToggleComplete(taskId: string) {
 }
 
 /**
- * Handle delete task event from TaskItem
+ * Handle delete task event - show confirmation modal
  */
-async function handleDeleteTask(taskId: string) {
-  if (!confirm('Are you sure you want to delete this task?')) {
-    return
+function handleDeleteTask(taskId: string) {
+  const task = tasks.value.find(t => t._id === taskId)
+  if (task) {
+    taskToDelete.value = taskId
+    deleteMessage.value = `Are you sure you want to delete "${task.title}"? This action cannot be undone.`
+    showDeleteModal.value = true
   }
+}
 
+/**
+ * Confirm delete task
+ */
+async function confirmDelete() {
+  if (!taskToDelete.value) return
+  
+  isDeleting.value = true
+  
   try {
-    await taskStore.deleteTask(taskId)
-    console.log('✅ Task deleted:', taskId)
+    await taskStore.deleteTask(taskToDelete.value)
+    console.log('✅ Task deleted:', taskToDelete.value)
+    showDeleteModal.value = false
+    taskToDelete.value = null
   } catch (err) {
     console.error('❌ Failed to delete task:', err)
-    // Optionally show error notification
+    // Keep modal open on error so user can try again
+  } finally {
+    isDeleting.value = false
   }
+}
+
+/**
+ * Cancel delete task
+ */
+function cancelDelete() {
+  showDeleteModal.value = false
+  taskToDelete.value = null
+  isDeleting.value = false
 }
 
 // Initialize tasks on component mount
@@ -189,13 +229,13 @@ defineExpose({
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #4D4D4D;
 }
 
 .task-list-header h2 {
   margin: 0;
   font-size: 1.75rem;
-  color: #333333;
+  color: #FFFFFF;
 }
 
 .loading-state,
@@ -203,7 +243,7 @@ defineExpose({
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #757575;
+  color: #808080;
 }
 
 .loading-state p,
@@ -217,7 +257,7 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  color: #d32f2f;
+  color: #CF6679;
 }
 
 .error-state p {
@@ -232,16 +272,16 @@ defineExpose({
 }
 
 .task-group {
-  background-color: #f9f9f9;
+  background-color: #1E1E1E;
   padding: 1.5rem;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #4D4D4D;
 }
 
 .group-title {
   margin: 0 0 1rem 0;
   font-size: 1.25rem;
-  color: #333;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -249,7 +289,7 @@ defineExpose({
 
 .task-count {
   font-size: 0.9rem;
-  color: #757575;
+  color: #808080;
   font-weight: normal;
 }
 

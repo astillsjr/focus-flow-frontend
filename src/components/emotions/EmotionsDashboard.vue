@@ -45,7 +45,7 @@ h3 {
 
 p {
   margin: 0.5rem 0;
-  color: #666666;
+  color: #B3B3B3;
   line-height: 1.6;
 }
 </style>

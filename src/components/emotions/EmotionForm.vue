@@ -113,22 +113,24 @@ label {
 select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid #4D4D4D;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: #1E1E1E;
+  color: #FFFFFF;
 }
 
 select:disabled {
-  background-color: #f5f5f5;
+  background-color: #0F0F0F;
   cursor: not-allowed;
 }
 
 .error {
-  color: #dc3545;
+  color: #CF6679;
   margin-bottom: 1rem;
   padding: 0.5rem;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  background-color: #3d1a1a;
+  border: 1px solid #CF6679;
   border-radius: 4px;
 }
 </style>

@@ -43,9 +43,9 @@ const handleLogout = async () => {
 
 <style scoped>
 .app-navigation {
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #1E1E1E;
+  border-bottom: 1px solid #4D4D4D;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -66,7 +66,7 @@ const handleLogout = async () => {
   align-items: center;
   font-weight: 600;
   font-size: 1.25rem;
-  color: #333333;
+  color: #FFFFFF;
 }
 
 .brand-text {
@@ -84,7 +84,7 @@ const handleLogout = async () => {
   display: inline-block;
   padding: 0.625rem 1rem;
   text-decoration: none;
-  color: #666666;
+  color: #B3B3B3;
   border-radius: 8px;
   background: transparent;
   font-weight: 500;
@@ -93,26 +93,26 @@ const handleLogout = async () => {
 }
 
 .nav-link:hover {
-  background-color: #f5f5f5;
-  color: #333333;
+  background-color: #2A2A2A;
+  color: #FFFFFF;
   text-decoration: none;
 }
 
 .nav-link.router-link-active {
-  background-color: #4CAF50;
-  color: white;
+  background-color: #BB86FC;
+  color: #000000;
 }
 
 .nav-link.router-link-active:hover {
-  background-color: #45a049;
+  background-color: #C693FC;
 }
 
 /* Logout Button */
 .logout-button {
   margin-left: auto;
   padding: 0.625rem 1.25rem;
-  background-color: #757575;
-  color: white;
+  background-color: #4D4D4D;
+  color: #FFFFFF;
   border: none;
   border-radius: 8px;
   font-weight: 500;
@@ -122,11 +122,11 @@ const handleLogout = async () => {
 }
 
 .logout-button:hover {
-  background-color: #616161;
+  background-color: #666666;
 }
 
 .logout-button:focus {
-  outline: 2px solid #757575;
+  outline: 2px solid #BB86FC;
   outline-offset: 2px;
 }
 

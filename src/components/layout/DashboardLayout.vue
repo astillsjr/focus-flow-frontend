@@ -14,7 +14,7 @@ import AppNavigation from './AppNavigation.vue'
 <style scoped>
 .dashboard-layout {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #121212;
 }
 
 .dashboard-main {

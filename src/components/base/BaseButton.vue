@@ -47,7 +47,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .base-button:focus {
-  outline: 2px solid #4CAF50;
+  outline: 2px solid #BB86FC;
   outline-offset: 2px;
 }
 
@@ -74,41 +74,41 @@ withDefaults(defineProps<Props>(), {
 
 /* Variants */
 .variant-primary {
-  background-color: #4CAF50;
-  color: white;
+  background-color: #BB86FC;
+  color: #000000;
 }
 
 .variant-primary:hover:not(:disabled) {
-  background-color: #45a049;
+  background-color: #C693FC;
 }
 
 .variant-secondary {
-  background-color: #2196F3;
-  color: white;
+  background-color: #03DAC6;
+  color: #000000;
 }
 
 .variant-secondary:hover:not(:disabled) {
-  background-color: #1976D2;
+  background-color: #26E0D1;
 }
 
 .variant-danger {
-  background-color: #f44336;
-  color: white;
+  background-color: #dc3545;
+  color: #ffffff;
 }
 
 .variant-danger:hover:not(:disabled) {
-  background-color: #d32f2f;
+  background-color: #c82333;
 }
 
 .variant-ghost {
   background-color: transparent;
-  color: #666666;
-  border: 1px solid #e0e0e0;
+  color: #B3B3B3;
+  border: 1px solid #4D4D4D;
 }
 
 .variant-ghost:hover:not(:disabled) {
-  background-color: #f5f5f5;
-  color: #333333;
+  background-color: #1E1E1E;
+  color: #FFFFFF;
 }
 
 /* Loading state */
@@ -127,8 +127,8 @@ withDefaults(defineProps<Props>(), {
 }
 
 .variant-ghost .spinner {
-  border-color: rgba(0, 0, 0, 0.1);
-  border-top-color: #666666;
+  border-color: rgba(255, 255, 255, 0.1);
+  border-top-color: #B3B3B3;
 }
 
 .button-content {

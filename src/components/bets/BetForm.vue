@@ -183,7 +183,7 @@ async function handleSubmit() {
 
 h3 {
   margin-bottom: 1rem;
-  color: #333;
+  color: #FFFFFF;
 }
 
 .form {
@@ -197,42 +197,42 @@ h3 {
   gap: 1.5rem;
   padding: 0.75rem;
   margin-bottom: 0.5rem;
-  background-color: #e3f2fd;
+  background-color: #0d2540;
   border-radius: 8px;
   font-size: 0.9rem;
 }
 
 .points-display,
 .streak-display {
-  color: #1565c0;
+  color: #42A5F5;
 }
 
 .warning-message {
   padding: 0.75rem;
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
+  background-color: #3d2a1a;
+  border: 1px solid #FFB74D;
   border-radius: 8px;
-  color: #856404;
+  color: #FFB74D;
   font-size: 0.9rem;
 }
 
 .error-message {
   padding: 0.75rem;
-  background-color: #ffebee;
-  border: 1px solid #f44336;
+  background-color: #3d1a1a;
+  border: 1px solid #CF6679;
   border-radius: 8px;
-  color: #d32f2f;
+  color: #CF6679;
   font-size: 0.9rem;
 }
 
 .bet-summary {
-  border-left: 4px solid #2196F3;
+  border-left: 4px solid #42A5F5;
 }
 
 .bet-summary h4 {
   margin: 0 0 0.75rem 0;
   font-size: 0.95rem;
-  color: #666;
+  color: #B3B3B3;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

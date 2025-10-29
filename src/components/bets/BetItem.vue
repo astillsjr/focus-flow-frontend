@@ -85,28 +85,28 @@ const timeRemaining = computed(() => {
 }
 
 .status.active {
-  color: #2196F3;
-  background-color: #e3f2fd;
+  color: #42A5F5;
+  background-color: #0d2540;
 }
 
 .status.expired {
-  color: #ff9800;
-  background-color: #fff3e0;
+  color: #FFB74D;
+  background-color: #3d2a1a;
 }
 
 .status.won {
-  color: #4CAF50;
-  background-color: #e8f5e9;
+  color: #66BB6A;
+  background-color: #1e3a1f;
 }
 
 .status.lost {
-  color: #f44336;
-  background-color: #ffebee;
+  color: #CF6679;
+  background-color: #3d1a1a;
 }
 
 .time-remaining {
   margin-left: 0.5rem;
-  color: #666;
+  color: #B3B3B3;
   font-size: 0.85rem;
 }
 </style>

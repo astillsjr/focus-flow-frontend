@@ -92,7 +92,7 @@ h1 {
 }
 
 .error-message {
-  color: #d32f2f;
+  color: #CF6679;
   margin-bottom: 1rem;
 }
 </style>

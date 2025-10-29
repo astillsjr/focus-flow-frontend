@@ -176,18 +176,18 @@ const getEmotionIcon = (emotion: Emotion): string => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal-content {
-  background: white;
+  background: #1E1E1E;
   border-radius: 12px;
   padding: 2rem;
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
@@ -197,13 +197,13 @@ const getEmotionIcon = (emotion: Emotion): string => {
 .modal-header h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
-  color: #333;
+  color: #FFFFFF;
   word-break: break-word;
 }
 
 .modal-subtitle {
   margin: 0;
-  color: #666;
+  color: #B3B3B3;
   font-size: 0.95rem;
 }
 
@@ -220,22 +220,22 @@ const getEmotionIcon = (emotion: Emotion): string => {
   align-items: center;
   gap: 0.5rem;
   padding: 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #4D4D4D;
   border-radius: 8px;
-  background: white;
+  background: #1E1E1E;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .emotion-button:hover {
-  border-color: #4CAF50;
+  border-color: #BB86FC;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .emotion-button.selected {
-  border-color: #4CAF50;
-  background-color: #e8f5e9;
+  border-color: #BB86FC;
+  background-color: #3700B3;
   transform: translateY(-2px);
 }
 
@@ -247,15 +247,16 @@ const getEmotionIcon = (emotion: Emotion): string => {
 .emotion-label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #333;
+  color: #FFFFFF;
   text-align: center;
 }
 
 .error-message {
-  color: #d32f2f;
+  color: #CF6679;
   padding: 0.75rem;
-  background-color: #ffebee;
-  border-radius: 4px;
+  background-color: rgba(207, 102, 121, 0.1);
+  border: 1px solid rgba(207, 102, 121, 0.3);
+  border-radius: 8px;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
@@ -270,35 +271,38 @@ const getEmotionIcon = (emotion: Emotion): string => {
 .button-secondary {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .button-primary {
-  background-color: #4CAF50;
-  color: white;
+  background-color: #BB86FC;
+  color: #000000;
 }
 
 .button-primary:hover:not(:disabled) {
-  background-color: #45a049;
+  background-color: #C693FC;
 }
 
 .button-primary:disabled {
-  background-color: #ccc;
+  background-color: #4D4D4D;
+  color: #808080;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .button-secondary {
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: transparent;
+  color: #B3B3B3;
+  border: 1px solid #4D4D4D;
 }
 
 .button-secondary:hover:not(:disabled) {
-  background-color: #e0e0e0;
+  background-color: #1E1E1E;
+  color: #FFFFFF;
 }
 
 .button-secondary:disabled {

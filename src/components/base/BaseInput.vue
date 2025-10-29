@@ -93,11 +93,11 @@ function handleInput(event: Event) {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #333333;
+  color: #FFFFFF;
 }
 
 .required-indicator {
-  color: #f44336;
+  color: #CF6679;
   margin-left: 0.25rem;
 }
 
@@ -107,30 +107,30 @@ function handleInput(event: Event) {
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.5;
-  color: #333333;
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
+  color: #FFFFFF;
+  background-color: #1E1E1E;
+  border: 1px solid #4D4D4D;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .base-input::placeholder {
-  color: #9e9e9e;
+  color: #808080;
 }
 
 .base-input:hover:not(:disabled) {
-  border-color: #cccccc;
+  border-color: #666666;
 }
 
 .base-input:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  border-color: #BB86FC;
+  box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
 }
 
 .base-input:disabled {
-  background-color: #f5f5f5;
-  color: #9e9e9e;
+  background-color: #0F0F0F;
+  color: #4D4D4D;
   cursor: not-allowed;
 }
 
@@ -141,24 +141,24 @@ function handleInput(event: Event) {
 
 /* Error state */
 .has-error {
-  border-color: #f44336;
+  border-color: #CF6679;
 }
 
 .has-error:focus {
-  border-color: #f44336;
-  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+  border-color: #CF6679;
+  box-shadow: 0 0 0 3px rgba(207, 102, 121, 0.1);
 }
 
 .error-message {
   margin: 0;
   font-size: 0.875rem;
-  color: #f44336;
+  color: #CF6679;
 }
 
 .hint-message {
   margin: 0;
   font-size: 0.875rem;
-  color: #757575;
+  color: #808080;
 }
 </style>
 

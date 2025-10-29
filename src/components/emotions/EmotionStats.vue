@@ -247,31 +247,31 @@ h3 {
 
 .loading-state {
   padding: 2rem;
-  background-color: #f5f5f5;
+  background-color: #1E1E1E;
   border-radius: 8px;
 }
 
 .loading-state p {
-  color: #666;
+  color: #808080;
   margin: 0;
 }
 
 .error-state {
-  background-color: #fff5f5;
+  background-color: #3d1a1a;
 }
 
 .error-message {
-  color: #d32f2f;
+  color: #CF6679;
   margin-bottom: 1rem;
 }
 
 .empty-state h3 {
   margin: 0 0 1rem 0;
-  color: #333;
+  color: #FFFFFF;
 }
 
 .empty-state p {
-  color: #666;
+  color: #B3B3B3;
   line-height: 1.6;
   margin: 0.5rem 0;
 }
@@ -285,16 +285,16 @@ h3 {
 }
 
 .stat-card {
-  background: #fff;
+  background: #1E1E1E;
   padding: 1.5rem;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid #4D4D4D;
   text-align: center;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: #666;
+  color: #B3B3B3;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
 }
@@ -306,7 +306,7 @@ h3 {
 
 .stat-value.emotion-badge {
   font-size: 1.25rem;
-  background-color: #e3f2fd;
+  background-color: #0d2540;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   display: inline-block;
@@ -314,28 +314,28 @@ h3 {
 
 /* Trend Classes */
 .trend-improving {
-  color: #28a745;
+  color: #66BB6A;
 }
 
 .trend-declining {
-  color: #dc3545;
+  color: #CF6679;
 }
 
 .trend-stable {
-  color: #007bff;
+  color: #42A5F5;
 }
 
 .trend-insufficient_data {
-  color: #6c757d;
+  color: #808080;
   font-size: 1rem;
 }
 
 /* Emotion Distribution */
 .emotion-distribution {
-  background: #fff;
+  background: #1E1E1E;
   padding: 1.5rem;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid #4D4D4D;
   margin-bottom: 2rem;
 }
 
@@ -359,7 +359,7 @@ h3 {
 .bar-container {
   flex: 1;
   height: 28px;
-  background-color: #f0f0f0;
+  background-color: #0F0F0F;
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -372,15 +372,15 @@ h3 {
 }
 
 .bar-fill.positive {
-  background-color: #28a745;
+  background-color: #66BB6A;
 }
 
 .bar-fill.negative {
-  background-color: #dc3545;
+  background-color: #CF6679;
 }
 
 .bar-fill.neutral {
-  background-color: #6c757d;
+  background-color: #808080;
 }
 
 .bar-count {
@@ -394,10 +394,10 @@ h3 {
 
 /* Before/After Comparison */
 .before-after-comparison {
-  background: #fff;
+  background: #1E1E1E;
   padding: 1.5rem;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid #4D4D4D;
   margin-bottom: 2rem;
 }
 
@@ -422,7 +422,7 @@ h3 {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem;
-  background-color: #f8f9fa;
+  background-color: #2A2A2A;
   border-radius: 4px;
 }
 
@@ -431,7 +431,7 @@ h3 {
 }
 
 .no-data-small {
-  color: #999;
+  color: #808080;
   font-style: italic;
   text-align: center;
   padding: 1rem;

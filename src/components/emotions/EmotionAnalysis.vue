@@ -144,12 +144,12 @@ onMounted(async () => {
   padding: 3rem 2rem;
   text-align: center;
   border-radius: 8px;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
+  background-color: #1E1E1E;
+  border: 1px solid #4D4D4D;
 }
 
 .loading-state p {
-  color: #666;
+  color: #B3B3B3;
   margin: 0;
 }
 
@@ -162,8 +162,8 @@ onMounted(async () => {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  border: 4px solid #4D4D4D;
+  border-top: 4px solid #42A5F5;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -174,23 +174,23 @@ onMounted(async () => {
 }
 
 .error-state {
-  background-color: #fff5f5;
+  background-color: #3d1a1a;
 }
 
 .error-message {
-  color: #d32f2f;
+  color: #CF6679;
   margin: 0 0 1rem 0;
 }
 
 .empty-state h3,
 .no-analysis-state h3 {
   margin: 0 0 1rem 0;
-  color: #333;
+  color: #FFFFFF;
 }
 
 .empty-state p,
 .no-analysis-state p {
-  color: #666;
+  color: #B3B3B3;
   line-height: 1.6;
   max-width: 500px;
   margin: 0.5rem auto;
@@ -213,7 +213,7 @@ onMounted(async () => {
 }
 
 .analysis-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #BB86FC 0%, #3700B3 100%);
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -227,7 +227,7 @@ onMounted(async () => {
 }
 
 .analysis-text {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   padding: 1.5rem;
   line-height: 1.8;
@@ -236,7 +236,7 @@ onMounted(async () => {
 .analysis-text p {
   margin: 0;
   font-size: 1.1rem;
-  color: #333;
+  color: #FFFFFF;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
@@ -247,14 +247,14 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 1rem;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: #1E1E1E;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #4D4D4D;
 }
 
 .meta-info {
   font-size: 0.875rem;
-  color: #666;
+  color: #B3B3B3;
   display: flex;
   align-items: center;
   gap: 0.25rem;

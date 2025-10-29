@@ -41,7 +41,7 @@ const totalWagered = computed(() => betStore.totalWagered)
 .stat-label {
   display: block;
   font-size: 0.85rem;
-  color: #666;
+  color: #B3B3B3;
   margin-bottom: 0.25rem;
 }
 
@@ -49,6 +49,6 @@ const totalWagered = computed(() => betStore.totalWagered)
   display: block;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: #FFFFFF;
 }
 </style>

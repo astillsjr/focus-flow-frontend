@@ -234,8 +234,8 @@ p {
 .warning-message {
   padding: 1rem;
   margin: 1rem 0;
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
+  background-color: #3d2a1a;
+  border: 1px solid #FFB74D;
   border-radius: 4px;
 }
 
@@ -246,10 +246,10 @@ p {
 .error-message {
   padding: 1rem;
   margin: 1rem 0;
-  background-color: #ffebee;
-  border: 1px solid #f44336;
+  background-color: #3d1a1a;
+  border: 1px solid #CF6679;
   border-radius: 8px;
-  color: #d32f2f;
+  color: #CF6679;
 }
 
 .button-group {

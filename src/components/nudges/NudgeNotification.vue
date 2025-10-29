@@ -1,48 +1,50 @@
 <template>
-  <div class="nudge-container">
-    <TransitionGroup name="nudge" tag="div" class="nudge-list">
-      <div
-        v-for="nudge in nudgeStore.activeNudges"
-        :key="nudge.nudgeId"
-        class="nudge-card"
-      >
-        <div class="nudge-header">
-          <div class="nudge-title">
-            Time to get started!
-            <span v-if="nudgeStore.nudgeQueue.length > 0" class="queue-badge">
-              +{{ nudgeStore.nudgeQueue.length }} more
-            </span>
+  <div>
+    <div class="nudge-container">
+      <TransitionGroup name="nudge" tag="div" class="nudge-list">
+        <div
+          v-for="nudge in nudgeStore.activeNudges"
+          :key="nudge.nudgeId"
+          class="nudge-card"
+        >
+          <div class="nudge-header">
+            <div class="nudge-title">
+              Time to get started!
+              <span v-if="nudgeStore.nudgeQueue.length > 0" class="queue-badge">
+                +{{ nudgeStore.nudgeQueue.length }} more
+              </span>
+            </div>
+            <button class="nudge-close" @click="dismiss(nudge.nudgeId)" aria-label="Dismiss notification">
+              ×
+            </button>
           </div>
-          <button class="nudge-close" @click="dismiss(nudge.nudgeId)" aria-label="Dismiss notification">
-            ×
-          </button>
+          
+          <div class="nudge-body">
+            <h4 class="task-title">{{ nudge.taskTitle }}</h4>
+            <p class="nudge-message">{{ nudge.message }}</p>
+          </div>
+          
+          <div class="nudge-actions">
+            <BaseButton 
+              @click="handleStart(nudge.taskId, nudge.taskTitle, nudge.nudgeId)"
+              variant="primary"
+              size="sm"
+            >
+              Start Task
+            </BaseButton>
+            <BaseButton 
+              @click="dismiss(nudge.nudgeId)"
+              variant="ghost"
+              size="sm"
+            >
+              Dismiss
+            </BaseButton>
+          </div>
         </div>
-        
-        <div class="nudge-body">
-          <h4 class="task-title">{{ nudge.taskTitle }}</h4>
-          <p class="nudge-message">{{ nudge.message }}</p>
-        </div>
-        
-        <div class="nudge-actions">
-          <BaseButton 
-            @click="handleStart(nudge.taskId, nudge.taskTitle, nudge.nudgeId)"
-            variant="primary"
-            size="sm"
-          >
-            Start Task
-          </BaseButton>
-          <BaseButton 
-            @click="dismiss(nudge.nudgeId)"
-            variant="ghost"
-            size="sm"
-          >
-            Dismiss
-          </BaseButton>
-        </div>
-      </div>
-    </TransitionGroup>
+      </TransitionGroup>
+    </div>
 
-    <!-- Start Emotion Prompt Modal -->
+    <!-- Start Emotion Prompt Modal - Outside nudge container to avoid pointer-events issues -->
     <EmotionPromptModal
       :is-open="showStartEmotionModal"
       :task-id="currentTaskId"
@@ -141,11 +143,11 @@ function handleStartEmotionCancel() {
 }
 
 .nudge-card {
-  background: white;
+  background: #1E1E1E;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   padding: 16px;
-  border-left: 4px solid #4CAF50;
+  border-left: 4px solid #BB86FC;
   pointer-events: auto;
   animation: slideIn 0.3s ease-out;
 }
@@ -171,7 +173,7 @@ function handleStartEmotionCancel() {
 .nudge-title {
   flex: 1;
   font-weight: 600;
-  color: #333333;
+  color: #FFFFFF;
   font-size: 14px;
 }
 
@@ -179,7 +181,7 @@ function handleStartEmotionCancel() {
   background: none;
   border: none;
   font-size: 28px;
-  color: #999;
+  color: #808080;
   cursor: pointer;
   padding: 0;
   width: 24px;
@@ -192,7 +194,7 @@ function handleStartEmotionCancel() {
 }
 
 .nudge-close:hover {
-  color: #333333;
+  color: #FFFFFF;
 }
 
 .nudge-body {
@@ -201,14 +203,14 @@ function handleStartEmotionCancel() {
 
 .task-title {
   margin: 0 0 8px 0;
-  color: #4CAF50;
+  color: #BB86FC;
   font-size: 15px;
   font-weight: 600;
 }
 
 .nudge-message {
   margin: 0;
-  color: #666666;
+  color: #B3B3B3;
   line-height: 1.5;
   font-size: 14px;
 }
@@ -241,7 +243,7 @@ function handleStartEmotionCancel() {
 /* Queue badge styling */
 .queue-badge {
   display: inline-block;
-  background: #2196F3;
+  background: #42A5F5;
   color: white;
   font-size: 11px;
   padding: 2px 6px;

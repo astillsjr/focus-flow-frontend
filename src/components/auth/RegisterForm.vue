@@ -133,13 +133,13 @@ h2 {
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
-  color: #666666;
+  border-top: 1px solid #4D4D4D;
+  color: #B3B3B3;
   font-size: 0.9rem;
 }
 
 .login-link a {
-  color: #4CAF50;
+  color: #BB86FC;
   font-weight: 500;
 }
 </style>

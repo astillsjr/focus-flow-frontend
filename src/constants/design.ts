@@ -4,62 +4,87 @@
  */
 
 export const colors = {
-  // Primary palette
-  primary: '#4CAF50',
-  primaryHover: '#45a049',
-  primaryLight: '#e8f5e9',
-  primaryDark: '#388e3c',
+  // Primary palette - Material Design Dark Theme
+  primary: '#BB86FC',
+  primaryHover: '#C693FC',
+  primaryLight: '#3700B3',
+  primaryDark: '#3700B3',
+  primaryVariant: '#3700B3',
   
   // Secondary palette
-  secondary: '#2196F3',
-  secondaryHover: '#1976D2',
-  secondaryLight: '#e3f2fd',
+  secondary: '#03DAC6',
+  secondaryHover: '#26E0D1',
+  secondaryLight: '#00BFA5',
+  secondaryDark: '#00BFA5',
   
-  // Status colors
-  pending: '#FF9800',
-  pendingLight: '#fff3e0',
-  pendingDark: '#f57c00',
+  // Status colors - using Material Design approach
+  pending: '#FFB74D',
+  pendingLight: '#FF9800',
+  pendingDark: '#F57C00',
   
-  inProgress: '#2196F3',
-  inProgressLight: '#e3f2fd',
-  inProgressDark: '#1976d2',
+  inProgress: '#42A5F5',
+  inProgressLight: '#2196F3',
+  inProgressDark: '#1976D2',
   
-  completed: '#4CAF50',
-  completedLight: '#e8f5e9',
-  completedDark: '#388e3c',
+  completed: '#66BB6A',
+  completedLight: '#4CAF50',
+  completedDark: '#388E3C',
   
   // Semantic colors
-  error: '#f44336',
-  errorHover: '#d32f2f',
-  errorLight: '#ffebee',
+  error: '#CF6679',
+  errorHover: '#D17A8A',
+  errorLight: '#B71C1C',
+  errorDark: '#B71C1C',
   
-  warning: '#FF9800',
-  warningLight: '#fff3e0',
+  warning: '#FFB74D',
+  warningLight: '#FF9800',
+  warningDark: '#F57C00',
   
-  info: '#2196F3',
-  infoLight: '#e3f2fd',
+  info: '#42A5F5',
+  infoLight: '#2196F3',
+  infoDark: '#1976D2',
   
-  success: '#4CAF50',
-  successLight: '#e8f5e9',
+  success: '#66BB6A',
+  successLight: '#4CAF50',
+  successDark: '#388E3C',
   
-  // Neutrals
-  text: '#333333',
-  textSecondary: '#666666',
-  textMuted: '#757575',
-  textDisabled: '#9e9e9e',
+  // Material Design Dark Theme Colors
+  background: '#121212',
+  onBackground: '#FFFFFF',
+  surface: '#121212',
+  onSurface: '#FFFFFF',
+  onPrimary: '#000000',
+  onSecondary: '#000000',
+  onError: '#000000',
   
-  border: '#e0e0e0',
-  borderLight: '#f0f0f0',
-  borderDark: '#cccccc',
+  // Text colors (derived from on-surface)
+  text: '#FFFFFF',
+  textSecondary: '#B3B3B3',
+  textMuted: '#808080',
+  textDisabled: '#4D4D4D',
   
-  background: '#ffffff',
-  backgroundLight: '#f9f9f9',
-  backgroundMuted: '#f5f5f5',
-  backgroundDark: '#e0e0e0',
+  // Outline and borders
+  outline: '#B3B3B3',
+  outlineVariant: '#4D4D4D',
+  border: '#4D4D4D',
+  borderLight: '#333333',
+  borderDark: '#666666',
+  
+  // Surface variants for elevation
+  surfaceVariant: '#1E1E1E',
+  surfaceContainer: '#1E1E1E',
+  surfaceContainerHigh: '#2A2A2A',
+  surfaceContainerHighest: '#363636',
+  
+  // Background variants
+  backgroundLight: '#1E1E1E',
+  backgroundMuted: '#0F0F0F',
+  backgroundDark: '#000000',
   
   // Overlay
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayLight: 'rgba(0, 0, 0, 0.3)',
+  scrim: 'rgba(0, 0, 0, 0.4)',
 } as const
 
 export const spacing = {

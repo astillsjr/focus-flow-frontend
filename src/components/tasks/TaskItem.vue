@@ -1,5 +1,5 @@
 <template>
-  <div class="task-item" :class="{ 'task-completed': isCompleted }">
+  <div class="task-item" :class="[`task-${status}`, { 'task-completed': isCompleted }]">
     <div class="task-content">
       <div class="task-header">
         <h3 class="task-title">{{ task.title }}</h3>
@@ -12,7 +12,7 @@
         {{ task.description }}
       </p>
 
-      <div v-if="task.dueDate" class="task-due-date">
+      <div v-if="task.dueDate" class="task-due-date" :class="`due-${status}`">
         <strong>Due:</strong> {{ formattedDueDate }}
       </div>
 
@@ -28,7 +28,7 @@
         v-if="!isCompleted"
         @click="handleToggleStart"
         :disabled="isLoading"
-        variant="primary"
+        variant="ghost"
         size="sm"
       >
         {{ isStarted ? 'Mark Complete' : 'Start' }}
@@ -234,19 +234,31 @@ function handleDelete() {
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #4D4D4D;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: #1E1E1E;
   transition: all 0.2s;
 }
 
 .task-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background-color: #2A2A2A;
+}
+
+/* Status-based task styling */
+.task-pending {
+  box-shadow: 0 2px 8px rgba(255, 183, 77, 0.2);
+  border-left: 3px solid #FFB74D;
+}
+
+.task-in-progress {
+  box-shadow: 0 2px 8px rgba(66, 165, 245, 0.2);
+  border-left: 3px solid #42A5F5;
 }
 
 .task-completed {
-  background-color: #f9f9f9;
-  border-left: 3px solid #4CAF50;
+  box-shadow: 0 2px 8px rgba(102, 187, 106, 0.2);
+  border-left: 3px solid #66BB6A;
 }
 
 .task-content {
@@ -265,7 +277,7 @@ function handleDelete() {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: #FFFFFF;
   flex: 1;
 }
 
@@ -279,33 +291,50 @@ function handleDelete() {
 }
 
 .status-pending {
-  background-color: #fff3e0;
-  color: #f57c00;
+  background-color: #3d2a1a;
+  color: #FFB74D;
 }
 
 .status-in-progress {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: #0d2540;
+  color: #42A5F5;
 }
 
 .status-completed {
-  background-color: #e8f5e9;
-  color: #388e3c;
+  background-color: #1e3a1f;
+  color: #66BB6A;
 }
 
 .task-description {
   margin: 0.5rem 0;
-  color: #555;
+  color: #B3B3B3;
   line-height: 1.5;
 }
 
 .task-due-date {
   margin: 0.5rem 0;
   padding: 0.5rem;
-  background-color: #fff9c4;
-  border-left: 3px solid #fbc02d;
   border-radius: 4px;
   font-size: 0.9rem;
+}
+
+/* Status-based due date styling */
+.due-pending {
+  background-color: #3d2a1a;
+  border-left: 3px solid #FFB74D;
+  color: #FFB74D;
+}
+
+.due-in-progress {
+  background-color: #0d2540;
+  border-left: 3px solid #42A5F5;
+  color: #42A5F5;
+}
+
+.due-completed {
+  background-color: #1e3a1f;
+  border-left: 3px solid #66BB6A;
+  color: #66BB6A;
 }
 
 .task-meta {
@@ -314,12 +343,12 @@ function handleDelete() {
   gap: 1rem;
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #4D4D4D;
 }
 
 .task-date {
   font-size: 0.85rem;
-  color: #757575;
+  color: #808080;
 }
 
 .task-actions {

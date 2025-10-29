@@ -165,7 +165,7 @@ defineExpose({
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #4D4D4D;
   padding-bottom: 0.5rem;
 }
 
@@ -182,12 +182,12 @@ defineExpose({
 }
 
 .error-state p {
-  color: #d32f2f;
+  color: #CF6679;
   margin-bottom: 1rem;
 }
 
 .empty-state p {
-  color: #666;
+  color: #B3B3B3;
   line-height: 1.6;
 }
 
@@ -199,7 +199,7 @@ defineExpose({
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: #FFFFFF;
 }
 
 .bet-items {
