@@ -22,12 +22,12 @@
             </div>
 
             <p class="lead">
-              Place a small wager to stay focused and earn points when you complete on time.
+              Place a small wager to stay focused and earn points when you start a task early.
             </p>
 
             <ul class="benefits-list">
-              <li>Earn points for on-time completion</li>
-              <li>Set a clear deadline to stay on track</li>
+              <li>Earn points for earlier starts</li>
+              <li>Set a clear deadline to get ahead</li>
               <li>Build momentum with streaks</li>
             </ul>
 
