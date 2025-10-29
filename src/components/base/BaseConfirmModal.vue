@@ -34,6 +34,8 @@
 </template>
 
 <script setup lang="ts">
+import BaseButton from './BaseButton.vue'
+
 const props = withDefaults(defineProps<{
   isOpen: boolean
   title?: string

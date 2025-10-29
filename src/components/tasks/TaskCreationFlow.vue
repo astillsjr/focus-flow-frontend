@@ -13,33 +13,51 @@
 
         <!-- Step 2: Bet Prompt -->
         <div v-else-if="currentStep === 'bet-prompt'" key="bet-prompt">
-          <h1>Want to bet on this task?</h1>
-          <p><strong>Task created:</strong> {{ createdTaskTitle }}</p>
-          <p>Placing a bet increases accountability and can earn you points when you complete the task on time.</p>
-          
-          <div v-if="!betStore.hasProfile" class="warning-message">
-            <p>You need to initialize your betting profile first.</p>
-            <BaseButton @click="initializeBettor" :loading="isInitializing">
-              Initialize Betting Profile
-            </BaseButton>
-          </div>
+          <h1>Add accountability with a bet?</h1>
 
-          <div v-if="betInitError" class="error-message">
-            {{ betInitError }}
-          </div>
-          
-          <div class="button-group">
-            <BaseButton 
-              @click="showBetForm" 
-              :disabled="!betStore.hasProfile"
-              variant="primary"
-            >
-              Yes, Place a Bet
-            </BaseButton>
-            <BaseButton @click="skipBetting" variant="ghost">
-              Skip for Now
-            </BaseButton>
-          </div>
+          <BaseCard padding="lg" class="bet-prompt-card">
+            <div class="task-summary">
+              <div class="task-summary__label">Task created</div>
+              <div class="task-summary__title">{{ createdTaskTitle }}</div>
+            </div>
+
+            <p class="lead">
+              Place a small wager to stay focused and earn points when you complete on time.
+            </p>
+
+            <ul class="benefits-list">
+              <li>Earn points for on-time completion</li>
+              <li>Set a clear deadline to stay on track</li>
+              <li>Build momentum with streaks</li>
+            </ul>
+
+            <div v-if="!betStore.hasProfile" class="warning-message">
+              <p>You need to initialize your betting profile first.</p>
+              <BaseButton @click="initializeBettor" :loading="isInitializing">
+                Initialize Betting Profile
+              </BaseButton>
+            </div>
+
+            <div v-if="betInitError" class="error-message">
+              {{ betInitError }}
+            </div>
+
+            <div class="button-group">
+              <BaseButton 
+                @click="showBetForm" 
+                :disabled="!betStore.hasProfile"
+                variant="primary"
+              >
+                Yes, place a bet
+              </BaseButton>
+              <BaseButton @click="skipBetting" variant="ghost">
+                Skip
+              </BaseButton>
+            </div>
+            <div class="footnote">
+              If you skip, you won’t be able to place a bet for this task later.
+            </div>
+          </BaseCard>
         </div>
 
         <!-- Step 3: Bet Form -->
@@ -59,19 +77,33 @@
 
         <!-- Step 4: Completion -->
         <div v-else-if="currentStep === 'complete'" key="complete">
-          <h1>Task Created!</h1>
-          <p v-if="betPlaced">Your task has been created and your bet is active.</p>
-          <p v-else>Your task has been created successfully.</p>
-          <p><strong>{{ createdTaskTitle }}</strong></p>
-          
-          <div class="button-group">
-            <BaseButton @click="goToDashboard" variant="primary">
-              View Dashboard
-            </BaseButton>
-            <BaseButton @click="resetFlow" variant="ghost">
-              Create Another Task
-            </BaseButton>
-          </div>
+          <h1>Task Created</h1>
+
+          <BaseCard padding="lg" class="completion-card">
+            <div class="status-row">
+              <div class="status-badge" :class="betPlaced ? 'status-badge--success' : 'status-badge--neutral'">
+                {{ betPlaced ? 'Bet Active' : 'No Bet Placed' }}
+              </div>
+            </div>
+
+            <div class="task-title">{{ createdTaskTitle }}</div>
+
+            <p class="completion-lead" v-if="betPlaced">
+              Great! Your bet is live. Stay on track and earn points by finishing on time.
+            </p>
+            <p class="completion-lead" v-else>
+              Your task is ready. You can manage it from your dashboard.
+            </p>
+
+            <div class="button-group">
+              <BaseButton @click="goToDashboard" variant="primary">
+                View Dashboard
+              </BaseButton>
+              <BaseButton @click="resetFlow" variant="ghost">
+                Create Another Task
+              </BaseButton>
+            </div>
+          </BaseCard>
         </div>
       </Transition>
     </div>
@@ -86,7 +118,7 @@ import { useTaskStore } from '../../stores/taskStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskForm from './TaskForm.vue'
 import BetForm from '../bets/BetForm.vue'
-import { BaseButton } from '../base'
+import { BaseButton, BaseCard } from '../base'
 
 type FlowStep = 'task' | 'bet-prompt' | 'bet-form' | 'complete'
 
@@ -288,6 +320,94 @@ p {
   button {
     width: 100%;
   }
+}
+
+/* New styles for enriched bet prompt */
+.bet-prompt-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lead {
+  color: #cfcfcf;
+  margin-top: 0.25rem;
+}
+
+.task-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border: 1px solid #2f2f2f;
+  border-radius: 8px;
+  background: #121212;
+}
+
+.task-summary__label {
+  font-size: 0.8rem;
+  color: #9aa3ab;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.task-summary__title {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.benefits-list {
+  margin: 0.25rem 0 0 1rem;
+  padding: 0;
+  list-style: disc;
+  color: #d7d7d7;
+}
+
+.footnote {
+  font-size: 0.85rem;
+  color: #98a2ab;
+}
+
+/* Completion step styles */
+.completion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid #2f2f2f;
+}
+
+.status-badge--success {
+  background: #0f2a16;
+  color: #6ee7b7;
+  border-color: #14532d;
+}
+
+.status-badge--neutral {
+  background: #1f2937;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+.task-title {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.completion-lead {
+  color: #cfcfcf;
 }
 </style>
 
