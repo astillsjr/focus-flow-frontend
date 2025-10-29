@@ -26,6 +26,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/tasks/create',
+    name: 'CreateTask',
+    component: () => import('../components/tasks/TaskCreationFlow.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/bets',
     name: 'Bets',
     component: () => import('../components/bets/BetsDashboard.vue'),

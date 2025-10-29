@@ -1,6 +1,6 @@
 <template>
   <div class="task-form">
-    <h2>Create New Task</h2>
+    <h2 v-if="showTitle">Create New Task</h2>
     
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
@@ -55,6 +55,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
+
+// Props
+const props = withDefaults(defineProps<{
+  showTitle?: boolean
+}>(), {
+  showTitle: true
+})
 
 // Define emits
 const emit = defineEmits<{

@@ -10,22 +10,9 @@
 
     <!-- Create Task Section -->
     <div class="create-task-section">
-      <button @click="toggleTaskForm" class="toggle-form-button">
+      <button @click="goToCreateTask" class="toggle-form-button">
         + Create New Task
       </button>
-      
-      <!-- Modal Overlay -->
-      <div v-if="showTaskForm" class="modal-overlay" @click.self="toggleTaskForm">
-        <div class="modal-container">
-          <div class="modal-header">
-            <h2>Create New Task</h2>
-            <button @click="toggleTaskForm" class="close-button">&times;</button>
-          </div>
-          <div class="modal-body">
-            <TaskForm @submit-task="handleTaskSubmit" />
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Controls -->
@@ -121,19 +108,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTaskStore } from '../../stores/taskStore'
 import { useAuthStore } from '../../stores/authStore'
 import AppNavigation from '../layout/AppNavigation.vue'
-import TaskForm from './TaskForm.vue'
 import TaskItem from './TaskItem.vue'
 
-// Get stores
+// Get stores and router
+const router = useRouter()
 const taskStore = useTaskStore()
 const authStore = useAuthStore()
 
 // Local state
-const showTaskForm = ref(false)
 const showHistory = ref(false)
 
 // Computed properties
@@ -145,20 +132,11 @@ const isLoading = computed(() => taskStore.isLoading)
 const error = computed(() => taskStore.error)
 const displayUsername = computed(() => authStore.username || 'User')
 
-// Prevent body scroll when modal is open
-watch(showTaskForm, (isOpen) => {
-  if (isOpen) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
-  }
-})
-
 /**
- * Toggle task form visibility
+ * Navigate to task creation flow
  */
-function toggleTaskForm() {
-  showTaskForm.value = !showTaskForm.value
+function goToCreateTask() {
+  router.push('/tasks/create')
 }
 
 /**
@@ -166,15 +144,6 @@ function toggleTaskForm() {
  */
 function toggleHistory() {
   showHistory.value = !showHistory.value
-}
-
-/**
- * Handle task submission
- */
-function handleTaskSubmit(taskId: string) {
-  console.log('✅ Task created:', taskId)
-  // Optionally hide the form after successful submission
-  showTaskForm.value = false
 }
 
 /**
@@ -233,11 +202,6 @@ async function handleDeleteTask(taskId: string) {
 onMounted(async () => {
   await handleRefresh()
 })
-
-// Cleanup: Restore body scroll when component unmounts
-onUnmounted(() => {
-  document.body.style.overflow = ''
-})
 </script>
 
 <style scoped>
@@ -277,93 +241,6 @@ onUnmounted(() => {
 
 .toggle-form-button:hover {
   background-color: #45a049;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.15);
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #333;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  line-height: 1;
-  color: #757575;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.close-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-.modal-body {
-  padding: 0;
-}
-
-/* Adjust TaskForm styling when in modal */
-.modal-body :deep(.task-form) {
-  padding: 1.5rem;
-  max-width: none;
-}
-
-.modal-body :deep(.task-form h2) {
-  display: none; /* Hide the h2 since we have it in modal-header */
 }
 
 /* Controls */
