@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useBetStore } from './betStore'
+import { useTaskStore } from './taskStore'
+import { useEmotionStore } from './emotionStore'
+import * as taskAPI from '@/api/tasks'
+import * as emotionAPI from '@/api/emotions'
+import * as nudgeAPI from '@/api/nudges'
+import * as betAPI from '@/api/bets'
 import * as authAPI from '@/api/auth'
 import type { LoginCredentials, RegisterCredentials } from '@/api/auth'
 
@@ -166,6 +172,66 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * Change the current user's password
+   */
+  async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    if (!accessToken.value) {
+      throw new Error('Not authenticated')
+    }
+    try {
+      await authAPI.changePassword(accessToken.value, oldPassword, newPassword)
+    } catch (error) {
+      console.error('Change password error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Delete the current user's account (logs out on success)
+   */
+  async function deleteAccount(password: string): Promise<void> {
+    if (!accessToken.value) {
+      throw new Error('Not authenticated')
+    }
+    if (!userId.value) {
+      throw new Error('Missing user id')
+    }
+    try {
+      // First, delete all user-associated data across services
+      await Promise.allSettled([
+        taskAPI.deleteUserTasks(userId.value),
+        emotionAPI.deleteUserLogs(userId.value),
+        nudgeAPI.deleteUserNudges(userId.value),
+        betAPI.removeBettor(userId.value)
+      ])
+
+      // Then delete the account in authentication service
+      await authAPI.deleteAccount(accessToken.value, password)
+
+      // Clear local stores explicitly before logging out
+      try {
+        const taskStore = useTaskStore()
+        taskStore.clearTasks()
+      } catch {}
+      try {
+        const emotionStore = useEmotionStore()
+        emotionStore.clearEmotions()
+      } catch {}
+      try {
+        const betStore = useBetStore()
+        betStore.clearState()
+      } catch {}
+
+      // Only logout after a successful deletion
+      await logout()
+    } catch (error) {
+      console.error('Delete account error:', error)
+      // Surface the error to the caller without logging out
+      throw error
+    }
+  }
+
+  /**
    * Initialize auth state from localStorage (call on app startup)
    */
   function initialize(): void {
@@ -265,7 +331,9 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshAccessToken,
     fetchUserInfo,
-    initialize
+    initialize,
+    changePassword,
+    deleteAccount
   }
 })
 

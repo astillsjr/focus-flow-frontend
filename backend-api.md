@@ -162,7 +162,7 @@ This document provides comprehensive API documentation for all concepts in the F
 - The provided password must match the user's current password.
 
 **Effects:**
-- Permanently removes the user's account and associated data.
+- Permanently removes the user's account.
 
 **Request Body:**
 ```json

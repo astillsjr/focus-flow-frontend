@@ -1,6 +1,7 @@
 <template>
   <div class="login-form">
     <BaseCard padding="lg">
+      <div class="app-title">Focus Flow</div>
       <h2>Login</h2>
       
       <form @submit.prevent="handleLogin" class="form">
@@ -103,6 +104,14 @@ async function handleLogin() {
   max-width: 400px;
   margin: 2rem auto;
   padding: 0 1rem;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: #E0E0E0;
 }
 
 h2 {

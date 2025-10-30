@@ -18,7 +18,18 @@
       </div>
       
       <div class="user-actions">
-        <span class="user-name" v-if="authStore.username">{{ authStore.username }}</span>
+        <span
+          class="user-name"
+          v-if="authStore.username"
+          @click="goToAccount"
+          role="button"
+          tabindex="0"
+          title="Open account settings"
+          @keypress.enter="goToAccount"
+        >
+          {{ authStore.username }}
+          <span class="user-caret" aria-hidden="true">›</span>
+        </span>
         <button @click="handleLogout" class="logout-button">
           Logout
         </button>
@@ -41,6 +52,10 @@ const handleLogout = async () => {
   } catch (err) {
     console.error('Logout error:', err)
   }
+}
+
+const goToAccount = () => {
+  router.push('/account')
 }
 </script>
 
@@ -145,6 +160,20 @@ const handleLogout = async () => {
   font-weight: 500;
   font-size: 0.9375rem;
   opacity: 0.9;
+}
+
+.user-name {
+  cursor: pointer;
+}
+
+.user-name:hover,
+.user-name:focus {
+  text-decoration: underline;
+}
+
+.user-caret {
+  margin-left: 4px;
+  opacity: 0.7;
 }
 
 /* Responsive Design */

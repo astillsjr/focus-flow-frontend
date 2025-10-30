@@ -1,6 +1,7 @@
 <template>
   <div class="register-form">
     <BaseCard padding="lg">
+      <div class="app-title">Focus Flow</div>
       <h2>Register</h2>
       
       <form @submit.prevent="handleRegister" class="form">
@@ -116,6 +117,14 @@ async function handleRegister() {
   max-width: 400px;
   margin: 2rem auto;
   padding: 0 1rem;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: #E0E0E0;
 }
 
 h2 {

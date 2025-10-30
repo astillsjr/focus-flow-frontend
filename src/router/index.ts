@@ -20,6 +20,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresGuest: true }
   },
   {
+    path: '/account',
+    name: 'AccountSettings',
+    component: () => import('../components/auth/AccountSettings.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/tasks',
     name: 'Dashboard',
     component: () => import('../components/tasks/TasksDashboard.vue'),
