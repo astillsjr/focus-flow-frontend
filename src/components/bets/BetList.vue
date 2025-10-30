@@ -21,7 +21,7 @@
 
     <div v-else>
       <div v-if="pendingBets.length > 0" class="bet-group">
-        <h3>Active Bets ({{ pendingBets.length }})</h3>
+        <h3>Pending ({{ pendingBets.length }})</h3>
         <TransitionGroup name="bet-list" tag="div" class="bet-items">
           <BetItem
             v-for="bet in pendingBets"
