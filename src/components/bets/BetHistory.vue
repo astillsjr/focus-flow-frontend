@@ -132,9 +132,7 @@ async function refreshBets() {
   try {
     isRefreshing.value = true
     await betStore.fetchAllBets()
-    console.log('✅ Bet history refreshed successfully')
   } catch (err) {
-    console.error('❌ Failed to refresh bet history:', err)
   } finally {
     isRefreshing.value = false
   }

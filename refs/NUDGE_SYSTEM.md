@@ -259,7 +259,7 @@ Schedule multiple reminders (e.g., at 75%, 50%, and 25% of time remaining).
 7. **Sound effects**: Optional audio alerts when nudge appears
 8. **Queue management UI**: Allow users to view/reorder/skip queued nudges
 
-## Testing the Feature
+## Testing the Feature (LOGGING WAS REMOVED)
 
 ### Test Scenario 1: Task with Due Date
 1. **Create a task** with a due date 10 minutes from now

@@ -158,8 +158,6 @@ async function handleSubmit() {
       deadline: new Date(deadline.value).toISOString()
     })
 
-    console.log('✅ Bet placed successfully!', { betId, wager: wagerNum })
-
     // Emit success event
     emit('bet-placed', betId)
 
@@ -169,7 +167,6 @@ async function handleSubmit() {
     const errorMessage = err instanceof Error ? err.message : 'Failed to place bet'
     error.value = errorMessage
     emit('error', err instanceof Error ? err : new Error(errorMessage))
-    console.error('❌ Bet placement error:', err)
   } finally {
     isLoading.value = false
   }

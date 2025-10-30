@@ -95,9 +95,7 @@ async function handleInitialize() {
   try {
     isInitializing.value = true
     await betStore.initializeBettor()
-    console.log('✅ Betting profile initialized successfully')
   } catch (err) {
-    console.error('❌ Failed to initialize betting profile:', err)
   } finally {
     isInitializing.value = false
   }
@@ -109,9 +107,7 @@ async function handleInitialize() {
 async function handleRefresh() {
   try {
     await betStore.initialize()
-    console.log('✅ Betting data refreshed successfully')
   } catch (err) {
-    console.error('❌ Failed to refresh betting data:', err)
   }
 }
 

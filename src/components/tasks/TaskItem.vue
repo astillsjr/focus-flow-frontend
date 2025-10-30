@@ -171,17 +171,14 @@ async function handleStartEmotionSubmit(emotion: Emotion) {
       taskId: props.task._id, 
       emotion 
     })
-    console.log('✅ Before emotion logged:', emotion)
     
     // Then mark the task as started
     await taskStore.markStarted(props.task._id)
-    console.log('✅ Task started:', props.task._id)
     
     // Success - close modal
     startEmotionLoading.value = false
     showStartEmotionModal.value = false
   } catch (err) {
-    console.error('❌ Failed to start task with emotion:', err)
     startEmotionLoading.value = false
     startEmotionError.value = err instanceof Error ? err.message : 'Failed to start task'
   }
@@ -197,17 +194,14 @@ async function handleCompleteEmotionSubmit(emotion: Emotion) {
       taskId: props.task._id, 
       emotion 
     })
-    console.log('✅ After emotion logged:', emotion)
     
     // Then mark the task as completed
     await taskStore.markCompleted(props.task._id)
-    console.log('✅ Task completed:', props.task._id)
     
     // Success - close modal
     completeEmotionLoading.value = false
     showCompleteEmotionModal.value = false
   } catch (err) {
-    console.error('❌ Failed to complete task with emotion:', err)
     completeEmotionLoading.value = false
     completeEmotionError.value = err instanceof Error ? err.message : 'Failed to complete task'
   }

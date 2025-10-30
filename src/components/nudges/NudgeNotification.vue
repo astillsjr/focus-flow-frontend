@@ -101,11 +101,9 @@ async function handleStartEmotionSubmit(emotion: Emotion) {
       taskId: currentTaskId.value, 
       emotion 
     })
-    console.log('✅ Before emotion logged:', emotion)
     
     // Then mark the task as started
     await taskStore.markStarted(currentTaskId.value)
-    console.log('✅ Task started:', currentTaskId.value)
     
     // Dismiss the nudge
     dismiss(currentNudgeId.value)
@@ -114,7 +112,6 @@ async function handleStartEmotionSubmit(emotion: Emotion) {
     startEmotionLoading.value = false
     showStartEmotionModal.value = false
   } catch (err) {
-    console.error('❌ Failed to start task with emotion:', err)
     startEmotionLoading.value = false
     startEmotionError.value = err instanceof Error ? err.message : 'Failed to start task'
   }

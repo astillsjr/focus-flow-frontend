@@ -118,8 +118,7 @@ async function handleSubmit() {
     // Call task store to create task
     const taskId = await taskStore.addTask(taskPayload)
 
-    // Log success message
-    console.log('✅ Task created successfully!', { taskId, title: taskPayload.title })
+    
 
     // Emit success event with the new task ID
     emit('submit-task', taskId)
@@ -136,7 +135,7 @@ async function handleSubmit() {
     } else {
       errorMessage.value = 'An unexpected error occurred. Please try again.'
     }
-    console.error('❌ Task creation error:', error)
+    
   } finally {
     // Reset loading state
     isLoading.value = false

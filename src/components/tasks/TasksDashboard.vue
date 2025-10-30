@@ -223,9 +223,7 @@ function nextPage() {
 async function handleRefresh() {
   try {
     await taskStore.fetchTasks()
-    console.log('✅ Tasks refreshed successfully')
   } catch (err) {
-    console.error('❌ Failed to refresh tasks:', err)
   }
 }
 
@@ -235,9 +233,7 @@ async function handleRefresh() {
 async function handleToggleStart(taskId: string) {
   try {
     await taskStore.markStarted(taskId)
-    console.log('✅ Task started:', taskId)
   } catch (err) {
-    console.error('❌ Failed to start task:', err)
   }
 }
 
@@ -247,9 +243,7 @@ async function handleToggleStart(taskId: string) {
 async function handleToggleComplete(taskId: string) {
   try {
     await taskStore.markCompleted(taskId)
-    console.log('✅ Task completed:', taskId)
   } catch (err) {
-    console.error('❌ Failed to complete task:', err)
   }
 }
 
@@ -275,11 +269,9 @@ async function confirmDelete() {
   
   try {
     await taskStore.deleteTask(taskToDelete.value)
-    console.log('✅ Task deleted:', taskToDelete.value)
     showDeleteModal.value = false
     taskToDelete.value = null
   } catch (err) {
-    console.error('❌ Failed to delete task:', err)
     // Keep modal open on error so user can try again
   } finally {
     isDeleting.value = false

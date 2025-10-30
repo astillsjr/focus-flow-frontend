@@ -85,7 +85,7 @@ const refreshAnalysis = async () => {
   } catch (err) {
     // Error is already handled in the store
     // Just log it here for debugging
-    console.error('Failed to refresh analysis:', err)
+    
   }
 }
 

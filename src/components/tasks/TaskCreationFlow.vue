@@ -159,10 +159,8 @@ async function initializeBettor() {
   
   try {
     await betStore.initializeBettor()
-    console.log('✅ Betting profile initialized')
   } catch (error) {
     betInitError.value = error instanceof Error ? error.message : 'Failed to initialize betting profile'
-    console.error('❌ Failed to initialize bettor:', error)
   } finally {
     isInitializing.value = false
   }
@@ -191,7 +189,6 @@ function skipBetting() {
  * Handle successful bet placement
  */
 function handleBetPlaced(betId: string) {
-  console.log('✅ Bet placed:', betId)
   betPlaced.value = true
   currentStep.value = 'complete'
 }
@@ -200,7 +197,6 @@ function handleBetPlaced(betId: string) {
  * Handle bet error
  */
 function handleBetError(error: Error) {
-  console.error('❌ Bet error:', error)
   betInitError.value = `Failed to place bet: ${error.message}`
 }
 
@@ -226,7 +222,6 @@ function goToDashboard() {
 onMounted(() => {
   // Ensure bet store is initialized
   if (!betStore.isInitialized && betStore.hasProfile === false) {
-    console.log('Bet store not initialized - will prompt user to initialize')
   }
 })
 </script>

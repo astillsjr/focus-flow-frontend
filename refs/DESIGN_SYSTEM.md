@@ -2,7 +2,7 @@
 
 This document outlines the design system and style guidelines for the Focus Flow application.
 
-## 📁 File Structure
+## File Structure
 
 - **`src/constants/design.ts`** - Design tokens and constants
 - **`src/style.css`** - Global styles and base CSS
@@ -10,32 +10,39 @@ This document outlines the design system and style guidelines for the Focus Flow
 
 ---
 
-## 🎨 Design Tokens
+## Design Tokens
 
-All design tokens are centralized in `src/constants/design.ts` and can be imported throughout the application.
+All design tokens live in `src/constants/design.ts` (dark theme, Material-inspired) and are re-exported from `src/constants/index.ts`.
 
 ### Colors
 
 ```typescript
 import { colors } from '@/constants'
 
-// Primary palette
-colors.primary          // #4CAF50
-colors.primaryHover     // #45a049
-colors.primaryLight     // #e8f5e9
+// Primary palette (dark theme)
+colors.primary          // #BB86FC
+colors.primaryHover     // #C693FC
+colors.primaryLight     // #3700B3
+
+// Secondary palette
+colors.secondary        // #03DAC6
+colors.secondaryHover   // #26E0D1
 
 // Status colors
-colors.pending          // #FF9800
-colors.inProgress       // #2196F3
-colors.completed        // #4CAF50
-colors.error            // #f44336
+colors.pending          // #FFB74D
+colors.inProgress       // #42A5F5
+colors.completed        // #66BB6A
+colors.error            // #CF6679
 
-// Neutrals
-colors.text             // #333333
-colors.textSecondary    // #666666
-colors.textMuted        // #757575
-colors.border           // #e0e0e0
-colors.background       // #ffffff
+// Surfaces & text (dark theme)
+colors.background       // #121212
+colors.surface          // #121212
+colors.surfaceVariant   // #1E1E1E
+colors.onSurface        // #FFFFFF
+colors.text             // #FFFFFF
+colors.textSecondary    // #B3B3B3
+colors.textMuted        // #808080
+colors.border           // #4D4D4D
 ```
 
 ### Spacing
@@ -56,14 +63,17 @@ spacing.xxl   // 3rem (48px)
 ```typescript
 import { typography } from '@/constants'
 
-// Font family
-typography.fontFamily.base    // Inter, system-ui, ...
-typography.fontFamily.mono    // Monaco, Courier, ...
+// Font family (tokens)
+typography.fontFamily.base    // Inter, system-ui, Avenir, Helvetica, Arial, sans-serif
+typography.fontFamily.mono    // Monaco, Courier, monospace
 
 // Font sizes
 typography.sizes.xs           // 0.75rem (12px)
+typography.sizes.sm           // 0.875rem (14px)
 typography.sizes.base         // 1rem (16px)
+typography.sizes.lg           // 1.125rem (18px)
 typography.sizes.xl           // 1.25rem (20px)
+typography.sizes.xxl          // 1.5rem (24px)
 typography.sizes.xxxl         // 2rem (32px)
 
 // Font weights
@@ -73,10 +83,12 @@ typography.weights.semibold   // 600
 typography.weights.bold       // 700
 ```
 
+Note: Global base CSS uses `Roboto` for headings/body; tokens define `Inter` as the base family for component-level usage.
+
 ### Other Tokens
 
 ```typescript
-import { borderRadius, shadows, transitions } from '@/constants'
+import { borderRadius, shadows, transitions, breakpoints, zIndex } from '@/constants'
 
 // Border radius
 borderRadius.sm    // 4px
@@ -88,40 +100,52 @@ borderRadius.full  // 9999px
 shadows.sm         // 0 1px 3px rgba(0, 0, 0, 0.1)
 shadows.md         // 0 2px 8px rgba(0, 0, 0, 0.1)
 shadows.lg         // 0 4px 16px rgba(0, 0, 0, 0.1)
+shadows.xl         // 0 8px 24px rgba(0, 0, 0, 0.12)
 
 // Transitions
 transitions.fast   // 0.15s ease
 transitions.normal // 0.2s ease
 transitions.slow   // 0.3s ease
+
+// Breakpoints
+breakpoints.mobile // 480px
+breakpoints.tablet // 768px
+breakpoints.desktop// 1024px
+breakpoints.wide   // 1280px
+
+// Z-index scale
+zIndex.modal       // 1000
+zIndex.toast       // 1300
 ```
 
 ---
 
-## 🧩 Using Design Tokens in Components
+## Using Design Tokens in Components
 
 ### In Vue Component Styles
 
-You can reference design tokens directly in your `<style scoped>` sections:
+You can reference design tokens directly in your `<style scoped>` sections (values shown reflect the dark theme tokens):
 
 ```vue
 <style scoped>
 .my-component {
-  /* Use the exact values from design.ts */
-  color: #333333;              /* colors.text */
+  color: #FFFFFF;              /* colors.text */
   padding: 1rem;               /* spacing.md */
   border-radius: 8px;          /* borderRadius.md */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);  /* shadows.md */
+  background: #1E1E1E;         /* colors.surfaceVariant */
   transition: all 0.2s ease;   /* transitions.normal */
 }
 
 .my-button {
-  background-color: #4CAF50;   /* colors.primary */
+  background-color: #BB86FC;   /* colors.primary */
   padding: 0.5rem 1rem;        /* spacing.sm spacing.md */
   border-radius: 8px;          /* borderRadius.md */
+  color: #000000;              /* colors.onPrimary */
 }
 
 .my-button:hover {
-  background-color: #45a049;   /* colors.primaryHover */
+  background-color: #C693FC;   /* colors.primaryHover */
 }
 </style>
 ```
@@ -141,7 +165,7 @@ const buttonStyle = {
 
 ---
 
-## 📐 Layout Components
+## Layout Components
 
 ### DashboardLayout
 
@@ -178,7 +202,7 @@ The main navigation bar for authenticated users:
 
 ---
 
-## 🎯 Design Principles
+## Design Principles
 
 ### 1. Consistency
 
@@ -234,27 +258,27 @@ Follow mobile-first approach with breakpoints:
 
 ---
 
-## ✅ Best Practices
+## Best Practices
 
 ### DO:
-- ✅ Use design tokens for all colors, spacing, and typography
-- ✅ Use semantic color names (e.g., `colors.error` not `colors.red`)
-- ✅ Include hover, focus, and disabled states for interactive elements
-- ✅ Test responsive behavior on mobile and desktop
-- ✅ Use consistent border radius (8px for most elements)
-- ✅ Add transitions for interactive elements (0.2s ease)
+- Use design tokens for all colors, spacing, and typography
+- Use semantic color names (e.g., `colors.error` not `colors.red`)
+- Include hover, focus, and disabled states for interactive elements
+- Test responsive behavior on mobile and desktop
+- Use consistent border radius (8px for most elements)
+- Add transitions for interactive elements (0.2s ease)
 
 ### DON'T:
-- ❌ Hard-code colors, spacing, or font sizes
-- ❌ Create one-off spacing values (use the spacing scale)
-- ❌ Forget to add focus states for accessibility
-- ❌ Use inconsistent shadows (stick to sm, md, lg)
-- ❌ Override global styles without good reason
-- ❌ Mix design tokens with arbitrary values
+- Hard-code colors, spacing, or font sizes
+- Create one-off spacing values (use the spacing scale)
+- Forget to add focus states for accessibility
+- Use inconsistent shadows (stick to sm, md, lg)
+- Override global styles without good reason
+- Mix design tokens with arbitrary values
 
 ---
 
-## 🔄 Migration Guide
+## Migration Guide
 
 When updating existing components to use the design system:
 
@@ -295,7 +319,7 @@ When updating existing components to use the design system:
 
 ---
 
-## 🧩 Base Components
+## Base Components
 
 Reusable, standardized UI components are available in `src/components/base/`:
 
@@ -328,19 +352,18 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 
 ---
 
-## 🚀 Next Steps
+## Next Steps
 
 As the design system evolves, consider:
 
 1. **CSS Variables** - Convert design tokens to CSS custom properties
 2. **More Components** - Add Badge, Modal, Toast, Dropdown components
-3. **Dark Mode** - Add dark theme support
 4. **Theme Variants** - Allow customization for different brands/use cases
 5. **Animation Library** - Standardized transitions and animations
 
 ---
 
-## 📚 Resources
+## Resources
 
 - **Figma Design** (if available)
 - **Component Examples**: See `src/components/layout/AppNavigation.vue`

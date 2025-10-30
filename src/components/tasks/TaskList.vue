@@ -122,9 +122,7 @@ async function refreshTasks() {
   try {
     isRefreshing.value = true
     await taskStore.fetchTasks()
-    console.log('✅ Tasks refreshed successfully')
   } catch (err) {
-    console.error('❌ Failed to refresh tasks:', err)
   } finally {
     isRefreshing.value = false
   }
@@ -136,9 +134,7 @@ async function refreshTasks() {
 async function handleToggleComplete(taskId: string) {
   try {
     await taskStore.markCompleted(taskId)
-    console.log('✅ Task completed:', taskId)
   } catch (err) {
-    console.error('❌ Failed to complete task:', err)
     // Optionally show error notification
   }
 }
@@ -165,11 +161,9 @@ async function confirmDelete() {
   
   try {
     await taskStore.deleteTask(taskToDelete.value)
-    console.log('✅ Task deleted:', taskToDelete.value)
     showDeleteModal.value = false
     taskToDelete.value = null
   } catch (err) {
-    console.error('❌ Failed to delete task:', err)
     // Keep modal open on error so user can try again
   } finally {
     isDeleting.value = false

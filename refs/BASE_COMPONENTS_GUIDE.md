@@ -2,7 +2,7 @@
 
 Simple, clean, and reusable UI components for Focus Flow.
 
-## 📦 What's Included
+## What's Included
 
 Three core components to standardize your UI:
 
@@ -12,7 +12,7 @@ Three core components to standardize your UI:
 | **BaseCard** | Content containers | Customizable padding, hover effects |
 | **BaseInput** | Form inputs | Text, textarea, validation, hints |
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Import Components
 
@@ -35,7 +35,7 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 </template>
 ```
 
-## 📝 Common Patterns
+## Common Patterns
 
 ### Form with Validation
 
@@ -93,7 +93,7 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 </template>
 ```
 
-## 🔄 Migration Examples
+## Migration Examples
 
 ### Before (Old Code)
 
@@ -173,17 +173,17 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 ```
 
 **Benefits:**
-- ✅ Less custom CSS
-- ✅ Consistent styling
-- ✅ Built-in loading states
-- ✅ Better accessibility
-- ✅ Easier to maintain
+- Less custom CSS
+- Consistent styling
+- Built-in loading states
+- Better accessibility
+- Easier to maintain
 
-## 🎨 Styling Tips
+## Styling Tips
 
 ### Don't Override Base Styles
 
-❌ **Bad:**
+**Bad:**
 ```vue
 <BaseButton class="my-button">Click</BaseButton>
 
@@ -194,14 +194,14 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 </style>
 ```
 
-✅ **Good:**
+**Good:**
 ```vue
 <BaseButton variant="danger">Click</BaseButton>
 ```
 
 ### Use Wrapper Classes
 
-✅ **Good:**
+**Good:**
 ```vue
 <div class="button-wrapper">
   <BaseButton>Click</BaseButton>
@@ -217,7 +217,7 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 
 ### Compose Components
 
-✅ **Good:**
+**Good:**
 ```vue
 <!-- Create specialized components -->
 <template>
@@ -232,7 +232,7 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 </template>
 ```
 
-## 🎯 Component Variants
+## Component Variants
 
 ### BaseButton Variants
 
@@ -266,44 +266,25 @@ import { BaseButton, BaseCard, BaseInput } from '@/components/base'
 <BaseCard padding="none">No padding</BaseCard>
 ```
 
-## 🔍 Live Demo
 
-Visit `/demo` when logged in to see all components in action with interactive examples.
-
-## 📚 Full Documentation
-
-- **Detailed API**: See `src/components/base/README.md`
-- **Design System**: See `DESIGN_SYSTEM.md`
-- **Design Tokens**: See `src/constants/design.ts`
-
-## 💡 Tips & Best Practices
-
-1. **Always use base components** for buttons, inputs, and cards
-2. **Use appropriate variants** that match the action's intent
-3. **Provide labels** for all inputs (accessibility)
-4. **Show loading states** during async operations
-5. **Display errors** clearly with the error prop
-6. **Keep forms simple** - one clear purpose per form
-7. **Test responsive behavior** on mobile devices
-
-## 🐛 Common Issues
+## Common Issues
 
 ### Issue: Button not showing loading state
 ```vue
-<!-- ❌ Wrong -->
+<!-- Wrong -->
 <BaseButton :loading="loading">Save</BaseButton>
 
-<!-- ✅ Correct -->
+<!-- Correct -->
 <BaseButton :loading="isLoading">Save</BaseButton>
 ```
 Make sure your loading variable is reactive (use `ref()` or `reactive()`)
 
 ### Issue: Input not updating
 ```vue
-<!-- ❌ Wrong -->
+<!-- Wrong -->
 <BaseInput :value="name" />
 
-<!-- ✅ Correct -->
+<!-- Correct -->
 <BaseInput v-model="name" />
 ```
 Use `v-model` for two-way binding
@@ -321,10 +302,5 @@ Use `v-model` for two-way binding
 </style>
 ```
 
-## 🤝 Need Help?
 
-- Check the live demo at `/demo`
-- Read the full documentation in `src/components/base/README.md`
-- Look at examples in existing components
-- Review the design system at `DESIGN_SYSTEM.md`
 

@@ -95,9 +95,7 @@ async function resolveExpiredBets() {
   try {
     isResolving.value = true
     await betStore.checkAndResolveExpiredBets()
-    console.log('✅ Expired bets resolved successfully')
   } catch (err) {
-    console.error('❌ Failed to resolve expired bets:', err)
   } finally {
     isResolving.value = false
   }
