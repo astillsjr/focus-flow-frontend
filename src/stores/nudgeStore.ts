@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useAuthStore } from './authStore'
 import { useTaskStore } from './taskStore'
-import { getReadyNudges } from '../api/nudges'
+import { getUserNudges, type Nudge } from '../api/nudges'
 
 export interface ActiveNudge {
   nudgeId: string
@@ -18,6 +18,8 @@ export const useNudgeStore = defineStore('nudge', () => {
   const nudgeQueue = ref<ActiveNudge[]>([])
   const isPolling = ref(false)
   const pollingInterval = ref<number | null>(null)
+  const eventSource = ref<EventSource | null>(null)
+  const useSSE = ref(true)  // Prefer SSE, fallback to polling
 
   // Get auth and task stores
   const authStore = useAuthStore()
@@ -37,91 +39,198 @@ export const useNudgeStore = defineStore('nudge', () => {
   }
 
   /**
-   * Check for ready nudges and trigger them
+   * Handle incoming nudge from SSE or polling
    */
-  async function checkForReadyNudges(): Promise<void> {
+  function handleIncomingNudge(nudge: Nudge): void {
+    // Check if already processed
+    const alreadyQueued = nudgeQueue.value.some(n => n.nudgeId === nudge._id)
+    const alreadyActive = activeNudges.value.some(n => n.nudgeId === nudge._id)
+    
+    if (alreadyQueued || alreadyActive) {
+      return
+    }
+
+    // Only process triggered nudges with messages
+    if (nudge.triggeredAt === null || !nudge.message) {
+      return
+    }
+
+    const task = taskStore.getTaskById(nudge.task)
+    if (!task) {
+      console.warn('Task not found for nudge:', nudge.task)
+      return
+    }
+
+    // Use backend-provided message
+    // Use triggeredAt timestamp if available (when it was actually triggered), otherwise deliveryTime
+    nudgeQueue.value.push({
+      nudgeId: nudge._id,
+      taskId: nudge.task,
+      taskTitle: task.title,
+      message: nudge.message,
+      timestamp: nudge.triggeredAt ? new Date(nudge.triggeredAt) : new Date(nudge.deliveryTime)
+    })
+
+    console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
+    showNextNudge()
+  }
+
+  /**
+   * Check for triggered nudges with messages (polling fallback)
+   */
+  async function checkForTriggeredNudges(): Promise<void> {
     if (!authStore.accessToken) return
 
     try {
-      // Get all ready-to-deliver nudges
-      const readyNudges = await getReadyNudges(authStore.accessToken)
+      // Get triggered nudges with messages
+      const triggeredNudges = await getUserNudges(authStore.accessToken, 'triggered', 50)
 
-      if (readyNudges.length > 0) {
-        console.log(`📬 Found ${readyNudges.length} ready nudge(s)`)
+      // Filter to only nudges with messages (triggeredAt !== null means it was triggered)
+      const nudgesWithMessages = triggeredNudges.filter(n => n.triggeredAt !== null && n.message)
+
+      if (nudgesWithMessages.length > 0) {
+        console.log(`📬 Found ${nudgesWithMessages.length} triggered nudge(s)`)
       }
 
-      // Process each ready nudge
-      for (const nudge of readyNudges) {
-        // Check if this nudge is already in queue or active
-        const alreadyQueued = nudgeQueue.value.some(n => n.taskId === nudge.task)
-        const alreadyActive = activeNudges.value.some(n => n.taskId === nudge.task)
-        
-        if (alreadyQueued || alreadyActive) {
-          continue
-        }
-
-        // Get the task details
-        const task = taskStore.getTaskById(nudge.task)
-        if (!task) {
-          console.warn('Task not found for nudge:', nudge.task)
-          continue
-        }
-
-        // Create a simple nudge message (backend doesn't provide message generation)
-        const message = `Don't forget about "${task.title}"${task.dueDate ? ' - due soon!' : '!'}`
-
-        // Add to queue instead of directly to active nudges
-        nudgeQueue.value.push({
-          nudgeId: nudge._id,
-          taskId: nudge.task,
-          taskTitle: task.title,
-          message: message,
-          timestamp: new Date()
-        })
-
-        console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
+      // Process each triggered nudge
+      for (const nudge of nudgesWithMessages) {
+        handleIncomingNudge(nudge)
       }
-      
-      // Show the first nudge if none are currently active
-      showNextNudge()
       
     } catch (error) {
-      console.error('Failed to check ready nudges:', error)
+      console.error('Failed to check triggered nudges:', error)
     }
   }
 
   /**
-   * Start polling for ready nudges
+   * Start SSE connection for real-time nudge notifications
    */
-  function startPolling(intervalMs: number = 60000): void {
-    if (isPolling.value) {
-      console.log('⏸️ Nudge polling already running')
+  function startSSEConnection(): void {
+    if (!authStore.accessToken || eventSource.value) {
       return
+    }
+
+    try {
+      const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
+      const url = `${API_BASE_URL}/nudges/stream?accessToken=${authStore.accessToken}`
+      
+      eventSource.value = new EventSource(url)
+
+      eventSource.value.addEventListener('message', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          
+          switch (data.type) {
+            case 'connected':
+              console.log('✅ Connected to nudge stream')
+              // Backlog of missed nudges will be sent automatically
+              break
+              
+            case 'nudge':
+              // Handle incoming nudge with backend message
+              handleIncomingNudge(data.nudge)
+              break
+              
+            case 'heartbeat':
+              // Connection is alive (sent every 30 seconds)
+              break
+              
+            case 'error':
+              console.error('SSE error:', data.message)
+              // Fallback to polling on error
+              stopSSEConnection()
+              useSSE.value = false
+              startPollingFallback()
+              break
+          }
+        } catch (error) {
+          console.error('Error processing SSE message:', error)
+        }
+      })
+
+      eventSource.value.onerror = (error) => {
+        console.error('SSE connection error:', error)
+        // Fallback to polling on connection error
+        stopSSEConnection()
+        useSSE.value = false
+        startPollingFallback()
+      }
+
+      console.log('📡 Started SSE connection for nudges')
+    } catch (error) {
+      console.error('Failed to start SSE:', error)
+      // Fallback to polling if SSE not supported
+      useSSE.value = false
+      startPollingFallback()
+    }
+  }
+
+  /**
+   * Stop SSE connection
+   */
+  function stopSSEConnection(): void {
+    if (eventSource.value) {
+      eventSource.value.close()
+      eventSource.value = null
+      console.log('⏸️ Stopped SSE connection')
+    }
+  }
+
+  /**
+   * Start polling fallback (when SSE unavailable or fails)
+   */
+  function startPollingFallback(intervalMs: number = 60000): void {
+    // Stop any existing polling first
+    if (pollingInterval.value !== null) {
+      clearInterval(pollingInterval.value)
+      pollingInterval.value = null
     }
 
     isPolling.value = true
     
-    // Check immediately
-    checkForReadyNudges()
+    // Check immediately for any missed nudges
+    checkForTriggeredNudges()
 
     // Then poll at regular intervals
     pollingInterval.value = window.setInterval(() => {
-      checkForReadyNudges()
+      checkForTriggeredNudges()
     }, intervalMs)
 
-    console.log(`📡 Started nudge polling (every ${intervalMs / 1000}s)`)
+    console.log(`📡 Started nudge polling fallback (every ${intervalMs / 1000}s)`)
   }
 
   /**
-   * Stop polling
+   * Start nudge notifications (SSE preferred, polling as fallback)
+   */
+  function startPolling(intervalMs: number = 60000): void {
+    if ((isPolling.value && !useSSE.value) || eventSource.value) {
+      console.log('⏸️ Nudge notifications already running')
+      return
+    }
+
+    // Try SSE first if enabled
+    if (useSSE.value) {
+      startSSEConnection()
+    } else {
+      // Use polling directly
+      startPollingFallback(intervalMs)
+    }
+  }
+
+  /**
+   * Stop all nudge notifications (SSE and polling)
    */
   function stopPolling(): void {
+    // Close SSE connection if open
+    stopSSEConnection()
+    
+    // Stop polling if active
     if (pollingInterval.value !== null) {
       clearInterval(pollingInterval.value)
       pollingInterval.value = null
     }
     isPolling.value = false
-    console.log('⏸️ Stopped nudge polling')
+    console.log('⏸️ Stopped nudge notifications')
   }
 
   /**
@@ -171,7 +280,7 @@ export const useNudgeStore = defineStore('nudge', () => {
     isPolling,
 
     // Actions
-    checkForReadyNudges,
+    checkForTriggeredNudges,
     startPolling,
     stopPolling,
     dismissNudge,

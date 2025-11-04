@@ -9,8 +9,9 @@ export interface Nudge {
   user: string
   task: string
   deliveryTime: Date | string
-  triggered: boolean
+  triggeredAt: Date | string | null  // When the nudge was actually triggered (null if not yet triggered)
   createdAt: Date | string
+  message?: string  // AI-generated message when triggered
 }
 
 // ===== Helper Functions =====

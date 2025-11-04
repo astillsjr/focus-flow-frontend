@@ -1,831 +1,240 @@
-# API Endpoints - Implemented Syncs
+# Nudge Handling Backend Changes - Frontend Update Guide
 
-This document lists all API endpoints that have been implemented with syncs in the backend. All endpoints require authentication via `accessToken` in the request body (except for login/register which are handled separately).
+## Summary
+The backend nudge system has been updated to automatically process nudges, store messages, and provide real-time notifications via Server-Sent Events (SSE). The frontend should update to take advantage of these new features.
 
-## Authentication
+## Key Changes
 
-### `POST /UserAuthentication/getUserInfo`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
+### 1. **Nudges Now Store Messages and Trigger Timestamps**
+- **Change**: When a nudge is triggered, the generated AI message is stored in the database along with a `triggeredAt` timestamp
+- **Impact**: Nudges returned from API calls now include a `message` field and `triggeredAt` timestamp
+- **NudgeDoc Structure**:
+  ```typescript
+  {
+    _id: string,
+    user: string,
+    task: string,
+    deliveryTime: Date,  // When the nudge was scheduled to be delivered
+    triggeredAt: Date | null,  // When the nudge was actually triggered (null if not yet triggered)
+    message?: string  // AI-generated message, present when triggered
+  }
+  ```
+- **Note**: The `triggered: boolean` field has been replaced with `triggeredAt: Date | null` for more accurate tracking
+
+### 2. **Automatic Background Processing**
+- **Change**: Background scheduler runs every 60 seconds to automatically trigger ready nudges
+- **Impact**: Nudges are processed even when no frontend clients are connected
+- **Architecture**: 
+  - **Background scheduler** is the single source of truth for triggering nudges (generates messages)
+  - **SSE endpoint** only delivers notifications to connected clients (does not trigger nudges)
+  - This separation prevents race conditions and ensures reliable delivery
+- **Frontend Action**: No changes needed - nudges are processed automatically
+
+### 3. **Server-Sent Events (SSE) Endpoint**
+- **New Endpoint**: `GET /api/nudges/stream?accessToken=<token>`
+- **Purpose**: Real-time nudge notifications for connected clients
+- **Authentication**: Access token via query parameter or `Authorization: Bearer <token>` header
+
+### 4. **Backlog Delivery on Connection**
+- **Change**: When connecting via SSE, clients automatically receive nudges triggered in the last 24 hours
+- **Impact**: Clients catch up on missed notifications when reconnecting
+- **Implementation**: Uses `triggeredAt` timestamp to accurately identify nudges triggered within the last 24 hours
+
+## Frontend Implementation Guide
+
+### Option 1: Use SSE for Real-Time Notifications (Recommended)
+
+```javascript
+// Connect to SSE stream
+const eventSource = new EventSource(`/api/nudges/stream?accessToken=${accessToken}`);
+
+// Handle connection
+eventSource.addEventListener('message', (event) => {
+  const data = JSON.parse(event.data);
+  
+  switch (data.type) {
+    case 'connected':
+      console.log('Connected to nudge stream');
+      // You'll immediately receive backlog of missed nudges
+      break;
+      
+    case 'nudge':
+      // Display the nudge to the user
+      showNudgeNotification({
+        nudgeId: data.nudge._id,
+        taskId: data.nudge.task,
+        message: data.nudge.message,
+        deliveryTime: data.nudge.deliveryTime,
+        triggeredAt: data.nudge.triggeredAt  // When the nudge was actually triggered
+      });
+      break;
+      
+    case 'heartbeat':
+      // Connection is alive (every 30 seconds)
+      break;
+      
+    case 'error':
+      console.error('SSE error:', data.message);
+      break;
+  }
+});
+
+// Handle connection errors
+eventSource.onerror = (error) => {
+  console.error('SSE connection error:', error);
+  // Optionally implement reconnection logic
+};
+
+// Close connection when done
+// eventSource.close();
 ```
-**Response:**
-```json
-{
-  "user": {
-    "id": "string",
-    "username": "string",
-    "email": "string"
+
+**Benefits:**
+- Real-time delivery (no polling delay)
+- Automatic catch-up on missed notifications
+- Efficient (only sends when nudges are ready)
+
+### Option 2: Poll for Triggered Nudges (Fallback)
+
+If you prefer polling or can't use SSE:
+
+```javascript
+// Poll for triggered nudges
+async function fetchTriggeredNudges(accessToken) {
+  const response = await fetch('/api/NudgeEngine/getUserNudges', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      accessToken,
+      status: 'triggered',
+      limit: 50
+    })
+  });
+  
+  const result = await response.json();
+  
+  if (result.nudges) {
+    // Filter to only nudges with messages (successfully triggered)
+    const nudgesWithMessages = result.nudges.filter(n => n.triggeredAt !== null && n.message);
+    
+    // Display nudges to user
+    nudgesWithMessages.forEach(nudge => {
+      showNudgeNotification({
+        nudgeId: nudge._id,
+        taskId: nudge.task,
+        message: nudge.message,
+        deliveryTime: nudge.deliveryTime,
+        triggeredAt: nudge.triggeredAt
+      });
+    });
+  }
+}
+
+// Poll every 60 seconds (or whatever interval you prefer)
+setInterval(() => {
+  fetchTriggeredNudges(accessToken);
+}, 60000);
+```
+
+### Option 3: Hybrid Approach
+
+Use SSE for real-time delivery, with polling as a fallback:
+
+```javascript
+let eventSource = null;
+let pollingInterval = null;
+
+function startNudgeNotifications(accessToken) {
+  // Try SSE first
+  try {
+    eventSource = new EventSource(`/api/nudges/stream?accessToken=${accessToken}`);
+    
+    eventSource.addEventListener('message', handleNudge);
+    eventSource.onerror = () => {
+      // SSE failed, fall back to polling
+      eventSource.close();
+      startPolling(accessToken);
+    };
+  } catch (error) {
+    // SSE not supported, use polling
+    startPolling(accessToken);
+  }
+}
+
+function startPolling(accessToken) {
+  pollingInterval = setInterval(() => {
+    fetchTriggeredNudges(accessToken);
+  }, 60000);
+}
+
+function handleNudge(event) {
+  const data = JSON.parse(event.data);
+  if (data.type === 'nudge') {
+    showNudgeNotification(data.nudge);
   }
 }
 ```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
 
-### `POST /UserAuthentication/logout`
-**Request:**
-```json
-{
-  "refreshToken": "string"
-}
-```
-**Response:** `{}` (empty object)
+## API Changes
 
-### `POST /UserAuthentication/refreshAccessToken`
-**Request:**
-```json
-{
-  "refreshToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "accessToken": "string"
-}
-```
-
-### `POST /UserAuthentication/changePassword`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "oldPassword": "string",
-  "newPassword": "string"
-}
-```
-**Response:** `{}` (empty object)
-
-### `POST /UserAuthentication/deleteAccount`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "password": "string"
-}
-```
-**Response:** `{}` (empty object)
-**Note:** Automatically cascades deletion of all user data (tasks, emotion logs, nudges, bettor profile).
-
----
-
-## TaskManager
-
-### `POST /TaskManager/createTask`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "title": "string",
-  "description": "string",
-  "dueDate": "string (ISO date) | null"
-}
-```
-**Note:** `dueDate` must be `null` if not present, not omitted. Backend automatically converts ISO date strings to Date objects.
-**Response:**
-```json
-{
-  "task": "string (task ID)"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-**Note:** Automatically schedules a nudge when task is created.
-
-### `POST /TaskManager/updateTask`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "title": "string | null",
-  "description": "string | null",
-  "dueDate": "string (ISO date) | null"
-}
-```
-**Note:** All optional parameters (`title`, `description`, `dueDate`) must be `null` if not being updated, not omitted. Backend automatically converts ISO date strings to Date objects.
-**Response:**
-```json
-{
-  "task": "string (task ID)"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /TaskManager/markStarted`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "timeStarted": "string (ISO date)"
-}
-```
-**Response:** `{}` (empty object)
-**Note:** Automatically resolves any associated bet and cancels any scheduled nudge.
-
-### `POST /TaskManager/markComplete`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "timeCompleted": "string (ISO date)"
-}
-```
-**Response:** `{}` (empty object)
-**Note:** Automatically resolves any associated bet and cancels any scheduled nudge.
-
-### `POST /TaskManager/deleteTask`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:** `{}` (empty object)
-**Note:** Automatically cascades deletion of associated bet, nudge, and emotion logs.
-
-### `POST /TaskManager/deleteUserTasks`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:** `{}` (empty object)
-
-### `POST /TaskManager/getTask`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:**
-```json
-{
-  "task": {
-    "_id": "string",
-    "user": "string",
-    "title": "string",
-    "description": "string",
-    "createdAt": "Date",
-    "dueDate": "Date | null",
-    "startedAt": "Date | null",
-    "completedAt": "Date | null"
-  }
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /TaskManager/getTasks`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "page": "number | null (optional, default: 1)",
-  "limit": "number | null (optional, default: 10)",
-  "sortBy": "string | null (optional, default: 'createdAt')",
-  "sortOrder": "number | null (optional, default: -1)",
-  "status": "string | null (optional, 'pending' | 'in-progress' | 'completed')",
-  "search": "string | null (optional, text search query)"
-}
-```
-**Note:** All optional parameters must be sent. Use `null` for unused parameters (not omitted). When `null` is sent:
-- For `page`, `limit`, `sortBy`, `sortOrder`: The backend will use the default values shown above.
-- For `status` and `search`: The backend will ignore the filter (no filtering applied).
-**Response:**
-```json
-{
-  "tasks": [
-    {
-      "_id": "string",
-      "user": "string",
-      "title": "string",
-      "description": "string",
-      "createdAt": "Date",
-      "dueDate": "Date | null",
-      "startedAt": "Date | null",
-      "completedAt": "Date | null"
-    }
-  ],
-  "total": "number",
-  "page": "number",
-  "totalPages": "number"
-}
-```
-
-### `POST /TaskManager/getTaskStatus`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:**
-```json
-{
-  "status": "pending" | "in-progress" | "completed"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
----
-
-## MicroBet
-
-### `POST /MicroBet/initializeBettor`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:** `{}` (empty object)
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /MicroBet/removeBettor`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:** `{}` (empty object)
-
-### `POST /MicroBet/placeBet`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "wager": "number",
-  "deadline": "string (ISO date)",
-  "taskDueDate": "string (ISO date) | null"
-}
-```
-**Note:** Backend automatically converts ISO date strings to Date objects for both `deadline` and `taskDueDate`.
-**Response:**
-```json
-{
-  "bet": "string (bet ID)"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /MicroBet/cancelBet`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:** `{}` (empty object)
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /MicroBet/getBet`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:**
-```json
-{
-  "bet": {
-    "_id": "string",
-    "user": "string",
-    "task": "string",
-    "wager": "number",
-    "deadline": "Date",
-    "taskDueDate": "Date | null",
-    "success": "boolean | undefined",
-    "createdAt": "Date"
-  }
-}
-```
-**Note:** `success === undefined` means the bet is pending, `success === true` means successful, `success === false` means failed.
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /MicroBet/getActiveBets`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "bets": [
-    {
-      "_id": "string",
-      "user": "string",
-      "task": "string",
-      "wager": "number",
-      "deadline": "Date",
-      "taskDueDate": "Date | null",
-      "success": "boolean | undefined",
-      "createdAt": "Date"
-    }
-  ]
-}
-```
-**Note:** Only returns bets where `success === undefined` (pending).
-
-### `POST /MicroBet/getExpiredBets`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "bets": [
-    {
-      "_id": "string",
-      "user": "string",
-      "task": "string",
-      "wager": "number",
-      "deadline": "Date",
-      "taskDueDate": "Date | null",
-      "success": "boolean | undefined",
-      "createdAt": "Date"
-    }
-  ]
-}
-```
-**Note:** Returns bets where `success === undefined` (unresolved) and deadline has passed. These are pending bets that have expired their deadline.
-
-### `POST /MicroBet/getUserProfile`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "points": "number",
-  "streak": "number",
-  "totalBets": "number",
-  "successfulBets": "number",
-  "failedBets": "number",
-  "pendingBets": "number"
-}
-```
-
-### `POST /MicroBet/getRecentActivity`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "limit": "number | null (optional, default: 10)"
-}
-```
-**Note:** All optional parameters must be sent. Use `null` for unused parameters (not omitted). When `null` is sent for `limit`, the backend will use the default value of 10.
-**Response:**
-```json
-{
-  "bets": [
-    {
-      "_id": "string",
-      "user": "string",
-      "task": "string",
-      "wager": "number",
-      "deadline": "Date",
-      "taskDueDate": "Date | null",
-      "success": "boolean | undefined",
-      "createdAt": "Date"
-    }
-  ]
-}
-```
-**Note:** Returns most recent bets regardless of status. `success === undefined` means pending, `success === true` means successful, `success === false` means failed.
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
----
-
-## NudgeEngine
-
-### `POST /NudgeEngine/scheduleNudge`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "deliveryTime": "string (ISO date)"
-}
-```
-**Note:** Backend automatically converts ISO date strings to Date objects.
-**Response:**
-```json
-{
-  "nudge": "string (nudge ID)"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /NudgeEngine/cancelNudge`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:** `{}` (empty object)
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /NudgeEngine/deleteUserNudges`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:** `{}` (empty object)
-
-### `POST /NudgeEngine/getNudge`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:**
-```json
-{
-  "nudge": {
-    "_id": "string",
-    "user": "string",
-    "task": "string",
-    "deliveryTime": "Date",
-    "triggered": "boolean",
-    "createdAt": "Date"
-  }
-}
-```
-**Note:** `triggered: false` means the nudge is pending, `triggered: true` means it has been delivered. Cancelled nudges are deleted and won't appear in responses.
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
-
-### `POST /NudgeEngine/getUserNudges`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "status": "string | null (optional, 'pending' | 'triggered')",
-  "limit": "number | null (optional, default: 50)"
-}
-```
-**Note:** All optional parameters must be sent. Use `null` for unused parameters (not omitted). When `null` is sent:
-- For `limit`: The backend will use the default value of 50.
-- For `status`: The backend will ignore the filter (returns all nudges regardless of status).
-**Response:**
+### Updated Response: `getUserNudges`
+Nudges now include the `message` field and `triggeredAt` timestamp when triggered:
 ```json
 {
   "nudges": [
     {
-      "_id": "string",
-      "user": "string",
-      "task": "string",
-      "deliveryTime": "Date",
-      "triggered": "boolean",
-      "createdAt": "Date"
+      "_id": "nudge_id",
+      "user": "user_id",
+      "task": "task_id",
+      "deliveryTime": "2025-01-15T10:00:00Z",
+      "triggeredAt": "2025-01-15T10:05:23Z",
+      "message": "Take a moment to dive into the first part of your task. It doesn't have to be perfect."
     }
   ]
 }
 ```
-**Note:** `triggered: false` means the nudge is pending, `triggered: true` means it has been delivered.
 
-### `POST /NudgeEngine/getReadyNudges`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "nudges": [
-    {
-      "_id": "string",
-      "user": "string",
-      "task": "string",
-      "deliveryTime": "Date",
-      "triggered": "boolean",
-      "createdAt": "Date"
-    }
-  ]
-}
-```
-**Note:** Only returns nudges where `triggered: false` and `deliveryTime <= now`.
+**Status Filtering**:
+- `status: "pending"` - Returns nudges where `triggeredAt` is `null`
+- `status: "triggered"` - Returns nudges where `triggeredAt` is not `null`
 
----
+### Updated Response: `getNudge`
+Same structure - includes `triggeredAt` and `message` when triggered.
 
-## EmotionLogger
+### Updated Response: `getReadyNudges`
+Still returns untriggered nudges (`triggeredAt: null`, no `message` field yet).
 
-### `POST /EmotionLogger/logBefore`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "emotion": "string"
-}
-```
-**Response:**
-```json
-{
-  "log": {
-    "_id": "string",
-    "user": "string",
-    "task": "string",
-    "emotion": "string",
-    "phase": "before",
-    "createdAt": "Date"
-  }
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
+## Migration Checklist
 
-### `POST /EmotionLogger/logAfter`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)",
-  "emotion": "string"
-}
-```
-**Response:**
-```json
-{
-  "log": {
-    "_id": "string",
-    "user": "string",
-    "task": "string",
-    "emotion": "string",
-    "phase": "after",
-    "createdAt": "Date"
-  }
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
+- [ ] Update nudge data types to include `message?: string` and `triggeredAt: Date | null` (replacing `triggered: boolean`)
+- [ ] Update any code that checks `nudge.triggered` to check `nudge.triggeredAt !== null` instead
+- [ ] Implement SSE connection or polling for triggered nudges
+- [ ] Update UI to display nudge messages
+- [ ] Handle backlog notifications when client reconnects
+- [ ] Remove old polling logic for ready nudges (if using SSE)
+- [ ] Remove any frontend calls to `scheduleNudge` endpoint (now backend-only)
+- [ ] Test offline/online scenarios
 
-### `POST /EmotionLogger/deleteTaskLogs`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:** `{}` (empty object)
+## Notes
 
-### `POST /EmotionLogger/deleteUserLogs`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:** `{}` (empty object)
+1. **Background Processing**: Nudges are automatically triggered every 60 seconds by the backend scheduler, so you don't need to manually trigger them from the frontend.
 
-### `POST /EmotionLogger/analyzeRecentEmotions`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "analysis": "string"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
+2. **Message Storage**: All triggered nudges have their messages and `triggeredAt` timestamps stored in the database, so you can retrieve them later.
 
-### `POST /EmotionLogger/getEmotionsForTask`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "task": "string (task ID)"
-}
-```
-**Response:**
-```json
-{
-  "task": "string (task ID)",
-  "emotions": {
-    "before": "string (emotion) | undefined",
-    "after": "string (emotion) | undefined"
-  }
-}
-```
-**Note:** The `emotions` object contains the emotion for each phase (before/after) if logged. Keys may be absent if that phase hasn't been logged yet.
+3. **SSE Backlog**: The SSE endpoint automatically sends nudges from the last 24 hours when you connect (using `triggeredAt` timestamp), so you'll catch up on missed notifications.
 
-### `POST /EmotionLogger/getEmotionLogs`
-**Request:**
-```json
-{
-  "accessToken": "string",
-  "page": "number | null (optional, default: 1)",
-  "limit": "number | null (optional, default: 20)",
-  "phase": "string | null (optional, 'before' | 'after')",
-  "emotion": "string | null (optional)",
-  "sortBy": "string | null (optional, default: 'createdAt')",
-  "sortOrder": "number | null (optional, default: -1)"
-}
-```
-**Note:** All optional parameters must be sent. Use `null` for unused parameters (not omitted). When `null` is sent:
-- For `page`, `limit`, `sortBy`, `sortOrder`: The backend will use the default values shown above.
-- For `phase` and `emotion`: The backend will ignore the filter (no filtering applied).
-**Response:**
-```json
-{
-  "logs": [
-    {
-      "_id": "string",
-      "user": "string",
-      "task": "string",
-      "emotion": "string",
-      "phase": "before" | "after",
-      "createdAt": "Date"
-    }
-  ],
-  "total": "number",
-  "page": "number",
-  "totalPages": "number"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
+4. **No Breaking Changes**: Existing API endpoints still work, they just now return additional data (`message` field and `triggeredAt` timestamp instead of `triggered` boolean).
 
-### `POST /EmotionLogger/getEmotionStats`
-**Request:**
-```json
-{
-  "accessToken": "string"
-}
-```
-**Response:**
-```json
-{
-  "totalLogs": "number",
-  "mostCommonEmotion": "string",
-  "leastCommonEmotion": "string",
-  "averageEmotionsPerDay": "number",
-  "recentTrend": "string"
-}
-```
-**Error Response:**
-```json
-{
-  "error": "string"
-}
-```
+5. **Polling Still Works**: You can continue using the polling approach if SSE doesn't fit your needs, but you'll need to poll `getUserNudges(status: "triggered")` instead of `getReadyNudges`.
 
----
+6. **Backend-Only Endpoints**: 
+   - `scheduleNudge` is now **backend-only** - nudges are automatically scheduled when tasks are created via the `AutoScheduleNudgeOnTaskCreate` sync
+   - `nudgeUser` is **backend-only** - called automatically by the background scheduler
+   - The frontend should not call these endpoints directly
 
-## Important Notes
-
-1. **Authentication**: All endpoints (except login/register) require `accessToken` in the request body.
-
-2. **Date Handling**: 
-   - The backend automatically converts ISO date strings (e.g., `"2025-11-04T04:59:00.000Z"`) to `Date` objects for:
-     - `dueDate` in `createTask` and `updateTask`
-     - `deliveryTime` in `scheduleNudge`
-     - `deadline` and `taskDueDate` in `placeBet`
-   - Send dates as ISO strings from the frontend.
-
-3. **Optional Parameters Convention**:
-   - **CRITICAL**: All optional parameters that are listed in the request schema must be sent, even if not used. Use `null` for unused optional parameters. Do NOT omit them.
-   - **Behavior when `null` is sent:**
-     - For pagination/sorting parameters (`page`, `limit`, `sortBy`, `sortOrder`): The backend automatically converts `null` to the default value (as shown in the endpoint documentation).
-     - For filter parameters (`status`, `search`, `phase`, `emotion`): The backend keeps `null` and ignores the filter (no filtering applied).
-   - **Specific endpoints:**
-     - For `createTask`: `dueDate` must be `null` if not present (not omitted).
-     - For `updateTask`: `title`, `description`, and `dueDate` must be `null` if not being updated (not omitted).
-     - For `getTasks`: All optional parameters (`page`, `limit`, `sortBy`, `sortOrder`, `status`, `search`) must be sent. Use `null` for defaults/filters.
-     - For `getEmotionLogs`: All optional parameters (`page`, `limit`, `phase`, `emotion`, `sortBy`, `sortOrder`) must be sent. Use `null` for defaults/filters.
-     - For `getUserNudges`: Both optional parameters (`status`, `limit`) must be sent. Use `null` for defaults/filters.
-     - For `getRecentActivity`: `limit` must be sent. Use `null` for default.
-   - This ensures sync patterns match correctly when optional parameters are not provided.
-
-4. **Automatic Behaviors**:
-   - Creating a task automatically schedules a nudge.
-   - Starting a task automatically resolves any associated bet and cancels any scheduled nudge.
-   - Completing a task automatically resolves any associated bet and cancels any scheduled nudge.
-   - Deleting a task automatically deletes associated bet, nudge, and emotion logs.
-   - Deleting a user account automatically deletes all user data (tasks, emotion logs, nudges, bettor profile).
-
-5. **Response Format**:
-   - Success responses return data objects or empty objects `{}`.
-   - Error responses return `{ "error": "string" }`.
-   - Query endpoints (like `getTasks`, `getActiveBets`) return arrays wrapped in objects with pagination metadata when applicable.
-
-6. **Return Types**:
-   - Methods that return arrays (like `getActiveBets`, `getExpiredBets`, `getRecentActivity`, `getReadyNudges`, `getUserNudges`) return objects with the array as a property:
-     - `{ bets: [...] }` instead of `[...]`
-     - `{ nudges: [...] }` instead of `[...]`
-   - This is consistent across all query endpoints.
+7. **Nudge Lifecycle**:
+   - Nudges are automatically scheduled when tasks are created
+   - Nudges are automatically canceled when tasks are started (user doesn't need encouragement anymore)
+   - Nudges are automatically canceled when tasks are deleted (cleanup)
+   - Nudges are **NOT** canceled when tasks are completed (they've already served their purpose of encouraging starting)
 
