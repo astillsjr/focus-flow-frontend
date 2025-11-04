@@ -36,38 +36,6 @@ async function handleResponse<T>(response: Response): Promise<T> {
 // ===== API Functions =====
 
 /**
- * Schedule a new nudge for a task
- */
-export async function scheduleNudge(
-  accessToken: string,
-  task: string,
-  deliveryTime: Date | string
-): Promise<{ nudge: string }> {
-  const response = await fetch(`${API_BASE_URL}/NudgeEngine/scheduleNudge`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ accessToken, task, deliveryTime })
-  })
-  return handleResponse<{ nudge: string }>(response)
-}
-
-/**
- * Cancel (delete) a scheduled nudge
- */
-export async function cancelNudge(accessToken: string, task: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/NudgeEngine/cancelNudge`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ accessToken, task })
-  })
-  await handleResponse<{}>(response)
-}
-
-/**
  * Delete all nudges associated with a user
  */
 export async function deleteUserNudges(accessToken: string): Promise<void> {
@@ -114,21 +82,6 @@ export async function getUserNudges(
       status: status ?? null,
       limit: limit ?? null
     })
-  })
-  const data = await handleResponse<{ nudges: Nudge[] }>(response)
-  return data.nudges
-}
-
-/**
- * Get all ready-to-deliver nudges for a user
- */
-export async function getReadyNudges(accessToken: string): Promise<Nudge[]> {
-  const response = await fetch(`${API_BASE_URL}/NudgeEngine/getReadyNudges`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ accessToken })
   })
   const data = await handleResponse<{ nudges: Nudge[] }>(response)
   return data.nudges

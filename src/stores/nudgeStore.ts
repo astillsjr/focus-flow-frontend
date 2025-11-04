@@ -20,6 +20,7 @@ export const useNudgeStore = defineStore('nudge', () => {
   const pollingInterval = ref<number | null>(null)
   const eventSource = ref<EventSource | null>(null)
   const useSSE = ref(true)  // Prefer SSE, fallback to polling
+  const pendingNudges = ref<Nudge[]>([]) // Queue for nudges waiting for tasks
 
   // Get auth and task stores
   const authStore = useAuthStore()
@@ -57,7 +58,11 @@ export const useNudgeStore = defineStore('nudge', () => {
 
     const task = taskStore.getTaskById(nudge.task)
     if (!task) {
-      console.warn('Task not found for nudge:', nudge.task)
+      // Queue this nudge to retry later when tasks are loaded
+      if (!pendingNudges.value.some(n => n._id === nudge._id)) {
+        pendingNudges.value.push(nudge)
+        console.log(`⏳ Nudge queued for later (task not loaded yet): ${nudge.task}`)
+      }
       return
     }
 
@@ -73,6 +78,37 @@ export const useNudgeStore = defineStore('nudge', () => {
 
     console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
     showNextNudge()
+  }
+
+  /**
+   * Retry processing pending nudges (called when tasks are loaded)
+   */
+  function retryPendingNudges(): void {
+    if (pendingNudges.value.length === 0) return
+
+    const stillPending: Nudge[] = []
+    const processedCount = pendingNudges.value.length
+    
+    for (const nudge of pendingNudges.value) {
+      const task = taskStore.getTaskById(nudge.task)
+      if (task) {
+        // Task is now available, process the nudge
+        handleIncomingNudge(nudge)
+      } else {
+        // Task still not found (might be deleted), keep it pending for now
+        stillPending.push(nudge)
+      }
+    }
+
+    pendingNudges.value = stillPending
+    
+    const resolvedCount = processedCount - stillPending.length
+    if (resolvedCount > 0) {
+      console.log(`✅ Resolved ${resolvedCount} pending nudge(s) after tasks loaded`)
+    }
+    if (stillPending.length > 0) {
+      console.warn(`⚠️ ${stillPending.length} nudge(s) still pending (tasks may have been deleted)`)
+    }
   }
 
   /**
@@ -266,9 +302,34 @@ export const useNudgeStore = defineStore('nudge', () => {
       if (!isAuthenticated) {
         stopPolling()
         clearAllNudges()
+        pendingNudges.value = [] // Clear pending nudges on logout
       } else {
         // Start polling when user logs in
         startPolling()
+      }
+    }
+  )
+
+  // Watch for tasks being loaded and retry pending nudges
+  watch(
+    () => taskStore.tasks.length,
+    (newLength, oldLength) => {
+      // If tasks were just loaded (went from 0 to >0), retry pending nudges
+      if (oldLength === 0 && newLength > 0 && pendingNudges.value.length > 0) {
+        console.log('📋 Tasks loaded, retrying pending nudges...')
+        retryPendingNudges()
+      }
+    }
+  )
+
+  // Also watch for when tasks are loaded via initialize (handles case where tasks.length was already > 0)
+  watch(
+    () => taskStore.isLoading,
+    (isLoading, wasLoading) => {
+      // If tasks finished loading (isLoading went from true to false), retry pending nudges
+      if (wasLoading && !isLoading && pendingNudges.value.length > 0) {
+        console.log('📋 Tasks finished loading, retrying pending nudges...')
+        retryPendingNudges()
       }
     }
   )
@@ -285,7 +346,8 @@ export const useNudgeStore = defineStore('nudge', () => {
     stopPolling,
     dismissNudge,
     clearAllNudges,
-    showNextNudge
+    showNextNudge,
+    retryPendingNudges // Export for manual retry if needed
   }
 })
 

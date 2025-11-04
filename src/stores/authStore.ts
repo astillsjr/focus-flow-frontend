@@ -61,9 +61,12 @@ export const useAuthStore = defineStore('auth', () => {
       // Start auto-refresh
       startAutoRefresh()
 
-      // Initialize bet store after successful registration
+      // Initialize stores after successful registration
       const betStore = useBetStore()
       await betStore.initialize()
+      
+      const taskStore = useTaskStore()
+      await taskStore.initialize()
     } catch (error) {
       console.error('Registration error:', error)
       throw error
@@ -90,9 +93,13 @@ export const useAuthStore = defineStore('auth', () => {
       // Start auto-refresh
       startAutoRefresh()
 
-      // Initialize bet store after successful login
+      // Initialize stores after successful login
       const betStore = useBetStore()
       await betStore.initialize()
+      
+      // Initialize task store to load tasks before nudges are processed
+      const taskStore = useTaskStore()
+      await taskStore.initialize()
     } catch (error) {
       console.error('Login error:', error)
       throw error

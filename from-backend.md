@@ -1,7 +1,7 @@
 # Nudge Handling Backend Changes - Frontend Update Guide
 
 ## Summary
-The backend nudge system has been updated to automatically process nudges, store messages, and provide real-time notifications via Server-Sent Events (SSE). The frontend should update to take advantage of these new features.
+The backend nudge system has been updated to process nudges on-demand via Server-Sent Events (SSE) connections. Nudges are only triggered when users are actively connected, ensuring efficient resource usage and real-time delivery. The frontend should update to use SSE for nudge notifications.
 
 ## Key Changes
 
@@ -21,24 +21,29 @@ The backend nudge system has been updated to automatically process nudges, store
   ```
 - **Note**: The `triggered: boolean` field has been replaced with `triggeredAt: Date | null` for more accurate tracking
 
-### 2. **Automatic Background Processing**
-- **Change**: Background scheduler runs every 60 seconds to automatically trigger ready nudges
-- **Impact**: Nudges are processed even when no frontend clients are connected
+### 2. **SSE-Based Nudge Triggering**
+- **Change**: Nudges are now triggered on-demand through SSE connections, not via background processing
+- **Impact**: Nudges are only generated when users are actively connected, saving resources
 - **Architecture**: 
-  - **Background scheduler** is the single source of truth for triggering nudges (generates messages)
-  - **SSE endpoint** only delivers notifications to connected clients (does not trigger nudges)
-  - This separation prevents race conditions and ensures reliable delivery
-- **Frontend Action**: No changes needed - nudges are processed automatically
+  - **SSE endpoint** handles both triggering and delivering nudges
+  - Nudges are triggered when users connect (backlog) and polled every 5 seconds while connected
+  - When a user disconnects or logs out, nudge processing stops immediately
+  - No background scheduler - all processing happens through active SSE connections
+- **Frontend Action**: Connect to SSE endpoint to receive nudges in real-time
 
 ### 3. **Server-Sent Events (SSE) Endpoint**
 - **New Endpoint**: `GET /api/nudges/stream?accessToken=<token>`
 - **Purpose**: Real-time nudge notifications for connected clients
 - **Authentication**: Access token via query parameter or `Authorization: Bearer <token>` header
 
-### 4. **Backlog Delivery on Connection**
-- **Change**: When connecting via SSE, clients automatically receive nudges triggered in the last 24 hours
-- **Impact**: Clients catch up on missed notifications when reconnecting
-- **Implementation**: Uses `triggeredAt` timestamp to accurately identify nudges triggered within the last 24 hours
+### 4. **Backlog Processing on Connection**
+- **Change**: When connecting via SSE, the system automatically processes all ready nudges since the user's last connection
+- **Impact**: Clients catch up on missed nudges when reconnecting, and ready nudges are triggered immediately
+- **Implementation**: 
+  - Tracks `lastSeenNudgeTimestamp` per user (when the last nudge was sent)
+  - On connect, gets all ready nudges with `deliveryTime > lastSeenNudgeTimestamp`
+  - Triggers and sends these nudges immediately
+  - Also sends any already-triggered nudges that weren't received (in case of disconnection)
 
 ## Frontend Implementation Guide
 
@@ -55,17 +60,18 @@ eventSource.addEventListener('message', (event) => {
   switch (data.type) {
     case 'connected':
       console.log('Connected to nudge stream');
-      // You'll immediately receive backlog of missed nudges
+      // Backlog of ready nudges will be triggered and sent immediately
+      // Any already-triggered nudges since last connection will also be sent
       break;
       
     case 'nudge':
       // Display the nudge to the user
+      // Note: This nudge was just triggered and the message was generated
       showNudgeNotification({
         nudgeId: data.nudge._id,
         taskId: data.nudge.task,
-        message: data.nudge.message,
-        deliveryTime: data.nudge.deliveryTime,
-        triggeredAt: data.nudge.triggeredAt  // When the nudge was actually triggered
+        message: data.nudge.message,  // AI-generated message
+        deliveryTime: data.nudge.deliveryTime,  // When nudge was scheduled
       });
       break;
       
@@ -94,9 +100,14 @@ eventSource.onerror = (error) => {
 - Automatic catch-up on missed notifications
 - Efficient (only sends when nudges are ready)
 
-### Option 2: Poll for Triggered Nudges (Fallback)
+### Option 2: Poll for Triggered Nudges (Not Recommended)
 
-If you prefer polling or can't use SSE:
+**Note**: Polling is not recommended because:
+- Nudges are only triggered when users are connected via SSE
+- If you're not connected via SSE, nudges won't be triggered
+- You'll miss real-time delivery
+
+If you must use polling (e.g., SSE not supported):
 
 ```javascript
 // Poll for triggered nudges
@@ -124,16 +135,16 @@ async function fetchTriggeredNudges(accessToken) {
         taskId: nudge.task,
         message: nudge.message,
         deliveryTime: nudge.deliveryTime,
-        triggeredAt: nudge.triggeredAt
       });
     });
   }
 }
 
-// Poll every 60 seconds (or whatever interval you prefer)
+// Poll every 5-10 seconds to catch nudges quickly
+// Note: This will NOT trigger nudges, only fetch already-triggered ones
 setInterval(() => {
   fetchTriggeredNudges(accessToken);
-}, 60000);
+}, 5000);
 ```
 
 ### Option 3: Hybrid Approach
@@ -208,28 +219,36 @@ Still returns untriggered nudges (`triggeredAt: null`, no `message` field yet).
 
 - [ ] Update nudge data types to include `message?: string` and `triggeredAt: Date | null` (replacing `triggered: boolean`)
 - [ ] Update any code that checks `nudge.triggered` to check `nudge.triggeredAt !== null` instead
-- [ ] Implement SSE connection or polling for triggered nudges
+- [ ] **Implement SSE connection** - This is required for nudges to be triggered
 - [ ] Update UI to display nudge messages
-- [ ] Handle backlog notifications when client reconnects
-- [ ] Remove old polling logic for ready nudges (if using SSE)
+- [ ] Handle connection lifecycle (connect on login, disconnect on logout)
+- [ ] Remove old polling logic for ready nudges (SSE is now the only way to trigger nudges)
 - [ ] Remove any frontend calls to `scheduleNudge` endpoint (now backend-only)
-- [ ] Test offline/online scenarios
+- [ ] Remove any frontend calls to `nudgeUser` endpoint (now backend-only, triggered via SSE)
+- [ ] Test connection/disconnection scenarios
+- [ ] Test logout behavior (SSE should close automatically)
 
 ## Notes
 
-1. **Background Processing**: Nudges are automatically triggered every 60 seconds by the backend scheduler, so you don't need to manually trigger them from the frontend.
+1. **SSE Connection Required**: Nudges are only triggered when users are connected via SSE. If you're not connected, nudges won't be processed. Make sure to establish an SSE connection when users log in.
 
-2. **Message Storage**: All triggered nudges have their messages and `triggeredAt` timestamps stored in the database, so you can retrieve them later.
+2. **Real-Time Processing**: When you connect via SSE, the system immediately:
+   - Processes all ready nudges since your last connection (backlog)
+   - Polls every 5 seconds for new ready nudges and triggers them
+   - Sends nudges to you in real-time as they're generated
 
-3. **SSE Backlog**: The SSE endpoint automatically sends nudges from the last 24 hours when you connect (using `triggeredAt` timestamp), so you'll catch up on missed notifications.
+3. **Connection Lifecycle**: 
+   - Connect to SSE when user logs in
+   - SSE connection automatically closes when user logs out (authentication check)
+   - Reconnect on login to resume nudge processing
 
-4. **No Breaking Changes**: Existing API endpoints still work, they just now return additional data (`message` field and `triggeredAt` timestamp instead of `triggered` boolean).
+4. **Message Storage**: All triggered nudges have their messages and `triggeredAt` timestamps stored in the database, so you can retrieve them later via API calls.
 
-5. **Polling Still Works**: You can continue using the polling approach if SSE doesn't fit your needs, but you'll need to poll `getUserNudges(status: "triggered")` instead of `getReadyNudges`.
+5. **No Breaking Changes**: Existing API endpoints still work, they just now return additional data (`message` field and `triggeredAt` timestamp instead of `triggered` boolean).
 
 6. **Backend-Only Endpoints**: 
-   - `scheduleNudge` is now **backend-only** - nudges are automatically scheduled when tasks are created via the `AutoScheduleNudgeOnTaskCreate` sync
-   - `nudgeUser` is **backend-only** - called automatically by the background scheduler
+   - `scheduleNudge` is **backend-only** - nudges are automatically scheduled when tasks are created via the `AutoScheduleNudgeOnTaskCreate` sync
+   - `nudgeUser` is **backend-only** - called automatically by SSE connections when ready nudges are detected
    - The frontend should not call these endpoints directly
 
 7. **Nudge Lifecycle**:
@@ -237,4 +256,11 @@ Still returns untriggered nudges (`triggeredAt: null`, no `message` field yet).
    - Nudges are automatically canceled when tasks are started (user doesn't need encouragement anymore)
    - Nudges are automatically canceled when tasks are deleted (cleanup)
    - Nudges are **NOT** canceled when tasks are completed (they've already served their purpose of encouraging starting)
+
+8. **Efficiency**: This approach is more efficient because:
+   - Nudges are only generated when users are connected (saves LLM API calls)
+   - No background processing for disconnected users
+   - Resources are only used for active connections
+
+9. **Authentication**: The SSE endpoint automatically verifies authentication every polling cycle. If a user logs out, the connection is closed immediately and polling stops.
 
