@@ -67,6 +67,7 @@
           <BetForm
             :task-id="createdTaskId!"
             :task-title="createdTaskTitle"
+            :task-due-date="createdTaskDueDate"
             @bet-placed="handleBetPlaced"
             @error="handleBetError"
           />
@@ -130,6 +131,7 @@ const taskStore = useTaskStore()
 const currentStep = ref<FlowStep>('task')
 const createdTaskId = ref<string | null>(null)
 const createdTaskTitle = ref('')
+const createdTaskDueDate = ref<Date | string | null>(null)
 const betPlaced = ref(false)
 const isInitializing = ref(false)
 const betInitError = ref<string | null>(null)
@@ -140,10 +142,11 @@ const betInitError = ref<string | null>(null)
 function handleTaskCreated(taskId: string) {
   createdTaskId.value = taskId
   
-  // Get the task title from the store
+  // Get the task details from the store
   const task = taskStore.getTaskById(taskId)
   if (task) {
     createdTaskTitle.value = task.title
+    createdTaskDueDate.value = task.dueDate || null
   }
   
   // Move to bet prompt
@@ -207,6 +210,7 @@ function resetFlow() {
   currentStep.value = 'task'
   createdTaskId.value = null
   createdTaskTitle.value = ''
+  createdTaskDueDate.value = null
   betPlaced.value = false
   betInitError.value = null
 }

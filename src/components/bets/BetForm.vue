@@ -28,7 +28,7 @@
         type="datetime-local"
         required
         :disabled="isLoading || !betStore.hasProfile"
-        hint="When will you complete this task?"
+        :hint="deadlineHint"
       />
 
       <div v-if="!betStore.hasProfile" class="warning-message">
@@ -48,6 +48,10 @@
         <div class="summary-item">
           <span>Deadline:</span>
           <strong>{{ formattedDeadline }}</strong>
+        </div>
+        <div v-if="props.taskDueDate" class="summary-item">
+          <span>Task Due:</span>
+          <strong>{{ formattedTaskDueDate }}</strong>
         </div>
       </BaseCard>
 
@@ -83,6 +87,7 @@ import { BaseButton, BaseCard, BaseInput } from '../base'
 const props = defineProps<{
   taskId: string
   taskTitle?: string
+  taskDueDate?: Date | string
 }>()
 
 // Emits
@@ -103,17 +108,43 @@ const error = ref<string | null>(null)
 // Computed
 const isFormValid = computed(() => {
   const wagerNum = Number(wager.value)
-  return (
-    wagerNum > 0 &&
-    wagerNum <= betStore.points &&
-    deadline.value !== '' &&
-    new Date(deadline.value) > new Date()
-  )
+  if (!(wagerNum > 0 && wagerNum <= betStore.points && deadline.value !== '')) {
+    return false
+  }
+  
+  const deadlineDate = new Date(deadline.value)
+  if (deadlineDate <= new Date()) {
+    return false
+  }
+  
+  // Check if deadline is after task due date (if task has one)
+  if (props.taskDueDate) {
+    const taskDueDate = new Date(props.taskDueDate)
+    if (deadlineDate > taskDueDate) {
+      return false
+    }
+  }
+  
+  return true
+})
+
+const deadlineHint = computed(() => {
+  if (props.taskDueDate) {
+    const taskDueDate = new Date(props.taskDueDate)
+    const formattedDueDate = taskDueDate.toLocaleString()
+    return `When will you start this task? (Task due: ${formattedDueDate})`
+  }
+  return 'When will you start this task?'
 })
 
 const formattedDeadline = computed(() => {
   if (!deadline.value) return ''
   return new Date(deadline.value).toLocaleString()
+})
+
+const formattedTaskDueDate = computed(() => {
+  if (!props.taskDueDate) return ''
+  return new Date(props.taskDueDate).toLocaleString()
 })
 
 // Methods
@@ -143,9 +174,19 @@ async function handleSubmit() {
   }
 
   // Validate deadline is in the future
-  if (new Date(deadline.value) <= new Date()) {
+  const deadlineDate = new Date(deadline.value)
+  if (deadlineDate <= new Date()) {
     error.value = 'Deadline must be in the future'
     return
+  }
+
+  // Validate deadline is not after task due date (if task has one)
+  if (props.taskDueDate) {
+    const taskDueDate = new Date(props.taskDueDate)
+    if (deadlineDate > taskDueDate) {
+      error.value = `Bet deadline cannot be after the task due date (${taskDueDate.toLocaleString()})`
+      return
+    }
   }
 
   error.value = null
@@ -155,7 +196,8 @@ async function handleSubmit() {
     const betId = await betStore.placeBet({
       taskId: props.taskId,
       wager: wagerNum,
-      deadline: new Date(deadline.value).toISOString()
+      deadline: deadlineDate.toISOString(),
+      taskDueDate: props.taskDueDate ? new Date(props.taskDueDate).toISOString() : undefined
     })
 
     // Emit success event
