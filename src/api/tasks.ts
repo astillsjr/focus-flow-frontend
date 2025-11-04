@@ -18,14 +18,14 @@ export interface Task {
 export interface CreateTaskRequest {
   title: string
   description?: string
-  dueDate?: Date | string
+  dueDate?: Date | string | null
 }
 
 export interface UpdateTaskRequest {
   task: string
   title?: string
   description?: string
-  dueDate?: Date | string
+  dueDate?: Date | string | null
 }
 
 export interface GetTasksRequest {

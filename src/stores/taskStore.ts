@@ -111,7 +111,7 @@ export const useTaskStore = defineStore('task', () => {
       const data = await taskAPI.createTask(authStore.accessToken, {
         title: payload.title,
         description: payload.description,
-        dueDate: payload.dueDate
+        dueDate: payload.dueDate ?? null
       })
 
       // ✨ Automatically schedule a nudge for the new task
@@ -182,7 +182,7 @@ export const useTaskStore = defineStore('task', () => {
         task: payload.taskId,
         title: payload.title,
         description: payload.description,
-        dueDate: payload.dueDate
+        dueDate: payload.dueDate ?? null
       })
 
       // Refresh tasks to get updated data
