@@ -2,8 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore'
 import { useBetStore } from './betStore'
-import { useEmotionStore } from './emotionStore'
-import { scheduleNudge, cancelNudge } from '../api/nudges'
 import * as taskAPI from '@/api/tasks'
 import type { Task } from '@/api/tasks'
 
@@ -77,12 +75,12 @@ export const useTaskStore = defineStore('task', () => {
 
     try {
       const result = await taskAPI.getTasks(authStore.accessToken, {
-        page: params.page || 1,
-        limit: params.limit || 100,
-        status: params.status,
-        search: params.search,
-        sortBy: params.sortBy || 'createdAt',
-        sortOrder: params.sortOrder || -1
+        page: params.page ?? null,
+        limit: params.limit ?? null,
+        sortBy: params.sortBy ?? null,
+        sortOrder: params.sortOrder ?? null,
+        status: params.status ?? null,
+        search: params.search ?? null
       })
 
       // Update tasks in store
@@ -114,44 +112,7 @@ export const useTaskStore = defineStore('task', () => {
         dueDate: payload.dueDate ?? null
       })
 
-      // ✨ Automatically schedule a nudge for the new task
-      try {
-        let deliveryTime: Date
-        
-        if (payload.dueDate) {
-          // Calculate halfway point between now and due date
-          const now = new Date()
-          const dueDate = new Date(payload.dueDate)
-          const timeDiff = dueDate.getTime() - now.getTime()
-          
-          if (timeDiff > 0) {
-            // Schedule at the halfway point
-            const halfwayPoint = now.getTime() + (timeDiff / 2)
-            deliveryTime = new Date(halfwayPoint)
-            
-            // Ensure minimum delay of 1 minute
-            const minDelay = new Date(now.getTime() + 60000) // 1 minute
-            if (deliveryTime < minDelay) {
-              deliveryTime = minDelay
-            }
-          } else {
-            // Due date is in the past, schedule for 5 minutes from now
-            deliveryTime = new Date()
-            deliveryTime.setMinutes(deliveryTime.getMinutes() + 5)
-          }
-        } else {
-          // No due date, schedule for 5 minutes from now
-          deliveryTime = new Date()
-          deliveryTime.setMinutes(deliveryTime.getMinutes() + 5)
-        }
-        
-        await scheduleNudge(authStore.accessToken, data.task, deliveryTime.toISOString())
-        
-        console.log('✅ Nudge scheduled successfully for task:', data.task, 'at', deliveryTime.toISOString())
-      } catch (nudgeError) {
-        // Don't fail task creation if nudge scheduling fails
-        console.warn('⚠️ Failed to schedule nudge:', nudgeError)
-      }
+      // Backend automatically schedules a nudge when task is created
 
       // Refresh tasks to get the newly created task
       await fetchTasks()
@@ -208,44 +169,27 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      // Check if there's an active bet for this task and try to cancel it
-      const betStore = useBetStore()
-      if (betStore.hasActiveBet(taskId)) {
-        try {
-          console.log('🎲 Attempting to cancel bet for task:', taskId)
-          await betStore.cancelBet(taskId)
-          console.log('✅ Bet cancelled successfully')
-        } catch (betErr) {
-          // Log the error but don't fail the task deletion
-          console.warn('⚠️ Failed to cancel bet, but continuing with task deletion:', betErr)
-        }
-      }
-
-      // Delete scheduled nudge for this task
-      try {
-        console.log('🔔 Attempting to delete nudge for task:', taskId)
-        await cancelNudge(authStore.accessToken, taskId)
-        console.log('✅ Nudge deleted successfully')
-      } catch (nudgeErr) {
-        // Log the error but don't fail the task deletion
-        console.warn('⚠️ Failed to delete nudge, but continuing with task deletion:', nudgeErr)
-      }
-
-      // Delete emotion logs for this task
-      try {
-        console.log('😊 Attempting to delete emotion logs for task:', taskId)
-        const emotionStore = useEmotionStore()
-        await emotionStore.deleteTaskLogs(taskId)
-        console.log('✅ Emotion logs deleted successfully')
-      } catch (emotionErr) {
-        // Log the error but don't fail the task deletion
-        console.warn('⚠️ Failed to delete emotion logs, but continuing with task deletion:', emotionErr)
-      }
-
+      // Backend automatically cascades deletion of associated bet, nudge, and emotion logs
       await taskAPI.deleteTask(authStore.accessToken, taskId)
 
       // Remove task from local state
       tasks.value = tasks.value.filter(task => task._id !== taskId)
+
+      // Refresh bet store to update profile stats (points, bet counts, etc.)
+      // This handles the case where a bet was refunded due to task deletion
+      const betStore = useBetStore()
+      if (betStore.isInitialized) {
+        try {
+          // Refresh profile and active bets to get updated stats after refund
+          await Promise.all([
+            betStore.fetchProfile(),
+            betStore.fetchActiveBets()
+          ])
+        } catch (err) {
+          // Log error but don't fail task deletion if bet refresh fails
+          console.error('Failed to refresh bet store after task deletion:', err)
+        }
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete task'
       console.error('Delete task error:', err)
@@ -270,33 +214,28 @@ export const useTaskStore = defineStore('task', () => {
       const startTime = new Date().toISOString()
       await taskAPI.markStarted(authStore.accessToken, taskId, startTime)
 
-      // ✨ Check if there's an active bet and resolve it
-      const betStore = useBetStore()
-      if (betStore.hasActiveBet(taskId)) {
-        try {
-          console.log('🎲 Resolving bet for started task:', taskId)
-          const result = await betStore.resolveBet(taskId, startTime)
-          console.log('✅ Bet resolved successfully:', result)
-        } catch (betErr) {
-          // Don't fail the task start if bet resolution fails
-          console.warn('⚠️ Failed to resolve bet, but task was started successfully:', betErr)
-        }
-      }
-
-      // ✨ Cancel scheduled nudge for this task (if it exists)
-      try {
-        console.log('🔔 Attempting to cancel nudge for started task:', taskId)
-        await cancelNudge(authStore.accessToken, taskId)
-        console.log('✅ Nudge cancelled successfully')
-      } catch (nudgeErr) {
-        // Don't fail the task start if nudge cancellation fails
-        console.warn('⚠️ Failed to cancel nudge, but task was started successfully:', nudgeErr)
-      }
+      // Backend automatically resolves any associated bet and cancels any scheduled nudge
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
       if (taskIndex !== -1) {
         tasks.value[taskIndex].startedAt = startTime
+      }
+
+      // Refresh bet store to update profile stats (points, bet counts, etc.)
+      // This handles the case where a bet was resolved when the task started
+      const betStore = useBetStore()
+      if (betStore.isInitialized) {
+        try {
+          // Refresh profile and active bets to get updated stats
+          await Promise.all([
+            betStore.fetchProfile(),
+            betStore.fetchActiveBets()
+          ])
+        } catch (err) {
+          // Log error but don't fail task start if bet refresh fails
+          console.error('Failed to refresh bet store after task start:', err)
+        }
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as started'
@@ -321,20 +260,28 @@ export const useTaskStore = defineStore('task', () => {
     try {
       await taskAPI.markComplete(authStore.accessToken, taskId, new Date().toISOString())
 
-      // ✨ Cancel scheduled nudge for this task (if it exists)
-      try {
-        console.log('🔔 Attempting to cancel nudge for completed task:', taskId)
-        await cancelNudge(authStore.accessToken, taskId)
-        console.log('✅ Nudge cancelled successfully')
-      } catch (nudgeErr) {
-        // Don't fail the task completion if nudge cancellation fails
-        console.warn('⚠️ Failed to cancel nudge, but task was completed successfully:', nudgeErr)
-      }
+      // Backend automatically resolves any associated bet and cancels any scheduled nudge
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
       if (taskIndex !== -1) {
         tasks.value[taskIndex].completedAt = new Date().toISOString()
+      }
+
+      // Refresh bet store to update profile stats (points, bet counts, etc.)
+      // This handles the case where a bet was resolved when the task completed
+      const betStore = useBetStore()
+      if (betStore.isInitialized) {
+        try {
+          // Refresh profile and active bets to get updated stats
+          await Promise.all([
+            betStore.fetchProfile(),
+            betStore.fetchActiveBets()
+          ])
+        } catch (err) {
+          // Log error but don't fail task completion if bet refresh fails
+          console.error('Failed to refresh bet store after task completion:', err)
+        }
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as completed'

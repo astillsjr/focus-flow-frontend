@@ -273,7 +273,7 @@ export const useBetStore = defineStore('bet', () => {
         task: payload.taskId,
         wager: payload.wager,
         deadline: payload.deadline,
-        taskDueDate: payload.taskDueDate
+        taskDueDate: payload.taskDueDate ?? null
       })
 
       // Refresh active bets and profile
@@ -321,62 +321,6 @@ export const useBetStore = defineStore('bet', () => {
   }
 
   /**
-   * Resolve a bet when a task is started/completed
-   */
-  async function resolveBet(taskId: string, completionTime?: Date | string): Promise<betAPI.ResolveBetResponse> {
-    if (!authStore.accessToken) {
-      throw new Error('User not authenticated')
-    }
-
-    isLoading.value = true
-    error.value = null
-
-    try {
-      const data = await betAPI.resolveBet(
-        authStore.accessToken,
-        taskId,
-        completionTime || new Date().toISOString()
-      )
-
-      // Refresh active bets and profile
-      await Promise.all([fetchActiveBets(), fetchProfile()])
-
-      return data
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to resolve bet'
-      console.error('Resolve bet error:', err)
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  /**
-   * Resolve an expired bet (marked as failed)
-   */
-  async function resolveExpiredBet(taskId: string): Promise<void> {
-    if (!authStore.accessToken) {
-      throw new Error('User not authenticated')
-    }
-
-    isLoading.value = true
-    error.value = null
-
-    try {
-      await betAPI.resolveExpiredBet(authStore.accessToken, taskId)
-
-      // Refresh active bets and profile
-      await Promise.all([fetchActiveBets(), fetchProfile()])
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to resolve expired bet'
-      console.error('Resolve expired bet error:', err)
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  /**
    * Get a specific bet for a task
    */
   async function getBet(taskId: string): Promise<Bet | null> {
@@ -415,7 +359,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getRecentActivity(authStore.accessToken, limit)
+      const data = await betAPI.getRecentActivity(authStore.accessToken, limit ?? null)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
@@ -434,18 +378,15 @@ export const useBetStore = defineStore('bet', () => {
   }
 
   /**
-   * Check and resolve any expired bets
+   * Check and refresh expired bets
+   * Note: Backend automatically resolves bets when tasks start/complete
+   * This function just refreshes the expired bets list
    */
   async function checkAndResolveExpiredBets(): Promise<void> {
     try {
-      const expired = await fetchExpiredBets()
-      
-      if (expired.length > 0) {
-        // Resolve all expired bets
-        await Promise.all(
-          expired.map(bet => resolveExpiredBet(bet.task))
-        )
-      }
+      // Just refresh the expired bets list
+      // Backend automatically resolves bets when tasks start/complete
+      await fetchExpiredBets()
     } catch (err) {
       console.error('Error checking expired bets:', err)
     }
@@ -667,8 +608,6 @@ export const useBetStore = defineStore('bet', () => {
     fetchExpiredBets,
     placeBet,
     cancelBet,
-    resolveBet,
-    resolveExpiredBet,
     getBet,
     getRecentActivity,
     checkAndResolveExpiredBets,

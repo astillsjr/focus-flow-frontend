@@ -22,12 +22,12 @@ export interface TaskEmotions {
 }
 
 export interface GetEmotionLogsRequest {
-  page?: number
-  limit?: number
-  phase?: 'before' | 'after'
-  emotion?: string
-  sortBy?: string
-  sortOrder?: 1 | -1
+  page?: number | null
+  limit?: number | null
+  phase?: 'before' | 'after' | null
+  emotion?: string | null
+  sortBy?: string | null
+  sortOrder?: 1 | -1 | null
 }
 
 export interface GetEmotionLogsResponse {
@@ -69,7 +69,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 /**
  * Log an emotion for a task before it is completed
  */
-export async function logBefore(accessToken: string, task: string, emotion: string): Promise<{ log: string }> {
+export async function logBefore(accessToken: string, task: string, emotion: string): Promise<{ log: EmotionLog }> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/logBefore`, {
     method: 'POST',
     headers: {
@@ -77,13 +77,13 @@ export async function logBefore(accessToken: string, task: string, emotion: stri
     },
     body: JSON.stringify({ accessToken, task, emotion })
   })
-  return handleResponse<{ log: string }>(response)
+  return handleResponse<{ log: EmotionLog }>(response)
 }
 
 /**
  * Log an emotion for a task after it is completed
  */
-export async function logAfter(accessToken: string, task: string, emotion: string): Promise<{ log: string }> {
+export async function logAfter(accessToken: string, task: string, emotion: string): Promise<{ log: EmotionLog }> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/logAfter`, {
     method: 'POST',
     headers: {
@@ -91,7 +91,7 @@ export async function logAfter(accessToken: string, task: string, emotion: strin
     },
     body: JSON.stringify({ accessToken, task, emotion })
   })
-  return handleResponse<{ log: string }>(response)
+  return handleResponse<{ log: EmotionLog }>(response)
 }
 
 /**
@@ -153,13 +153,21 @@ export async function getEmotionsForTask(accessToken: string, task: string): Pro
 /**
  * Get emotion logs with pagination and filtering
  */
-export async function getEmotionLogs(accessToken: string, request: GetEmotionLogsRequest): Promise<GetEmotionLogsResponse> {
+export async function getEmotionLogs(accessToken: string, request: GetEmotionLogsRequest = {}): Promise<GetEmotionLogsResponse> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionLogs`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ accessToken, ...request })
+    body: JSON.stringify({
+      accessToken,
+      page: request.page ?? null,
+      limit: request.limit ?? null,
+      phase: request.phase ?? null,
+      emotion: request.emotion ?? null,
+      sortBy: request.sortBy ?? null,
+      sortOrder: request.sortOrder ?? null
+    })
   })
   return handleResponse<GetEmotionLogsResponse>(response)
 }

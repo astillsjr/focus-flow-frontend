@@ -29,12 +29,12 @@ export interface UpdateTaskRequest {
 }
 
 export interface GetTasksRequest {
-  page?: number
-  limit?: number
-  status?: 'pending' | 'in-progress' | 'completed'
-  search?: string
-  sortBy?: string
-  sortOrder?: 1 | -1
+  page?: number | null
+  limit?: number | null
+  status?: 'pending' | 'in-progress' | 'completed' | null
+  search?: string | null
+  sortBy?: string | null
+  sortOrder?: 1 | -1 | null
 }
 
 export interface GetTasksResponse {
@@ -90,7 +90,13 @@ export async function updateTask(accessToken: string, request: UpdateTaskRequest
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ accessToken, ...request })
+    body: JSON.stringify({
+      accessToken,
+      task: request.task,
+      title: request.title ?? null,
+      description: request.description ?? null,
+      dueDate: request.dueDate ?? null
+    })
   })
   return handleResponse<{ task: string }>(response)
 }
@@ -162,19 +168,28 @@ export async function getTask(accessToken: string, task: string): Promise<Task> 
     },
     body: JSON.stringify({ accessToken, task })
   })
-  return handleResponse<Task>(response)
+  const data = await handleResponse<{ task: Task }>(response)
+  return data.task
 }
 
 /**
  * Get a paginated and filtered list of tasks
  */
-export async function getTasks(accessToken: string, request: GetTasksRequest): Promise<GetTasksResponse> {
+export async function getTasks(accessToken: string, request: GetTasksRequest = {}): Promise<GetTasksResponse> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/getTasks`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ accessToken, ...request })
+    body: JSON.stringify({
+      accessToken,
+      page: request.page ?? null,
+      limit: request.limit ?? null,
+      sortBy: request.sortBy ?? null,
+      sortOrder: request.sortOrder ?? null,
+      status: request.status ?? null,
+      search: request.search ?? null
+    })
   })
   return handleResponse<GetTasksResponse>(response)
 }
@@ -182,13 +197,13 @@ export async function getTasks(accessToken: string, request: GetTasksRequest): P
 /**
  * Get the status of a task
  */
-export async function getTaskStatus(accessToken: string, task: Task): Promise<{ status: TaskStatus }> {
+export async function getTaskStatus(accessToken: string, taskId: string): Promise<{ status: TaskStatus }> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/getTaskStatus`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ accessToken, ...task })
+    body: JSON.stringify({ accessToken, task: taskId })
   })
   return handleResponse<{ status: TaskStatus }>(response)
 }

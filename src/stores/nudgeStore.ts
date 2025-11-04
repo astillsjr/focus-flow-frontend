@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useAuthStore } from './authStore'
 import { useTaskStore } from './taskStore'
-import { getReadyNudges, nudgeUser } from '../api/nudges'
+import { getReadyNudges } from '../api/nudges'
 
 export interface ActiveNudge {
   nudgeId: string
@@ -67,31 +67,19 @@ export const useNudgeStore = defineStore('nudge', () => {
           continue
         }
 
-        // Get recent emotions (you can enhance this to actually fetch from emotion store)
-        const recentEmotions: string[] = []
+        // Create a simple nudge message (backend doesn't provide message generation)
+        const message = `Don't forget about "${task.title}"${task.dueDate ? ' - due soon!' : '!'}`
 
-        try {
-          // Call nudgeUser to get the AI-generated message
-          const result = await nudgeUser(authStore.accessToken, {
-            task: nudge.task,
-            title: task.title,
-            description: task.description || '',
-            recentEmotions
-          })
+        // Add to queue instead of directly to active nudges
+        nudgeQueue.value.push({
+          nudgeId: nudge._id,
+          taskId: nudge.task,
+          taskTitle: task.title,
+          message: message,
+          timestamp: new Date()
+        })
 
-          // Add to queue instead of directly to active nudges
-          nudgeQueue.value.push({
-            nudgeId: result.nudge,
-            taskId: nudge.task,
-            taskTitle: task.title,
-            message: result.message,
-            timestamp: new Date()
-          })
-
-          console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
-        } catch (error) {
-          console.error('Failed to trigger nudge:', error)
-        }
+        console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
       }
       
       // Show the first nudge if none are currently active

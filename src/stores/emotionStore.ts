@@ -15,12 +15,12 @@ export interface LogEmotionPayload {
 }
 
 export interface GetEmotionLogsParams {
-  page?: number
-  limit?: number
-  phase?: 'before' | 'after'
-  emotion?: string
-  sortBy?: string
-  sortOrder?: 1 | -1
+  page?: number | null
+  limit?: number | null
+  phase?: 'before' | 'after' | null
+  emotion?: string | null
+  sortBy?: string | null
+  sortOrder?: 1 | -1 | null
 }
 
 export const useEmotionStore = defineStore('emotion', () => {
@@ -77,7 +77,7 @@ export const useEmotionStore = defineStore('emotion', () => {
       // Refresh emotion logs to get the newly created log
       await fetchEmotionLogs()
 
-      return data.log
+      return data.log._id
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to log before emotion'
       console.error('Log before emotion error:', err)
@@ -104,7 +104,7 @@ export const useEmotionStore = defineStore('emotion', () => {
       // Refresh emotion logs to get the newly created log
       await fetchEmotionLogs()
 
-      return data.log
+      return data.log._id
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to log after emotion'
       console.error('Log after emotion error:', err)
@@ -269,12 +269,12 @@ export const useEmotionStore = defineStore('emotion', () => {
 
     try {
       const result = await emotionAPI.getEmotionLogs(authStore.accessToken, {
-        page: params.page || 1,
-        limit: params.limit || 100,
-        phase: params.phase,
-        emotion: params.emotion,
-        sortBy: params.sortBy || 'createdAt',
-        sortOrder: params.sortOrder || -1
+        page: params.page ?? null,
+        limit: params.limit ?? null,
+        phase: params.phase ?? null,
+        emotion: params.emotion ?? null,
+        sortBy: params.sortBy ?? null,
+        sortOrder: params.sortOrder ?? null
       })
 
       // Update emotion logs in store

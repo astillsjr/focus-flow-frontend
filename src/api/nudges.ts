@@ -10,18 +10,7 @@ export interface Nudge {
   task: string
   deliveryTime: Date | string
   triggered: boolean
-}
-
-export interface NudgeUserRequest {
-  task: string
-  title: string
-  description: string
-  recentEmotions: string[]
-}
-
-export interface NudgeUserResponse {
-  message: string
-  nudge: string
+  createdAt: Date | string
 }
 
 // ===== Helper Functions =====
@@ -92,20 +81,6 @@ export async function deleteUserNudges(accessToken: string): Promise<void> {
 }
 
 /**
- * Send a motivational nudge to a user
- */
-export async function nudgeUser(accessToken: string, request: NudgeUserRequest): Promise<NudgeUserResponse> {
-  const response = await fetch(`${API_BASE_URL}/NudgeEngine/nudgeUser`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ accessToken, ...request })
-  })
-  return handleResponse<NudgeUserResponse>(response)
-}
-
-/**
  * Get a specific nudge for a given task
  */
 export async function getNudge(accessToken: string, task: string): Promise<Nudge> {
@@ -116,7 +91,8 @@ export async function getNudge(accessToken: string, task: string): Promise<Nudge
     },
     body: JSON.stringify({ accessToken, task })
   })
-  return handleResponse<Nudge>(response)
+  const data = await handleResponse<{ nudge: Nudge }>(response)
+  return data.nudge
 }
 
 /**
@@ -124,17 +100,22 @@ export async function getNudge(accessToken: string, task: string): Promise<Nudge
  */
 export async function getUserNudges(
   accessToken: string,
-  status?: 'pending' | 'triggered',
-  limit?: number
+  status?: string | null,
+  limit?: number | null
 ): Promise<Nudge[]> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/getUserNudges`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ accessToken, status, limit })
+    body: JSON.stringify({ 
+      accessToken, 
+      status: status ?? null,
+      limit: limit ?? null
+    })
   })
-  return handleResponse<Nudge[]>(response)
+  const data = await handleResponse<{ nudges: Nudge[] }>(response)
+  return data.nudges
 }
 
 /**
@@ -148,5 +129,6 @@ export async function getReadyNudges(accessToken: string): Promise<Nudge[]> {
     },
     body: JSON.stringify({ accessToken })
   })
-  return handleResponse<Nudge[]>(response)
+  const data = await handleResponse<{ nudges: Nudge[] }>(response)
+  return data.nudges
 }
