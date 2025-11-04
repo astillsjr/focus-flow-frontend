@@ -199,10 +199,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // First, delete all user-associated data across services
       await Promise.allSettled([
-        taskAPI.deleteUserTasks(userId.value),
-        emotionAPI.deleteUserLogs(userId.value),
-        nudgeAPI.deleteUserNudges(userId.value),
-        betAPI.removeBettor(userId.value)
+        taskAPI.deleteUserTasks(accessToken.value),
+        emotionAPI.deleteUserLogs(accessToken.value),
+        nudgeAPI.deleteUserNudges(accessToken.value),
+        betAPI.removeBettor(accessToken.value)
       ])
 
       // Then delete the account in authentication service

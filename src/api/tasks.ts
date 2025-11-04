@@ -16,14 +16,12 @@ export interface Task {
 }
 
 export interface CreateTaskRequest {
-  user: string
   title: string
   description?: string
   dueDate?: Date | string
 }
 
 export interface UpdateTaskRequest {
-  user: string
   task: string
   title?: string
   description?: string
@@ -31,7 +29,6 @@ export interface UpdateTaskRequest {
 }
 
 export interface GetTasksRequest {
-  user: string
   page?: number
   limit?: number
   status?: 'pending' | 'in-progress' | 'completed'
@@ -73,13 +70,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
 /**
  * Create a new task
  */
-export async function createTask(request: CreateTaskRequest): Promise<{ task: string }> {
+export async function createTask(accessToken: string, request: CreateTaskRequest): Promise<{ task: string }> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/createTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify({ accessToken, ...request })
   })
   return handleResponse<{ task: string }>(response)
 }
@@ -87,13 +84,13 @@ export async function createTask(request: CreateTaskRequest): Promise<{ task: st
 /**
  * Update an existing task
  */
-export async function updateTask(request: UpdateTaskRequest): Promise<{ task: string }> {
+export async function updateTask(accessToken: string, request: UpdateTaskRequest): Promise<{ task: string }> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/updateTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify({ accessToken, ...request })
   })
   return handleResponse<{ task: string }>(response)
 }
@@ -101,13 +98,13 @@ export async function updateTask(request: UpdateTaskRequest): Promise<{ task: st
 /**
  * Mark a task as started
  */
-export async function markStarted(user: string, task: string, timeStarted: Date | string): Promise<void> {
+export async function markStarted(accessToken: string, task: string, timeStarted: Date | string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/markStarted`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task, timeStarted })
+    body: JSON.stringify({ accessToken, task, timeStarted })
   })
   await handleResponse<{}>(response)
 }
@@ -115,13 +112,13 @@ export async function markStarted(user: string, task: string, timeStarted: Date 
 /**
  * Mark a task as completed
  */
-export async function markComplete(user: string, task: string, timeCompleted: Date | string): Promise<void> {
+export async function markComplete(accessToken: string, task: string, timeCompleted: Date | string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/markComplete`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task, timeCompleted })
+    body: JSON.stringify({ accessToken, task, timeCompleted })
   })
   await handleResponse<{}>(response)
 }
@@ -129,13 +126,13 @@ export async function markComplete(user: string, task: string, timeCompleted: Da
 /**
  * Delete a single task
  */
-export async function deleteTask(user: string, task: string): Promise<void> {
+export async function deleteTask(accessToken: string, task: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/deleteTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   await handleResponse<{}>(response)
 }
@@ -143,13 +140,13 @@ export async function deleteTask(user: string, task: string): Promise<void> {
 /**
  * Delete all tasks for a user
  */
-export async function deleteUserTasks(user: string): Promise<void> {
+export async function deleteUserTasks(accessToken: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/deleteUserTasks`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   await handleResponse<{}>(response)
 }
@@ -157,13 +154,13 @@ export async function deleteUserTasks(user: string): Promise<void> {
 /**
  * Get a single task by ID
  */
-export async function getTask(user: string, task: string): Promise<Task> {
+export async function getTask(accessToken: string, task: string): Promise<Task> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/getTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   return handleResponse<Task>(response)
 }
@@ -171,13 +168,13 @@ export async function getTask(user: string, task: string): Promise<Task> {
 /**
  * Get a paginated and filtered list of tasks
  */
-export async function getTasks(request: GetTasksRequest): Promise<GetTasksResponse> {
+export async function getTasks(accessToken: string, request: GetTasksRequest): Promise<GetTasksResponse> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/getTasks`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify({ accessToken, ...request })
   })
   return handleResponse<GetTasksResponse>(response)
 }
@@ -185,13 +182,13 @@ export async function getTasks(request: GetTasksRequest): Promise<GetTasksRespon
 /**
  * Get the status of a task
  */
-export async function getTaskStatus(task: Task): Promise<{ status: TaskStatus }> {
+export async function getTaskStatus(accessToken: string, task: Task): Promise<{ status: TaskStatus }> {
   const response = await fetch(`${API_BASE_URL}/TaskManager/getTaskStatus`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(task)
+    body: JSON.stringify({ accessToken, ...task })
   })
   return handleResponse<{ status: TaskStatus }>(response)
 }

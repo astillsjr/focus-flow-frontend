@@ -68,7 +68,7 @@ export const useTaskStore = defineStore('task', () => {
    * Fetch tasks from the API
    */
   async function fetchTasks(params: GetTasksParams = {}): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -76,8 +76,7 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const result = await taskAPI.getTasks({
-        user: authStore.userId,
+      const result = await taskAPI.getTasks(authStore.accessToken, {
         page: params.page || 1,
         limit: params.limit || 100,
         status: params.status,
@@ -101,7 +100,7 @@ export const useTaskStore = defineStore('task', () => {
    * Create a new task
    */
   async function addTask(payload: CreateTaskPayload): Promise<string> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -109,8 +108,7 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      const data = await taskAPI.createTask({
-        user: authStore.userId,
+      const data = await taskAPI.createTask(authStore.accessToken, {
         title: payload.title,
         description: payload.description,
         dueDate: payload.dueDate
@@ -147,7 +145,7 @@ export const useTaskStore = defineStore('task', () => {
           deliveryTime.setMinutes(deliveryTime.getMinutes() + 5)
         }
         
-        await scheduleNudge(authStore.userId, data.task, deliveryTime.toISOString())
+        await scheduleNudge(authStore.accessToken, data.task, deliveryTime.toISOString())
         
         console.log('✅ Nudge scheduled successfully for task:', data.task, 'at', deliveryTime.toISOString())
       } catch (nudgeError) {
@@ -172,7 +170,7 @@ export const useTaskStore = defineStore('task', () => {
    * Update an existing task
    */
   async function updateTask(payload: UpdateTaskPayload): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -180,8 +178,7 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      await taskAPI.updateTask({
-        user: authStore.userId,
+      await taskAPI.updateTask(authStore.accessToken, {
         task: payload.taskId,
         title: payload.title,
         description: payload.description,
@@ -203,7 +200,7 @@ export const useTaskStore = defineStore('task', () => {
    * Delete a task
    */
   async function deleteTask(taskId: string): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -227,7 +224,7 @@ export const useTaskStore = defineStore('task', () => {
       // Delete scheduled nudge for this task
       try {
         console.log('🔔 Attempting to delete nudge for task:', taskId)
-        await cancelNudge(authStore.userId, taskId)
+        await cancelNudge(authStore.accessToken, taskId)
         console.log('✅ Nudge deleted successfully')
       } catch (nudgeErr) {
         // Log the error but don't fail the task deletion
@@ -245,7 +242,7 @@ export const useTaskStore = defineStore('task', () => {
         console.warn('⚠️ Failed to delete emotion logs, but continuing with task deletion:', emotionErr)
       }
 
-      await taskAPI.deleteTask(authStore.userId, taskId)
+      await taskAPI.deleteTask(authStore.accessToken, taskId)
 
       // Remove task from local state
       tasks.value = tasks.value.filter(task => task._id !== taskId)
@@ -262,7 +259,7 @@ export const useTaskStore = defineStore('task', () => {
    * Mark a task as started
    */
   async function markStarted(taskId: string): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -271,7 +268,7 @@ export const useTaskStore = defineStore('task', () => {
 
     try {
       const startTime = new Date().toISOString()
-      await taskAPI.markStarted(authStore.userId, taskId, startTime)
+      await taskAPI.markStarted(authStore.accessToken, taskId, startTime)
 
       // ✨ Check if there's an active bet and resolve it
       const betStore = useBetStore()
@@ -289,7 +286,7 @@ export const useTaskStore = defineStore('task', () => {
       // ✨ Cancel scheduled nudge for this task (if it exists)
       try {
         console.log('🔔 Attempting to cancel nudge for started task:', taskId)
-        await cancelNudge(authStore.userId, taskId)
+        await cancelNudge(authStore.accessToken, taskId)
         console.log('✅ Nudge cancelled successfully')
       } catch (nudgeErr) {
         // Don't fail the task start if nudge cancellation fails
@@ -314,7 +311,7 @@ export const useTaskStore = defineStore('task', () => {
    * Mark a task as completed
    */
   async function markCompleted(taskId: string): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -322,12 +319,12 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
 
     try {
-      await taskAPI.markComplete(authStore.userId, taskId, new Date().toISOString())
+      await taskAPI.markComplete(authStore.accessToken, taskId, new Date().toISOString())
 
       // ✨ Cancel scheduled nudge for this task (if it exists)
       try {
         console.log('🔔 Attempting to cancel nudge for completed task:', taskId)
-        await cancelNudge(authStore.userId, taskId)
+        await cancelNudge(authStore.accessToken, taskId)
         console.log('✅ Nudge cancelled successfully')
       } catch (nudgeErr) {
         // Don't fail the task completion if nudge cancellation fails

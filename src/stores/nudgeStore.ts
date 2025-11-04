@@ -40,11 +40,11 @@ export const useNudgeStore = defineStore('nudge', () => {
    * Check for ready nudges and trigger them
    */
   async function checkForReadyNudges(): Promise<void> {
-    if (!authStore.userId) return
+    if (!authStore.accessToken) return
 
     try {
       // Get all ready-to-deliver nudges
-      const readyNudges = await getReadyNudges(authStore.userId)
+      const readyNudges = await getReadyNudges(authStore.accessToken)
 
       if (readyNudges.length > 0) {
         console.log(`📬 Found ${readyNudges.length} ready nudge(s)`)
@@ -72,8 +72,7 @@ export const useNudgeStore = defineStore('nudge', () => {
 
         try {
           // Call nudgeUser to get the AI-generated message
-          const result = await nudgeUser({
-            user: authStore.userId,
+          const result = await nudgeUser(authStore.accessToken, {
             task: nudge.task,
             title: task.title,
             description: task.description || '',

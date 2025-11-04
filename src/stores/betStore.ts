@@ -90,7 +90,7 @@ export const useBetStore = defineStore('bet', () => {
    * Initialize a betting profile for the current user
    */
   async function initializeBettor(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -98,7 +98,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      await betAPI.initializeBettor(authStore.userId)
+      await betAPI.initializeBettor(authStore.accessToken)
 
       // Fetch the profile after initialization
       await fetchProfile()
@@ -118,7 +118,7 @@ export const useBetStore = defineStore('bet', () => {
    * Fetch the user's betting profile
    */
   async function fetchProfile(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -126,7 +126,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getUserProfile(authStore.userId)
+      const data = await betAPI.getUserProfile(authStore.accessToken)
       profile.value = data
       isInitialized.value = true
       
@@ -145,7 +145,7 @@ export const useBetStore = defineStore('bet', () => {
    * Fetch all active bets for the current user
    */
   async function fetchActiveBets(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -153,7 +153,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getActiveBets(authStore.userId)
+      const data = await betAPI.getActiveBets(authStore.accessToken)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
@@ -186,7 +186,7 @@ export const useBetStore = defineStore('bet', () => {
    * Fetch all bets (including resolved) for the current user
    */
   async function fetchAllBets(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -194,7 +194,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getRecentActivity(authStore.userId, 1000) // Get up to 1000 bets
+      const data = await betAPI.getRecentActivity(authStore.accessToken, 1000) // Get up to 1000 bets
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
@@ -223,7 +223,7 @@ export const useBetStore = defineStore('bet', () => {
    * Fetch expired bets for the current user
    */
   async function fetchExpiredBets(): Promise<Bet[]> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -231,7 +231,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getExpiredBets(authStore.userId)
+      const data = await betAPI.getExpiredBets(authStore.accessToken)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
@@ -257,7 +257,7 @@ export const useBetStore = defineStore('bet', () => {
    * Place a new bet on a task
    */
   async function placeBet(payload: PlaceBetPayload): Promise<string> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -269,8 +269,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.placeBet({
-        user: authStore.userId,
+      const data = await betAPI.placeBet(authStore.accessToken, {
         task: payload.taskId,
         wager: payload.wager,
         deadline: payload.deadline,
@@ -294,7 +293,7 @@ export const useBetStore = defineStore('bet', () => {
    * Cancel a bet for a task
    */
   async function cancelBet(taskId: string): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -302,7 +301,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      await betAPI.cancelBet(authStore.userId, taskId)
+      await betAPI.cancelBet(authStore.accessToken, taskId)
 
       // Remove bet from local state
       bets.value = bets.value.filter(bet => bet.task !== taskId)
@@ -325,7 +324,7 @@ export const useBetStore = defineStore('bet', () => {
    * Resolve a bet when a task is started/completed
    */
   async function resolveBet(taskId: string, completionTime?: Date | string): Promise<betAPI.ResolveBetResponse> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -334,7 +333,7 @@ export const useBetStore = defineStore('bet', () => {
 
     try {
       const data = await betAPI.resolveBet(
-        authStore.userId,
+        authStore.accessToken,
         taskId,
         completionTime || new Date().toISOString()
       )
@@ -356,7 +355,7 @@ export const useBetStore = defineStore('bet', () => {
    * Resolve an expired bet (marked as failed)
    */
   async function resolveExpiredBet(taskId: string): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -364,7 +363,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      await betAPI.resolveExpiredBet(authStore.userId, taskId)
+      await betAPI.resolveExpiredBet(authStore.accessToken, taskId)
 
       // Refresh active bets and profile
       await Promise.all([fetchActiveBets(), fetchProfile()])
@@ -381,7 +380,7 @@ export const useBetStore = defineStore('bet', () => {
    * Get a specific bet for a task
    */
   async function getBet(taskId: string): Promise<Bet | null> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -389,7 +388,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getBet(authStore.userId, taskId)
+      const data = await betAPI.getBet(authStore.accessToken, taskId)
       return data
     } catch (err) {
       // If bet doesn't exist, return null instead of throwing
@@ -408,7 +407,7 @@ export const useBetStore = defineStore('bet', () => {
    * Get recent betting activity
    */
   async function getRecentActivity(limit: number = 10): Promise<Bet[]> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -416,7 +415,7 @@ export const useBetStore = defineStore('bet', () => {
     error.value = null
 
     try {
-      const data = await betAPI.getRecentActivity(authStore.userId, limit)
+      const data = await betAPI.getRecentActivity(authStore.accessToken, limit)
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {

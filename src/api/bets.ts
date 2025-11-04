@@ -16,7 +16,6 @@ export interface Bet {
 }
 
 export interface PlaceBetRequest {
-  user: string
   task: string
   wager: number
   deadline: Date | string
@@ -65,13 +64,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
 /**
  * Initialize a user in the betting system
  */
-export async function initializeBettor(user: string): Promise<void> {
+export async function initializeBettor(accessToken: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/initializeBettor`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   await handleResponse<{}>(response)
 }
@@ -79,13 +78,13 @@ export async function initializeBettor(user: string): Promise<void> {
 /**
  * Remove a user and their bets from the system
  */
-export async function removeBettor(user: string): Promise<void> {
+export async function removeBettor(accessToken: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/removeBettor`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   await handleResponse<{}>(response)
 }
@@ -93,13 +92,13 @@ export async function removeBettor(user: string): Promise<void> {
 /**
  * Place a new bet on a task
  */
-export async function placeBet(request: PlaceBetRequest): Promise<{ bet: string }> {
+export async function placeBet(accessToken: string, request: PlaceBetRequest): Promise<{ bet: string }> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/placeBet`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify({ accessToken, ...request })
   })
   return handleResponse<{ bet: string }>(response)
 }
@@ -107,13 +106,13 @@ export async function placeBet(request: PlaceBetRequest): Promise<{ bet: string 
 /**
  * Cancel an existing bet
  */
-export async function cancelBet(user: string, task: string): Promise<void> {
+export async function cancelBet(accessToken: string, task: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/cancelBet`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   await handleResponse<{}>(response)
 }
@@ -122,7 +121,7 @@ export async function cancelBet(user: string, task: string): Promise<void> {
  * Resolve a bet when a task is completed
  */
 export async function resolveBet(
-  user: string,
+  accessToken: string,
   task: string,
   completionTime: Date | string
 ): Promise<ResolveBetResponse> {
@@ -131,7 +130,7 @@ export async function resolveBet(
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task, completionTime })
+    body: JSON.stringify({ accessToken, task, completionTime })
   })
   return handleResponse<ResolveBetResponse>(response)
 }
@@ -139,13 +138,13 @@ export async function resolveBet(
 /**
  * Resolve a bet that has passed its deadline
  */
-export async function resolveExpiredBet(user: string, task: string): Promise<ResolveExpiredBetResponse> {
+export async function resolveExpiredBet(accessToken: string, task: string): Promise<ResolveExpiredBetResponse> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/resolveExpiredBet`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   return handleResponse<ResolveExpiredBetResponse>(response)
 }
@@ -153,13 +152,13 @@ export async function resolveExpiredBet(user: string, task: string): Promise<Res
 /**
  * Get a specific bet for a user
  */
-export async function getBet(user: string, task: string): Promise<Bet> {
+export async function getBet(accessToken: string, task: string): Promise<Bet> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/getBet`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   return handleResponse<Bet>(response)
 }
@@ -167,13 +166,13 @@ export async function getBet(user: string, task: string): Promise<Bet> {
 /**
  * Get all active (unresolved) bets for a user
  */
-export async function getActiveBets(user: string): Promise<Bet[]> {
+export async function getActiveBets(accessToken: string): Promise<Bet[]> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/getActiveBets`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   return handleResponse<Bet[]>(response)
 }
@@ -181,13 +180,13 @@ export async function getActiveBets(user: string): Promise<Bet[]> {
 /**
  * Get all expired (unresolved and past-deadline) bets for a user
  */
-export async function getExpiredBets(user: string): Promise<Bet[]> {
+export async function getExpiredBets(accessToken: string): Promise<Bet[]> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/getExpiredBets`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   return handleResponse<Bet[]>(response)
 }
@@ -195,13 +194,13 @@ export async function getExpiredBets(user: string): Promise<Bet[]> {
 /**
  * Get the user's overall betting profile and statistics
  */
-export async function getUserProfile(user: string): Promise<UserProfile> {
+export async function getUserProfile(accessToken: string): Promise<UserProfile> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/getUserProfile`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   return handleResponse<UserProfile>(response)
 }
@@ -209,13 +208,13 @@ export async function getUserProfile(user: string): Promise<UserProfile> {
 /**
  * Get recent betting activity for a user
  */
-export async function getRecentActivity(user: string, limit?: number): Promise<Bet[]> {
+export async function getRecentActivity(accessToken: string, limit?: number): Promise<Bet[]> {
   const response = await fetch(`${API_BASE_URL}/MicroBet/getRecentActivity`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, limit })
+    body: JSON.stringify({ accessToken, limit })
   })
   return handleResponse<Bet[]>(response)
 }

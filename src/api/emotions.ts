@@ -22,7 +22,6 @@ export interface TaskEmotions {
 }
 
 export interface GetEmotionLogsRequest {
-  user: string
   page?: number
   limit?: number
   phase?: 'before' | 'after'
@@ -70,13 +69,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
 /**
  * Log an emotion for a task before it is completed
  */
-export async function logBefore(user: string, task: string, emotion: string): Promise<{ log: string }> {
+export async function logBefore(accessToken: string, task: string, emotion: string): Promise<{ log: string }> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/logBefore`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task, emotion })
+    body: JSON.stringify({ accessToken, task, emotion })
   })
   return handleResponse<{ log: string }>(response)
 }
@@ -84,13 +83,13 @@ export async function logBefore(user: string, task: string, emotion: string): Pr
 /**
  * Log an emotion for a task after it is completed
  */
-export async function logAfter(user: string, task: string, emotion: string): Promise<{ log: string }> {
+export async function logAfter(accessToken: string, task: string, emotion: string): Promise<{ log: string }> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/logAfter`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task, emotion })
+    body: JSON.stringify({ accessToken, task, emotion })
   })
   return handleResponse<{ log: string }>(response)
 }
@@ -98,13 +97,13 @@ export async function logAfter(user: string, task: string, emotion: string): Pro
 /**
  * Delete all emotion logs for a specific task
  */
-export async function deleteTaskLogs(user: string, task: string): Promise<void> {
+export async function deleteTaskLogs(accessToken: string, task: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/deleteTaskLogs`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   await handleResponse<{}>(response)
 }
@@ -112,13 +111,13 @@ export async function deleteTaskLogs(user: string, task: string): Promise<void> 
 /**
  * Delete all emotion logs for a specific user
  */
-export async function deleteUserLogs(user: string): Promise<void> {
+export async function deleteUserLogs(accessToken: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/deleteUserLogs`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   await handleResponse<{}>(response)
 }
@@ -126,13 +125,13 @@ export async function deleteUserLogs(user: string): Promise<void> {
 /**
  * Generate a reflection analyzing the user's recent emotional patterns
  */
-export async function analyzeRecentEmotions(user: string): Promise<{ analysis: string }> {
+export async function analyzeRecentEmotions(accessToken: string): Promise<{ analysis: string }> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/analyzeRecentEmotions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   return handleResponse<{ analysis: string }>(response)
 }
@@ -140,13 +139,13 @@ export async function analyzeRecentEmotions(user: string): Promise<{ analysis: s
 /**
  * Get all logged emotions for a specific task
  */
-export async function getEmotionsForTask(user: string, task: string): Promise<TaskEmotions> {
+export async function getEmotionsForTask(accessToken: string, task: string): Promise<TaskEmotions> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionsForTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   return handleResponse<TaskEmotions>(response)
 }
@@ -154,13 +153,13 @@ export async function getEmotionsForTask(user: string, task: string): Promise<Ta
 /**
  * Get emotion logs with pagination and filtering
  */
-export async function getEmotionLogs(request: GetEmotionLogsRequest): Promise<GetEmotionLogsResponse> {
+export async function getEmotionLogs(accessToken: string, request: GetEmotionLogsRequest): Promise<GetEmotionLogsResponse> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionLogs`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify({ accessToken, ...request })
   })
   return handleResponse<GetEmotionLogsResponse>(response)
 }
@@ -168,13 +167,13 @@ export async function getEmotionLogs(request: GetEmotionLogsRequest): Promise<Ge
 /**
  * Get overall emotion statistics for a user
  */
-export async function getEmotionStats(user: string): Promise<EmotionStats> {
+export async function getEmotionStats(accessToken: string): Promise<EmotionStats> {
   const response = await fetch(`${API_BASE_URL}/EmotionLogger/getEmotionStats`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   return handleResponse<EmotionStats>(response)
 }

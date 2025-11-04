@@ -13,7 +13,6 @@ export interface Nudge {
 }
 
 export interface NudgeUserRequest {
-  user: string
   task: string
   title: string
   description: string
@@ -50,7 +49,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  * Schedule a new nudge for a task
  */
 export async function scheduleNudge(
-  user: string,
+  accessToken: string,
   task: string,
   deliveryTime: Date | string
 ): Promise<{ nudge: string }> {
@@ -59,7 +58,7 @@ export async function scheduleNudge(
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task, deliveryTime })
+    body: JSON.stringify({ accessToken, task, deliveryTime })
   })
   return handleResponse<{ nudge: string }>(response)
 }
@@ -67,13 +66,13 @@ export async function scheduleNudge(
 /**
  * Cancel (delete) a scheduled nudge
  */
-export async function cancelNudge(user: string, task: string): Promise<void> {
+export async function cancelNudge(accessToken: string, task: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/cancelNudge`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   await handleResponse<{}>(response)
 }
@@ -81,13 +80,13 @@ export async function cancelNudge(user: string, task: string): Promise<void> {
 /**
  * Delete all nudges associated with a user
  */
-export async function deleteUserNudges(user: string): Promise<void> {
+export async function deleteUserNudges(accessToken: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/deleteUserNudges`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   await handleResponse<{}>(response)
 }
@@ -95,13 +94,13 @@ export async function deleteUserNudges(user: string): Promise<void> {
 /**
  * Send a motivational nudge to a user
  */
-export async function nudgeUser(request: NudgeUserRequest): Promise<NudgeUserResponse> {
+export async function nudgeUser(accessToken: string, request: NudgeUserRequest): Promise<NudgeUserResponse> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/nudgeUser`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify({ accessToken, ...request })
   })
   return handleResponse<NudgeUserResponse>(response)
 }
@@ -109,13 +108,13 @@ export async function nudgeUser(request: NudgeUserRequest): Promise<NudgeUserRes
 /**
  * Get a specific nudge for a given task
  */
-export async function getNudge(user: string, task: string): Promise<Nudge> {
+export async function getNudge(accessToken: string, task: string): Promise<Nudge> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/getNudge`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, task })
+    body: JSON.stringify({ accessToken, task })
   })
   return handleResponse<Nudge>(response)
 }
@@ -124,7 +123,7 @@ export async function getNudge(user: string, task: string): Promise<Nudge> {
  * Get all nudges for a user with optional filtering
  */
 export async function getUserNudges(
-  user: string,
+  accessToken: string,
   status?: 'pending' | 'triggered',
   limit?: number
 ): Promise<Nudge[]> {
@@ -133,7 +132,7 @@ export async function getUserNudges(
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user, status, limit })
+    body: JSON.stringify({ accessToken, status, limit })
   })
   return handleResponse<Nudge[]>(response)
 }
@@ -141,13 +140,13 @@ export async function getUserNudges(
 /**
  * Get all ready-to-deliver nudges for a user
  */
-export async function getReadyNudges(user: string): Promise<Nudge[]> {
+export async function getReadyNudges(accessToken: string): Promise<Nudge[]> {
   const response = await fetch(`${API_BASE_URL}/NudgeEngine/getReadyNudges`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ user })
+    body: JSON.stringify({ accessToken })
   })
   return handleResponse<Nudge[]>(response)
 }

@@ -64,7 +64,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Log emotion before starting a task
    */
   async function logBefore(payload: LogEmotionPayload): Promise<string> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -72,7 +72,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const data = await emotionAPI.logBefore(authStore.userId, payload.taskId, payload.emotion)
+      const data = await emotionAPI.logBefore(authStore.accessToken, payload.taskId, payload.emotion)
 
       // Refresh emotion logs to get the newly created log
       await fetchEmotionLogs()
@@ -91,7 +91,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Log emotion after completing a task
    */
   async function logAfter(payload: LogEmotionPayload): Promise<string> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -99,7 +99,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const data = await emotionAPI.logAfter(authStore.userId, payload.taskId, payload.emotion)
+      const data = await emotionAPI.logAfter(authStore.accessToken, payload.taskId, payload.emotion)
 
       // Refresh emotion logs to get the newly created log
       await fetchEmotionLogs()
@@ -118,7 +118,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Delete all emotion logs for a specific task
    */
   async function deleteTaskLogs(taskId: string): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -126,7 +126,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      await emotionAPI.deleteTaskLogs(authStore.userId, taskId)
+      await emotionAPI.deleteTaskLogs(authStore.accessToken, taskId)
 
       // Remove logs from local state
       emotionLogs.value = emotionLogs.value.filter(log => log.task !== taskId)
@@ -143,7 +143,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Delete all emotion logs for the current user
    */
   async function deleteUserLogs(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -151,7 +151,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      await emotionAPI.deleteUserLogs(authStore.userId)
+      await emotionAPI.deleteUserLogs(authStore.accessToken)
 
       // Clear all logs from local state
       emotionLogs.value = []
@@ -170,7 +170,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Get emotion statistics for the current user
    */
   async function fetchEmotionStats(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -178,7 +178,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const data = await emotionAPI.getEmotionStats(authStore.userId)
+      const data = await emotionAPI.getEmotionStats(authStore.accessToken)
 
       stats.value = data
     } catch (err) {
@@ -203,7 +203,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Analyze recent emotions for the current user
    */
   async function analyzeRecentEmotions(): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -211,7 +211,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const data = await emotionAPI.analyzeRecentEmotions(authStore.userId)
+      const data = await emotionAPI.analyzeRecentEmotions(authStore.accessToken)
 
       analysis.value = data.analysis
     } catch (err) {
@@ -236,7 +236,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Get emotions for a specific task
    */
   async function getEmotionsForTask(taskId: string): Promise<TaskEmotions> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -244,7 +244,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const data = await emotionAPI.getEmotionsForTask(authStore.userId, taskId)
+      const data = await emotionAPI.getEmotionsForTask(authStore.accessToken, taskId)
 
       return data
     } catch (err) {
@@ -260,7 +260,7 @@ export const useEmotionStore = defineStore('emotion', () => {
    * Fetch emotion logs with optional filtering and pagination
    */
   async function fetchEmotionLogs(params: GetEmotionLogsParams = {}): Promise<void> {
-    if (!authStore.userId) {
+    if (!authStore.accessToken) {
       throw new Error('User not authenticated')
     }
 
@@ -268,8 +268,7 @@ export const useEmotionStore = defineStore('emotion', () => {
     error.value = null
 
     try {
-      const result = await emotionAPI.getEmotionLogs({
-        user: authStore.userId,
+      const result = await emotionAPI.getEmotionLogs(authStore.accessToken, {
         page: params.page || 1,
         limit: params.limit || 100,
         phase: params.phase,
