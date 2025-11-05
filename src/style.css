@@ -13,12 +13,12 @@
 }
 
 :root {
-  /* Typography - Material Design uses Roboto */
+  /* Typography */
   font-family: 'Roboto', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   
-  /* Color scheme - Material Design Dark Theme */
+  /* Color scheme */
   color-scheme: dark;
   color: #FFFFFF;
   background-color: #121212;
@@ -29,7 +29,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
-  /* Scrollbar styling - dark theme */
+  /* Scrollbar styling */
   scrollbar-width: thin;
   scrollbar-color: #4D4D4D #121212;
 }
