@@ -17,5 +17,8 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
-  }
+  },
+  build: {
+    target: 'es2022', // Support top-level await
+  },
 })
