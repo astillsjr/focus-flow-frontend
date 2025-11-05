@@ -324,7 +324,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
+      // For SSE, connect directly to backend to avoid Vite proxy issues with long-lived connections
+      // Use environment variable if set, otherwise default to backend URL
+      const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000/api'
       const url = `${API_BASE_URL}/events/stream?accessToken=${accessToken.value}`
       
       eventSource = new EventSource(url)
