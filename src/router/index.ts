@@ -1,6 +1,14 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 
+// Type definition for route meta
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    requiresGuest?: boolean
+  }
+}
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -27,7 +35,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/tasks',
-    name: 'Dashboard',
+    name: 'Tasks',
     component: () => import('../components/tasks/TasksDashboard.vue'),
     meta: { requiresAuth: true }
   },
@@ -66,7 +74,7 @@ router.beforeEach((to, _from, next) => {
     next({ name: 'Login' })
   } else if (to.meta.requiresGuest && isAuthenticated) {
     // Redirect to dashboard if already logged in
-    next({ name: 'Dashboard' })
+    next({ name: 'Tasks' })
   } else {
     next()
   }
