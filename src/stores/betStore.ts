@@ -106,7 +106,6 @@ export const useBetStore = defineStore('bet', () => {
       persistInitializedFlag()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to initialize bettor'
-      console.error('Initialize bettor error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -133,7 +132,6 @@ export const useBetStore = defineStore('bet', () => {
       persistProfile()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch profile'
-      console.error('Fetch profile error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -156,7 +154,6 @@ export const useBetStore = defineStore('bet', () => {
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
-        console.error('API returned non-array data for bets:', data)
         bets.value = []
       } else {
         bets.value = data
@@ -166,7 +163,6 @@ export const useBetStore = defineStore('bet', () => {
       persistBets()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch active bets'
-      console.error('Fetch active bets error:', err)
       // Ensure bets remains an array even on error
       if (!Array.isArray(bets.value)) {
         bets.value = []
@@ -197,7 +193,6 @@ export const useBetStore = defineStore('bet', () => {
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
-        console.error('API returned non-array data for bets:', data)
         bets.value = []
       } else {
         bets.value = data
@@ -207,7 +202,6 @@ export const useBetStore = defineStore('bet', () => {
       persistBets()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch all bets'
-      console.error('Fetch all bets error:', err)
       // Ensure bets remains an array even on error
       if (!Array.isArray(bets.value)) {
         bets.value = []
@@ -234,14 +228,12 @@ export const useBetStore = defineStore('bet', () => {
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
-        console.error('API returned non-array data for expired bets:', data)
         return []
       }
       
       return data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch expired bets'
-      console.error('Fetch expired bets error:', err)
       // If profile doesn't exist, return empty array instead of throwing
       if (err instanceof Error && err.message.includes('profile not found')) {
         return []
@@ -281,7 +273,6 @@ export const useBetStore = defineStore('bet', () => {
       return data.bet
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to place bet'
-      console.error('Place bet error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -312,7 +303,6 @@ export const useBetStore = defineStore('bet', () => {
       persistBets()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to cancel bet'
-      console.error('Cancel bet error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -339,7 +329,6 @@ export const useBetStore = defineStore('bet', () => {
         return null
       }
       error.value = err instanceof Error ? err.message : 'Failed to get bet'
-      console.error('Get bet error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -362,14 +351,12 @@ export const useBetStore = defineStore('bet', () => {
       
       // Sanity check - ensure data is an array
       if (!Array.isArray(data)) {
-        console.error('API returned non-array data for recent activity:', data)
         return []
       }
       
       return data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to get recent activity'
-      console.error('Get recent activity error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -386,7 +373,7 @@ export const useBetStore = defineStore('bet', () => {
       // Also refresh profile to update points/stats
       await fetchProfile()
     } catch (err) {
-      console.error('Error refreshing bets:', err)
+      // Silently handle refresh errors
     }
   }
 
@@ -466,7 +453,7 @@ export const useBetStore = defineStore('bet', () => {
       try {
         profile.value = JSON.parse(storedProfile)
       } catch (err) {
-        console.error('Failed to parse stored profile:', err)
+        // Silently handle parse errors
       }
     }
 
@@ -476,7 +463,6 @@ export const useBetStore = defineStore('bet', () => {
         // Ensure bets is always an array
         bets.value = Array.isArray(parsed) ? parsed : []
       } catch (err) {
-        console.error('Failed to parse stored bets:', err)
         bets.value = []
       }
     } else {
@@ -486,34 +472,26 @@ export const useBetStore = defineStore('bet', () => {
 
     // Try to fetch profile from server
     try {
-      console.log('📊 Fetching betting profile...')
       await fetchProfile()
       isInitialized.value = true
-      console.log('✅ Betting profile loaded successfully')
     } catch (err) {
-      console.log('⚠️ Profile fetch failed:', err instanceof Error ? err.message : err)
       // If profile doesn't exist and not already initialized, initialize it
       if (bettorInitialized !== authStore.userId) {
         try {
-          console.log('🔄 Initializing new bettor profile...')
           await initializeBettor()
           isInitialized.value = true
-          console.log('✅ Bettor profile initialized successfully')
         } catch (initErr) {
-          console.error('❌ Failed to initialize bettor:', initErr)
           // If initialization fails, stop here - don't try to fetch bets
           return
         }
       } else {
         // Profile doesn't exist and we can't/shouldn't initialize
-        console.log('⚠️ Betting profile not initialized yet - user needs to initialize manually')
         return
       }
     }
 
     // Only fetch bets if profile exists
     if (!isInitialized.value) {
-      console.log('Skipping bet fetches - profile not initialized')
       return
     }
 
@@ -521,7 +499,7 @@ export const useBetStore = defineStore('bet', () => {
     try {
       await fetchActiveBets()
     } catch (err) {
-      console.error('Failed to fetch active bets:', err)
+      // Silently handle fetch errors
     }
 
     // Note: Bet expiration is now handled via SSE events from authStore

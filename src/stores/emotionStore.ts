@@ -79,7 +79,6 @@ export const useEmotionStore = defineStore('emotion', () => {
       return data.log._id
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to log before emotion'
-      console.error('Log before emotion error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -106,7 +105,6 @@ export const useEmotionStore = defineStore('emotion', () => {
       return data.log._id
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to log after emotion'
-      console.error('Log after emotion error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -131,7 +129,6 @@ export const useEmotionStore = defineStore('emotion', () => {
       emotionLogs.value = emotionLogs.value.filter(log => log.task !== taskId)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete task logs'
-      console.error('Delete task logs error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -158,7 +155,6 @@ export const useEmotionStore = defineStore('emotion', () => {
       analysis.value = null
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete user logs'
-      console.error('Delete user logs error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -186,11 +182,9 @@ export const useEmotionStore = defineStore('emotion', () => {
       if (errorMessage.toLowerCase().includes('no emotion logs')) {
         // Set stats to indicate no data
         stats.value = null
-        console.log('No emotion stats available yet - user has no logs')
       } else {
         // Only set error for actual errors
         error.value = err instanceof Error ? err.message : 'Failed to fetch emotion stats'
-        console.error('Fetch emotion stats error:', err)
         throw err
       }
     } finally {
@@ -219,11 +213,9 @@ export const useEmotionStore = defineStore('emotion', () => {
       if (errorMessage.toLowerCase().includes('no') && errorMessage.toLowerCase().includes('emotion log')) {
         // Clear analysis - user has no logs to analyze
         analysis.value = null
-        console.log('No emotion analysis available yet - user has no recent logs')
       } else {
         // Only set error for actual errors
         error.value = err instanceof Error ? err.message : 'Failed to analyze recent emotions'
-        console.error('Analyze recent emotions error:', err)
         throw err
       }
     } finally {
@@ -248,7 +240,6 @@ export const useEmotionStore = defineStore('emotion', () => {
       return data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to get emotions for task'
-      console.error('Get emotions for task error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -284,11 +275,9 @@ export const useEmotionStore = defineStore('emotion', () => {
       if (errorMessage.toLowerCase().includes('no emotion logs')) {
         // Set empty array - user has no logs yet
         emotionLogs.value = []
-        console.log('No emotion logs available yet')
       } else {
         // Only set error for actual errors
         error.value = err instanceof Error ? err.message : 'Failed to fetch emotion logs'
-        console.error('Fetch emotion logs error:', err)
         throw err
       }
     } finally {
@@ -317,11 +306,10 @@ export const useEmotionStore = defineStore('emotion', () => {
           fetchEmotionLogs(),
           fetchEmotionStats().catch(() => {
             // Stats might fail if user has no logs yet, that's okay
-            console.log('No emotion stats available yet')
           })
         ])
       } catch (err) {
-        console.error('Failed to initialize emotions:', err)
+        // Silently handle initialization errors
       }
     }
   }

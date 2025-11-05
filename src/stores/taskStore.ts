@@ -87,7 +87,6 @@ export const useTaskStore = defineStore('task', () => {
       tasks.value = result.tasks
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch tasks'
-      console.error('Fetch tasks error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -120,7 +119,6 @@ export const useTaskStore = defineStore('task', () => {
       return data.task
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create task'
-      console.error('Create task error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -150,7 +148,6 @@ export const useTaskStore = defineStore('task', () => {
       await fetchTasks()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update task'
-      console.error('Update task error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -186,13 +183,11 @@ export const useTaskStore = defineStore('task', () => {
             betStore.fetchActiveBets()
           ])
         } catch (err) {
-          // Log error but don't fail task deletion if bet refresh fails
-          console.error('Failed to refresh bet store after task deletion:', err)
+          // Silently handle bet refresh errors
         }
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete task'
-      console.error('Delete task error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -224,7 +219,6 @@ export const useTaskStore = defineStore('task', () => {
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as started'
-      console.error('Mark started error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -255,7 +249,6 @@ export const useTaskStore = defineStore('task', () => {
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as completed'
-      console.error('Mark completed error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -295,7 +288,7 @@ export const useTaskStore = defineStore('task', () => {
       try {
         await fetchTasks()
       } catch (err) {
-        console.error('Failed to initialize tasks:', err)
+        // Silently handle initialization errors
       }
     }
   }

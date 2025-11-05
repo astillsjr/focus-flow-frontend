@@ -75,7 +75,6 @@ export const useAuthStore = defineStore('auth', () => {
       // Start unified SSE connection for real-time events
       startUnifiedSSEConnection()
     } catch (error) {
-      console.error('Registration error:', error)
       throw error
     }
   }
@@ -111,7 +110,6 @@ export const useAuthStore = defineStore('auth', () => {
       // Start unified SSE connection for real-time events
       startUnifiedSSEConnection()
     } catch (error) {
-      console.error('Login error:', error)
       throw error
     }
   }
@@ -126,7 +124,6 @@ export const useAuthStore = defineStore('auth', () => {
         await authAPI.logout(refreshToken.value)
       }
     } catch (error) {
-      console.error('Logout error:', error)
       // Continue with local cleanup even if server call fails
     } finally {
       // Stop unified SSE connection
@@ -166,7 +163,6 @@ export const useAuthStore = defineStore('auth', () => {
         startUnifiedSSEConnection()
       }
     } catch (error) {
-      console.error('Token refresh error:', error)
       // If refresh fails, logout the user
       await logout()
       throw error
@@ -192,7 +188,6 @@ export const useAuthStore = defineStore('auth', () => {
       // Persist to localStorage
       persistToLocalStorage()
     } catch (error) {
-      console.error('Fetch user info error:', error)
       throw error
     }
   }
@@ -207,7 +202,6 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await authAPI.changePassword(accessToken.value, oldPassword, newPassword)
     } catch (error) {
-      console.error('Change password error:', error)
       throw error
     }
   }
@@ -251,7 +245,6 @@ export const useAuthStore = defineStore('auth', () => {
       // Only logout after a successful deletion
       await logout()
     } catch (error) {
-      console.error('Delete account error:', error)
       // Surface the error to the caller without logging out
       throw error
     }
@@ -337,7 +330,6 @@ export const useAuthStore = defineStore('auth', () => {
           
           switch (data.type) {
             case 'connected':
-              console.log('✅ Connected to unified event stream')
               // Backlog of missed events will be sent automatically
               break
               
@@ -351,14 +343,12 @@ export const useAuthStore = defineStore('auth', () => {
               // Bet was successfully resolved (task completed before deadline)
               const betStore = useBetStore()
               betStore.refreshActiveBets()
-              console.log('✅ Bet resolved:', data.bet._id)
               break
               
             case 'bet_expired':
               // Bet expired (deadline passed without completion)
               const betStore2 = useBetStore()
               betStore2.refreshActiveBets()
-              console.log('⏰ Bet expired:', data.bet._id)
               break
               
             case 'heartbeat':
@@ -366,25 +356,20 @@ export const useAuthStore = defineStore('auth', () => {
               break
               
             case 'error':
-              console.error('SSE error:', data.message)
               // On error, close connection and let it retry on next auth action
               stopUnifiedSSEConnection()
               break
           }
         } catch (error) {
-          console.error('Error processing SSE message:', error)
+          // Silently handle parsing errors
         }
       })
 
-      eventSource.onerror = (error) => {
-        console.error('SSE connection error:', error)
+      eventSource.onerror = () => {
         // Close connection on error - will be reconnected on next auth action
         stopUnifiedSSEConnection()
       }
-
-      console.log('📡 Started unified SSE connection for events')
     } catch (error) {
-      console.error('Failed to start SSE:', error)
       eventSource = null
     }
   }
@@ -396,7 +381,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (eventSource) {
       eventSource.close()
       eventSource = null
-      console.log('⏸️ Stopped unified SSE connection')
     }
   }
 
@@ -412,7 +396,7 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         await refreshAccessToken()
       } catch (error) {
-        console.error('Auto-refresh failed:', error)
+        // Silently handle auto-refresh failures
       }
     }, 14 * 60 * 1000) // 14 minutes
   }

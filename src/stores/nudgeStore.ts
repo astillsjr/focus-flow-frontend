@@ -30,7 +30,6 @@ export const useNudgeStore = defineStore('nudge', () => {
       const nextNudge = nudgeQueue.value.shift()
       if (nextNudge) {
         activeNudges.value.push(nextNudge)
-        console.log(`📢 Showing next nudge from queue: "${nextNudge.taskTitle}" (${nudgeQueue.value.length} remaining)`)
       }
     }
   }
@@ -57,7 +56,6 @@ export const useNudgeStore = defineStore('nudge', () => {
       // Queue this nudge to retry later when tasks are loaded
       if (!pendingNudges.value.some(n => n._id === nudge._id)) {
         pendingNudges.value.push(nudge)
-        console.log(`⏳ Nudge queued for later (task not loaded yet): ${nudge.task}`)
       }
       return
     }
@@ -72,7 +70,6 @@ export const useNudgeStore = defineStore('nudge', () => {
       timestamp: nudge.triggeredAt ? new Date(nudge.triggeredAt) : new Date(nudge.deliveryTime)
     })
 
-    console.log(`✨ Nudge queued: "${task.title}" (${nudgeQueue.value.length} in queue)`)
     showNextNudge()
   }
 
@@ -83,7 +80,6 @@ export const useNudgeStore = defineStore('nudge', () => {
     if (pendingNudges.value.length === 0) return
 
     const stillPending: Nudge[] = []
-    const processedCount = pendingNudges.value.length
     
     for (const nudge of pendingNudges.value) {
       const task = taskStore.getTaskById(nudge.task)
@@ -97,14 +93,6 @@ export const useNudgeStore = defineStore('nudge', () => {
     }
 
     pendingNudges.value = stillPending
-    
-    const resolvedCount = processedCount - stillPending.length
-    if (resolvedCount > 0) {
-      console.log(`✅ Resolved ${resolvedCount} pending nudge(s) after tasks loaded`)
-    }
-    if (stillPending.length > 0) {
-      console.warn(`⚠️ ${stillPending.length} nudge(s) still pending (tasks may have been deleted)`)
-    }
   }
 
   /**
@@ -113,8 +101,6 @@ export const useNudgeStore = defineStore('nudge', () => {
   function dismissNudge(nudgeId: string): void {
     const index = activeNudges.value.findIndex(n => n.nudgeId === nudgeId)
     if (index !== -1) {
-      const nudge = activeNudges.value[index]
-      console.log('🔕 Dismissed nudge for task:', nudge.taskTitle)
       activeNudges.value.splice(index, 1)
       
       // Show next nudge in queue after a short delay for better UX
@@ -130,7 +116,6 @@ export const useNudgeStore = defineStore('nudge', () => {
   function clearAllNudges(): void {
     activeNudges.value = []
     nudgeQueue.value = []
-    console.log('🔕 Cleared all nudges and queue')
   }
 
   // Watch for logout and clear nudges
@@ -151,7 +136,6 @@ export const useNudgeStore = defineStore('nudge', () => {
     (newLength, oldLength) => {
       // If tasks were just loaded (went from 0 to >0), retry pending nudges
       if (oldLength === 0 && newLength > 0 && pendingNudges.value.length > 0) {
-        console.log('📋 Tasks loaded, retrying pending nudges...')
         retryPendingNudges()
       }
     }
@@ -163,7 +147,6 @@ export const useNudgeStore = defineStore('nudge', () => {
     (isLoading, wasLoading) => {
       // If tasks finished loading (isLoading went from true to false), retry pending nudges
       if (wasLoading && !isLoading && pendingNudges.value.length > 0) {
-        console.log('📋 Tasks finished loading, retrying pending nudges...')
         retryPendingNudges()
       }
     }
