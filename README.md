@@ -12,7 +12,7 @@ A modern Vue.js 3 application for productivity and focus management, built with 
 - **Responsive Design** for all devices
 - **Modern UI** with clean, accessible components
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - Vue.js 3.4+
 - TypeScript 5.3+
@@ -20,7 +20,7 @@ A modern Vue.js 3 application for productivity and focus management, built with 
 - Vue Router 4.2+
 - Pinia 2.1+
 
-## 📦 Installation
+## Installation
 
 1. Clone the repository:
 ```bash
@@ -33,7 +33,7 @@ cd focus-flow-frontend
 npm install
 ```
 
-## 🚀 Development
+## Development
 
 Start the development server:
 ```bash
@@ -42,7 +42,7 @@ npm run dev
 
 The application will be available at `http://localhost:5173`
 
-## 🏗️ Build
+## Build
 
 Build the application for production:
 ```bash
@@ -54,12 +54,21 @@ Preview the production build:
 npm run preview
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── components/          # Reusable Vue components
-├── views/              # Page components
+├── api/                # API client functions
+├── components/         # Vue components
+│   ├── auth/          # Authentication components
+│   ├── base/          # Base/reusable components
+│   ├── bets/          # Betting-related components
+│   ├── emotions/      # Emotion-related components
+│   ├── layout/        # Layout components
+│   ├── nudges/        # Nudge components
+│   └── tasks/         # Task-related components
+├── constants/          # Constants and configuration
+├── router/             # Vue Router configuration
 ├── stores/             # Pinia state management
 ├── App.vue             # Root component
 ├── main.ts             # Application entry point
