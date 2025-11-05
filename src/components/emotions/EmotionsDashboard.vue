@@ -21,6 +21,7 @@
         <p>Use the emotion forms on individual tasks in the Tasks dashboard to record how you feel.</p>
       </BaseCard>
     </section>
+    </div>
   </DashboardLayout>
 </template>
 
