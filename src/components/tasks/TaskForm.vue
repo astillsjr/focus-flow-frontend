@@ -58,7 +58,7 @@ import { useDesignTokens } from '@/composables/useDesignTokens'
 const { cssVars } = useDesignTokens()
 
 // Props
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   showTitle?: boolean
 }>(), {
   showTitle: true

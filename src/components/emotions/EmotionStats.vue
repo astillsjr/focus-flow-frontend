@@ -39,7 +39,7 @@
         <div class="stat-card">
           <div class="stat-label">Most Common</div>
           <div class="stat-value emotion-badge">
-            {{ stats.mostCommonEmotion ? EMOTION_LABELS[stats.mostCommonEmotion] : 'N/A' }}
+            {{ stats.mostCommonEmotion ? EMOTION_LABELS[stats.mostCommonEmotion as Emotion] : 'N/A' }}
           </div>
         </div>
 
@@ -61,7 +61,7 @@
             class="emotion-bar-item"
           >
             <div class="emotion-label">
-              {{ EMOTION_LABELS[emotion] }}
+              {{ EMOTION_LABELS[emotion as Emotion] }}
             </div>
             <div class="bar-container">
               <div 
@@ -87,7 +87,7 @@
                 :key="'before-' + emotion"
                 class="emotion-item"
               >
-                <span class="emotion-name">{{ EMOTION_LABELS[emotion] }}</span>
+                <span class="emotion-name">{{ EMOTION_LABELS[emotion as Emotion] }}</span>
                 <span class="emotion-count">{{ count }}</span>
               </div>
               <div v-if="beforeEmotionCounts.length === 0" class="no-data-small">
@@ -104,7 +104,7 @@
                 :key="'after-' + emotion"
                 class="emotion-item"
               >
-                <span class="emotion-name">{{ EMOTION_LABELS[emotion] }}</span>
+                <span class="emotion-name">{{ EMOTION_LABELS[emotion as Emotion] }}</span>
                 <span class="emotion-count">{{ count }}</span>
               </div>
               <div v-if="afterEmotionCounts.length === 0" class="no-data-small">
@@ -132,7 +132,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useEmotionStore } from '@/stores/emotionStore'
-import { EMOTION_LABELS } from '@/constants'
+import { EMOTION_LABELS, type Emotion } from '@/constants'
 import { BaseButton, BaseCard } from '../base'
 import { useDesignTokens } from '@/composables/useDesignTokens'
 

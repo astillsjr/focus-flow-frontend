@@ -74,7 +74,6 @@ const isResolving = ref(false)
 const bets = computed(() => betStore.bets)
 const pendingBets = computed(() => betStore.pendingBets)
 const expiredBets = computed(() => betStore.expiredBets)
-const resolvedBets = computed(() => betStore.resolvedBets)
 const isLoading = computed(() => betStore.isLoading || isRefreshing.value)
 const error = computed(() => betStore.error)
 

@@ -67,7 +67,7 @@
           <BetForm
             :task-id="createdTaskId!"
             :task-title="createdTaskTitle"
-            :task-due-date="createdTaskDueDate"
+            :task-due-date="createdTaskDueDate ?? undefined"
             @bet-placed="handleBetPlaced"
             @error="handleBetError"
           />
@@ -194,7 +194,7 @@ function skipBetting() {
 /**
  * Handle successful bet placement
  */
-function handleBetPlaced(betId: string) {
+function handleBetPlaced(_betId: string) {
   betPlaced.value = true
   currentStep.value = 'complete'
 }
