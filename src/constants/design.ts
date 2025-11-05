@@ -4,7 +4,7 @@
  */
 
 export const colors = {
-  // Primary palette - Material Design Dark Theme
+  // Primary palette 
   primary: '#BB86FC',
   primaryHover: '#C693FC',
   primaryLight: '#3700B3',
@@ -17,7 +17,7 @@ export const colors = {
   secondaryLight: '#00BFA5',
   secondaryDark: '#00BFA5',
   
-  // Status colors - using Material Design approach
+  // Status colors 
   pending: '#FFB74D',
   pendingLight: '#FF9800',
   pendingDark: '#F57C00',
@@ -48,7 +48,7 @@ export const colors = {
   successLight: '#4CAF50',
   successDark: '#388E3C',
   
-  // Material Design Dark Theme Colors
+  // Theme Colors
   background: '#121212',
   onBackground: '#FFFFFF',
   surface: '#121212',

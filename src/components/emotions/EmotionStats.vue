@@ -131,7 +131,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useEmotionStore, EMOTION_LABELS } from '@/stores/emotionStore'
+import { useEmotionStore } from '@/stores/emotionStore'
+import { EMOTION_LABELS } from '@/constants'
 import { BaseButton, BaseCard } from '../base'
 
 // Store

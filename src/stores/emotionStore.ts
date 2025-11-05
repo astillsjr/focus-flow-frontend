@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from './authStore'
-import { VALID_EMOTIONS, EMOTION_LABELS, isValidEmotion, type Emotion } from '@/constants/emotions'
 import * as emotionAPI from '@/api/emotions'
 import type { EmotionLog, EmotionStats, TaskEmotions } from '@/api/emotions'
 
@@ -354,7 +353,4 @@ export const useEmotionStore = defineStore('emotion', () => {
     initialize
   }
 })
-
-// Re-export emotion constants for convenience
-export { VALID_EMOTIONS, EMOTION_LABELS, isValidEmotion, type Emotion }
 

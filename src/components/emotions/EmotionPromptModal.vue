@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/stores/emotionStore'
+import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/constants'
 
 const props = withDefaults(defineProps<{
   isOpen: boolean

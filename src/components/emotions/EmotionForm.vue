@@ -40,7 +40,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useEmotionStore, VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/stores/emotionStore'
+import { useEmotionStore } from '@/stores/emotionStore'
+import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/constants'
 import { BaseButton } from '../base'
 
 // Props
