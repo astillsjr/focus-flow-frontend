@@ -12,17 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAuthStore } from './stores/authStore'
 import NudgeNotification from './components/nudges/NudgeNotification.vue'
-
-const authStore = useAuthStore()
-
-// Initialize auth store on app mount (restores session from localStorage)
-// This will also start the unified SSE connection if user is authenticated
-onMounted(() => {
-  authStore.initialize()
-})
 </script>
 
 <style>
