@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useBetStore } from '../../stores/betStore'
 import { useAuthStore } from '../../stores/authStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
@@ -116,43 +116,16 @@ onMounted(async () => {
   if (!isInitialized.value) {
     await betStore.initialize()
   }
-  startAutoRefresh()
 })
 
-onUnmounted(() => {
-  stopAutoRefresh()
-})
-
-// Auto-refresh every 60s while this view is mounted
-const refreshIntervalId = ref<ReturnType<typeof setInterval> | null>(null)
-
-function stopAutoRefresh() {
-  if (refreshIntervalId.value) {
-    clearInterval(refreshIntervalId.value)
-    refreshIntervalId.value = null
-  }
-}
-
-async function doRefreshNow() {
+// Refresh on view switch (SSE handles real-time updates, so no periodic polling needed)
+watch(showHistory, async () => {
+  // Refresh immediately when switching views to get fresh data
   if (showHistory.value) {
     await betStore.fetchAllBets()
   } else {
-    await betStore.fetchActiveBets()
-    await betStore.checkAndResolveExpiredBets()
+    await betStore.refreshActiveBets()
   }
-}
-
-function startAutoRefresh() {
-  stopAutoRefresh()
-  refreshIntervalId.value = setInterval(() => {
-    void doRefreshNow()
-  }, 60000)
-}
-
-watch(showHistory, async () => {
-  // Immediate refresh on view switch, then keep interval running
-  await doRefreshNow()
-  startAutoRefresh()
 })
 </script>
 

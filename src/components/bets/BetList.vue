@@ -81,20 +81,19 @@ const error = computed(() => betStore.error)
 async function refreshBets() {
   try {
     isRefreshing.value = true
-    await betStore.fetchActiveBets()
-    await betStore.checkAndResolveExpiredBets()
+    await betStore.refreshActiveBets()  // Refreshes both bets and profile
   } finally {
     isRefreshing.value = false
   }
 }
 
 /**
- * Resolve all expired bets
+ * Resolve all expired bets (now just refreshes from backend)
  */
 async function resolveExpiredBets() {
   try {
     isResolving.value = true
-    await betStore.checkAndResolveExpiredBets()
+    await betStore.refreshActiveBets()  // Just refresh, backend handles resolution
   } catch (err) {
   } finally {
     isResolving.value = false

@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useBetStore } from './betStore'
 import { useTaskStore } from './taskStore'
 import { useEmotionStore } from './emotionStore'
+import { useNudgeStore } from './nudgeStore'
 import * as taskAPI from '@/api/tasks'
 import * as emotionAPI from '@/api/emotions'
 import * as nudgeAPI from '@/api/nudges'
@@ -20,6 +21,9 @@ export const useAuthStore = defineStore('auth', () => {
   
   // Auto-refresh timer reference
   let refreshInterval: number | null = null
+  
+  // Unified SSE connection for all events
+  let eventSource: EventSource | null = null
 
   // Getters
   const isAuthenticated = computed(() => {
@@ -67,6 +71,9 @@ export const useAuthStore = defineStore('auth', () => {
       
       const taskStore = useTaskStore()
       await taskStore.initialize()
+      
+      // Start unified SSE connection for real-time events
+      startUnifiedSSEConnection()
     } catch (error) {
       console.error('Registration error:', error)
       throw error
@@ -100,6 +107,9 @@ export const useAuthStore = defineStore('auth', () => {
       // Initialize task store to load tasks before nudges are processed
       const taskStore = useTaskStore()
       await taskStore.initialize()
+      
+      // Start unified SSE connection for real-time events
+      startUnifiedSSEConnection()
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -119,6 +129,9 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('Logout error:', error)
       // Continue with local cleanup even if server call fails
     } finally {
+      // Stop unified SSE connection
+      stopUnifiedSSEConnection()
+      
       // Clear state
       clearState()
 
@@ -146,6 +159,12 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Persist updated token to localStorage
       persistToLocalStorage()
+      
+      // Reconnect SSE with new token if connection exists
+      if (eventSource) {
+        stopUnifiedSSEConnection()
+        startUnifiedSSEConnection()
+      }
     } catch (error) {
       console.error('Token refresh error:', error)
       // If refresh fails, logout the user
@@ -257,6 +276,9 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Start auto-refresh
       startAutoRefresh()
+      
+      // Start unified SSE connection if authenticated
+      startUnifiedSSEConnection()
     }
   }
 
@@ -291,6 +313,89 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = null
     username.value = null
     email.value = null
+  }
+
+  /**
+   * Start unified SSE connection for real-time events (nudges, bet events, etc.)
+   */
+  function startUnifiedSSEConnection(): void {
+    if (!accessToken.value || eventSource) {
+      return
+    }
+
+    try {
+      const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api'
+      const url = `${API_BASE_URL}/events/stream?accessToken=${accessToken.value}`
+      
+      eventSource = new EventSource(url)
+
+      eventSource.addEventListener('message', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          
+          switch (data.type) {
+            case 'connected':
+              console.log('✅ Connected to unified event stream')
+              // Backlog of missed events will be sent automatically
+              break
+              
+            case 'nudge':
+              // Route nudge events to nudge store
+              const nudgeStore = useNudgeStore()
+              nudgeStore.handleIncomingNudge(data.nudge)
+              break
+              
+            case 'bet_resolved':
+              // Bet was successfully resolved (task completed before deadline)
+              const betStore = useBetStore()
+              betStore.refreshActiveBets()
+              console.log('✅ Bet resolved:', data.bet._id)
+              break
+              
+            case 'bet_expired':
+              // Bet expired (deadline passed without completion)
+              const betStore2 = useBetStore()
+              betStore2.refreshActiveBets()
+              console.log('⏰ Bet expired:', data.bet._id)
+              break
+              
+            case 'heartbeat':
+              // Connection is alive (sent every 30 seconds)
+              break
+              
+            case 'error':
+              console.error('SSE error:', data.message)
+              // On error, close connection and let it retry on next auth action
+              stopUnifiedSSEConnection()
+              break
+          }
+        } catch (error) {
+          console.error('Error processing SSE message:', error)
+        }
+      })
+
+      eventSource.onerror = (error) => {
+        console.error('SSE connection error:', error)
+        // Close connection on error - will be reconnected on next auth action
+        stopUnifiedSSEConnection()
+      }
+
+      console.log('📡 Started unified SSE connection for events')
+    } catch (error) {
+      console.error('Failed to start SSE:', error)
+      eventSource = null
+    }
+  }
+
+  /**
+   * Stop unified SSE connection
+   */
+  function stopUnifiedSSEConnection(): void {
+    if (eventSource) {
+      eventSource.close()
+      eventSource = null
+      console.log('⏸️ Stopped unified SSE connection')
+    }
   }
 
   /**

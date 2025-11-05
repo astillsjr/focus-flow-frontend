@@ -12,31 +12,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted } from 'vue'
 import { useAuthStore } from './stores/authStore'
-import { useNudgeStore } from './stores/nudgeStore'
 import NudgeNotification from './components/nudges/NudgeNotification.vue'
 
 const authStore = useAuthStore()
-const nudgeStore = useNudgeStore()
 
-// Start nudge polling when app mounts and user is authenticated
+// Initialize auth store on app mount (restores session from localStorage)
+// This will also start the unified SSE connection if user is authenticated
 onMounted(() => {
-  if (authStore.isAuthenticated) {
-    nudgeStore.startPolling(60000) // Poll every 60 seconds (1 minute)
-  }
+  authStore.initialize()
 })
-
-// Watch for authentication changes
-watch(
-  () => authStore.isAuthenticated,
-  (isAuthenticated) => {
-    if (isAuthenticated) {
-      // Start polling when user logs in
-      nudgeStore.startPolling(60000)
-    }
-  }
-)
 </script>
 
 <style>

@@ -215,27 +215,12 @@ export const useTaskStore = defineStore('task', () => {
       await taskAPI.markStarted(authStore.accessToken, taskId, startTime)
 
       // Backend automatically resolves any associated bet and cancels any scheduled nudge
+      // SSE events will automatically refresh bet store when bet is resolved
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
       if (taskIndex !== -1) {
         tasks.value[taskIndex].startedAt = startTime
-      }
-
-      // Refresh bet store to update profile stats (points, bet counts, etc.)
-      // This handles the case where a bet was resolved when the task started
-      const betStore = useBetStore()
-      if (betStore.isInitialized) {
-        try {
-          // Refresh profile and active bets to get updated stats
-          await Promise.all([
-            betStore.fetchProfile(),
-            betStore.fetchActiveBets()
-          ])
-        } catch (err) {
-          // Log error but don't fail task start if bet refresh fails
-          console.error('Failed to refresh bet store after task start:', err)
-        }
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as started'
@@ -261,27 +246,12 @@ export const useTaskStore = defineStore('task', () => {
       await taskAPI.markComplete(authStore.accessToken, taskId, new Date().toISOString())
 
       // Backend automatically resolves any associated bet and cancels any scheduled nudge
+      // SSE events will automatically refresh bet store when bet is resolved
 
       // Update task in local state
       const taskIndex = tasks.value.findIndex(t => t._id === taskId)
       if (taskIndex !== -1) {
         tasks.value[taskIndex].completedAt = new Date().toISOString()
-      }
-
-      // Refresh bet store to update profile stats (points, bet counts, etc.)
-      // This handles the case where a bet was resolved when the task completed
-      const betStore = useBetStore()
-      if (betStore.isInitialized) {
-        try {
-          // Refresh profile and active bets to get updated stats
-          await Promise.all([
-            betStore.fetchProfile(),
-            betStore.fetchActiveBets()
-          ])
-        } catch (err) {
-          // Log error but don't fail task completion if bet refresh fails
-          console.error('Failed to refresh bet store after task completion:', err)
-        }
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark task as completed'
