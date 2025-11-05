@@ -158,21 +158,6 @@ export async function deleteUserTasks(accessToken: string): Promise<void> {
 }
 
 /**
- * Get a single task by ID
- */
-export async function getTask(accessToken: string, task: string): Promise<Task> {
-  const response = await fetch(`${API_BASE_URL}/TaskManager/getTask`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ accessToken, task })
-  })
-  const data = await handleResponse<{ task: Task }>(response)
-  return data.task
-}
-
-/**
  * Get a paginated and filtered list of tasks
  */
 export async function getTasks(accessToken: string, request: GetTasksRequest = {}): Promise<GetTasksResponse> {
@@ -192,18 +177,4 @@ export async function getTasks(accessToken: string, request: GetTasksRequest = {
     })
   })
   return handleResponse<GetTasksResponse>(response)
-}
-
-/**
- * Get the status of a task
- */
-export async function getTaskStatus(accessToken: string, taskId: string): Promise<{ status: TaskStatus }> {
-  const response = await fetch(`${API_BASE_URL}/TaskManager/getTaskStatus`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ accessToken, task: taskId })
-  })
-  return handleResponse<{ status: TaskStatus }>(response)
 }
