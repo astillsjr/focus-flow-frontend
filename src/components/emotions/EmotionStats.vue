@@ -1,5 +1,5 @@
 <template>
-  <div class="emotion-stats">
+  <div class="emotion-stats" :style="cssVars">
     <h2>Emotion Statistics</h2>
 
     <!-- Loading State -->
@@ -134,6 +134,9 @@ import { computed, onMounted } from 'vue'
 import { useEmotionStore } from '@/stores/emotionStore'
 import { EMOTION_LABELS } from '@/constants'
 import { BaseButton, BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Store
 const emotionStore = useEmotionStore()
@@ -231,11 +234,13 @@ onMounted(async () => {
 }
 
 h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text);
 }
 
 h3 {
-  margin: 1.5rem 0 1rem;
+  margin: var(--spacing-lg) 0 var(--spacing-md);
+  color: var(--color-text);
 }
 
 /* Loading, Error, No Data States */
@@ -243,101 +248,102 @@ h3 {
 .error-state,
 .empty-state {
   text-align: center;
-  margin: 1rem 0;
+  margin: var(--spacing-md) 0;
 }
 
 .loading-state {
-  padding: 2rem;
-  background-color: #1E1E1E;
-  border-radius: 8px;
+  padding: var(--spacing-xl);
+  background-color: var(--color-surface-variant);
+  border-radius: var(--radius-md);
 }
 
 .loading-state p {
-  color: #808080;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .error-state {
-  background-color: #3d1a1a;
+  background-color: rgba(207, 102, 121, 0.1);
 }
 
 .error-message {
-  color: #CF6679;
-  margin-bottom: 1rem;
+  color: var(--color-error);
+  margin-bottom: var(--spacing-md);
 }
 
 .empty-state h3 {
-  margin: 0 0 1rem 0;
-  color: #FFFFFF;
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text);
 }
 
 .empty-state p {
-  color: #B3B3B3;
-  line-height: 1.6;
-  margin: 0.5rem 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: var(--spacing-sm) 0;
 }
 
 /* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 .stat-card {
-  background: #1E1E1E;
-  padding: 1.5rem;
-  border-radius: 4px;
-  border: 1px solid #4D4D4D;
+  background: var(--color-surface-variant);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
   text-align: center;
 }
 
 .stat-label {
-  font-size: 0.875rem;
-  color: #B3B3B3;
-  margin-bottom: 0.5rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: var(--font-size-xxxl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
 }
 
 .stat-value.emotion-badge {
-  font-size: 1.25rem;
-  background-color: #0d2540;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  font-size: var(--font-size-xl);
+  background-color: rgba(66, 165, 245, 0.1);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
   display: inline-block;
 }
 
 /* Trend Classes */
 .trend-improving {
-  color: #66BB6A;
+  color: var(--color-completed);
 }
 
 .trend-declining {
-  color: #CF6679;
+  color: var(--color-error);
 }
 
 .trend-stable {
-  color: #42A5F5;
+  color: var(--color-in-progress);
 }
 
 .trend-insufficient_data {
-  color: #808080;
-  font-size: 1rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
 }
 
 /* Emotion Distribution */
 .emotion-distribution {
-  background: #1E1E1E;
-  padding: 1.5rem;
-  border-radius: 4px;
-  border: 1px solid #4D4D4D;
-  margin-bottom: 2rem;
+  background: var(--color-surface-variant);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-xl);
 }
 
 .distribution-bars {
@@ -349,39 +355,40 @@ h3 {
 .emotion-bar-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .emotion-label {
   min-width: 120px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
 }
 
 .bar-container {
   flex: 1;
   height: 28px;
-  background-color: #0F0F0F;
-  border-radius: 4px;
+  background-color: var(--color-background-muted);
+  border-radius: var(--radius-sm);
   position: relative;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-slow);
 }
 
 .bar-fill.positive {
-  background-color: #66BB6A;
+  background-color: var(--color-completed);
 }
 
 .bar-fill.negative {
-  background-color: #CF6679;
+  background-color: var(--color-error);
 }
 
 .bar-fill.neutral {
-  background-color: #808080;
+  background-color: var(--color-text-muted);
 }
 
 .bar-count {
@@ -395,55 +402,57 @@ h3 {
 
 /* Before/After Comparison */
 .before-after-comparison {
-  background: #1E1E1E;
-  padding: 1.5rem;
-  border-radius: 4px;
-  border: 1px solid #4D4D4D;
-  margin-bottom: 2rem;
+  background: var(--color-surface-variant);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-xl);
 }
 
 .comparison-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  gap: var(--spacing-xl);
 }
 
 .comparison-section h4 {
-  margin-bottom: 1rem;
-  font-size: 1rem;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
 }
 
 .emotion-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .emotion-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem;
-  background-color: #2A2A2A;
-  border-radius: 4px;
+  padding: var(--spacing-sm);
+  background-color: var(--color-surface-container-high);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
 }
 
 .emotion-count {
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .no-data-small {
-  color: #808080;
+  color: var(--color-text-muted);
   font-style: italic;
   text-align: center;
-  padding: 1rem;
+  padding: var(--spacing-md);
 }
 
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-md);
   justify-content: center;
-  margin-top: 2rem;
+  margin-top: var(--spacing-xl);
 }
 
 /* Responsive */

@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="isOpen" class="modal-overlay" @click.self="handleCancel">
+    <div v-if="isOpen" class="modal-overlay" :style="cssVars" @click.self="handleCancel">
       <div class="modal-content">
         <div class="modal-header">
           <h3>{{ title }}</h3>
@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import BaseButton from './BaseButton.vue'
+import { useDesignTokens } from '@/composables/useDesignTokens'
 
 const props = withDefaults(defineProps<{
   isOpen: boolean
@@ -64,13 +65,15 @@ function handleCancel() {
     emit('cancel')
   }
 }
+
+const { cssVars } = useDesignTokens()
 </script>
 
 <style scoped>
 /* Modal Transitions */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-slow);
 }
 
 .modal-enter-from,
@@ -80,7 +83,7 @@ function handleCancel() {
 
 .modal-enter-active .modal-content,
 .modal-leave-active .modal-content {
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-slow);
 }
 
 .modal-enter-from .modal-content,
@@ -94,38 +97,38 @@ function handleCancel() {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 
 .modal-content {
-  background-color: #1E1E1E;
-  border: 1px solid #4D4D4D;
-  border-radius: 12px;
+  background-color: var(--color-surface-variant);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 0;
   max-width: 420px;
   width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
 }
 
 .modal-header {
-  padding: 1.5rem 1.5rem 1rem 1.5rem;
-  border-bottom: 1px solid #4D4D4D;
-  background-color: #1E1E1E;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface-variant);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.25rem;
-  color: #FFFFFF;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .modal-header h3::before {
@@ -134,83 +137,44 @@ function handleCancel() {
 }
 
 .modal-body {
-  padding: 1.5rem;
-  background-color: #1E1E1E;
+  padding: var(--spacing-lg);
+  background-color: var(--color-surface-variant);
 }
 
 .modal-body p {
   margin: 0;
-  color: #E5E5E5;
-  line-height: 1.6;
+  color: var(--color-on-surface);
+  line-height: var(--line-height-relaxed);
   font-size: 0.95rem;
 }
 
 .modal-actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-md);
   justify-content: flex-end;
-  padding: 1.5rem 1.5rem 1.5rem 1.5rem;
-  background-color: #2A2A2A;
-  border-top: 1px solid #4D4D4D;
+  padding: var(--spacing-lg);
+  background-color: var(--color-surface-container-high);
+  border-top: 1px solid var(--color-border);
 }
 
 .cancel-button {
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   position: relative;
-  background-color: #404040;
-  border-color: #6B7280;
-  color: #FFFFFF;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-}
-
-.cancel-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  background-color: #4A4A4A;
-  border-color: #9CA3AF;
-  color: #FFFFFF;
-}
-
-.cancel-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  background-color: #525252;
 }
 
 .confirm-button {
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
-  background-color: #DC2626;
-  border-color: #DC2626;
-  color: #FFFFFF;
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-}
-
-.confirm-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5);
-  background-color: #B91C1C;
-  border-color: #B91C1C;
-}
-
-.confirm-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.4);
-  background-color: #991B1B;
-  border-color: #991B1B;
 }
 
 .confirm-button:focus:not(:disabled) {
-  outline: 2px solid #DC2626;
+  outline: 2px solid var(--color-error);
   outline-offset: 2px;
 }
 
 .cancel-button:focus:not(:disabled) {
-  outline: 2px solid #6B7280;
+  outline: 2px solid var(--color-outline);
   outline-offset: 2px;
 }
 
@@ -223,10 +187,10 @@ function handleCancel() {
   left: 50%;
   width: 0;
   height: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background-color: rgba(255, 255, 255, 0.1);
   transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease;
+  transition: width var(--transition-slow), height var(--transition-slow);
   pointer-events: none;
 }
 
@@ -239,7 +203,7 @@ function handleCancel() {
 @media (max-width: 480px) {
   .modal-content {
     width: 95%;
-    margin: 1rem;
+    margin: var(--spacing-md);
   }
   
   .modal-header {
@@ -254,11 +218,6 @@ function handleCancel() {
     flex-direction: column;
     gap: 0.75rem;
     padding: 1.25rem;
-  }
-  
-  .cancel-button:hover:not(:disabled),
-  .confirm-button:hover:not(:disabled) {
-    transform: none;
   }
 }
 </style>

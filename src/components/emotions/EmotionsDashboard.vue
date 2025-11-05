@@ -1,6 +1,7 @@
 <template>
   <DashboardLayout>
-    <h1>Emotion Insights</h1>
+    <div :style="cssVars">
+      <h1>Emotion Insights</h1>
 
     <!-- AI Analysis Section -->
     <section class="section">
@@ -28,25 +29,30 @@ import DashboardLayout from '../layout/DashboardLayout.vue'
 import EmotionAnalysis from './EmotionAnalysis.vue'
 import EmotionStats from './EmotionStats.vue'
 import { BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 </script>
 
 <style scoped>
 h1 {
-  margin: 0 0 2rem 0;
+  margin: 0 0 var(--spacing-xl) 0;
+  color: var(--color-text);
 }
 
 .section {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 h3 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text);
 }
 
 p {
-  margin: 0.5rem 0;
-  color: #B3B3B3;
-  line-height: 1.6;
+  margin: var(--spacing-sm) 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
 }
 </style>
 

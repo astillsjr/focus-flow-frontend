@@ -1,5 +1,5 @@
 <template>
-  <div class="task-item" :class="[`task-${status}`, { 'task-completed': isCompleted }]">
+  <div class="task-item" :class="[`task-${status}`, { 'task-completed': isCompleted }]" :style="cssVars">
     <div class="task-content">
       <div class="task-header">
         <h3 class="task-title">{{ task.title }}</h3>
@@ -73,11 +73,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { Task } from '../../stores/taskStore'
-import type { Emotion } from '@/stores/emotionStore'
+import type { Emotion } from '@/constants'
 import { useTaskStore } from '../../stores/taskStore'
 import { useEmotionStore } from '../../stores/emotionStore'
 import EmotionPromptModal from '../emotions/EmotionPromptModal.vue'
 import { BaseButton } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Props
 const props = defineProps<{
@@ -226,33 +229,33 @@ function handleDelete() {
 .task-item {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #4D4D4D;
-  border-radius: 8px;
-  background-color: #1E1E1E;
-  transition: all 0.2s;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-variant);
+  transition: all var(--transition-normal);
 }
 
 .task-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  background-color: #2A2A2A;
+  box-shadow: var(--shadow-md);
+  background-color: var(--color-surface-container-high);
 }
 
 /* Status-based task styling */
 .task-pending {
   box-shadow: 0 2px 8px rgba(255, 183, 77, 0.2);
-  border-left: 3px solid #FFB74D;
+  border-left: 3px solid var(--color-pending);
 }
 
 .task-in-progress {
   box-shadow: 0 2px 8px rgba(66, 165, 245, 0.2);
-  border-left: 3px solid #42A5F5;
+  border-left: 3px solid var(--color-in-progress);
 }
 
 .task-completed {
   box-shadow: 0 2px 8px rgba(102, 187, 106, 0.2);
-  border-left: 3px solid #66BB6A;
+  border-left: 3px solid var(--color-completed);
 }
 
 .task-content {
@@ -269,85 +272,85 @@ function handleDelete() {
 
 .task-title {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #FFFFFF;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
   flex: 1;
 }
 
 .task-status {
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .status-pending {
-  background-color: #3d2a1a;
-  color: #FFB74D;
+  background-color: rgba(255, 183, 77, 0.1);
+  color: var(--color-pending);
 }
 
 .status-in-progress {
-  background-color: #0d2540;
-  color: #42A5F5;
+  background-color: rgba(66, 165, 245, 0.1);
+  color: var(--color-in-progress);
 }
 
 .status-completed {
-  background-color: #1e3a1f;
-  color: #66BB6A;
+  background-color: rgba(102, 187, 106, 0.1);
+  color: var(--color-completed);
 }
 
 .task-description {
-  margin: 0.5rem 0;
-  color: #B3B3B3;
-  line-height: 1.5;
+  margin: var(--spacing-sm) 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
 }
 
 .task-due-date {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  border-radius: 4px;
+  margin: var(--spacing-sm) 0;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
 }
 
 /* Status-based due date styling */
 .due-pending {
-  background-color: #3d2a1a;
-  border-left: 3px solid #FFB74D;
-  color: #FFB74D;
+  background-color: rgba(255, 183, 77, 0.1);
+  border-left: 3px solid var(--color-pending);
+  color: var(--color-pending);
 }
 
 .due-in-progress {
-  background-color: #0d2540;
-  border-left: 3px solid #42A5F5;
-  color: #42A5F5;
+  background-color: rgba(66, 165, 245, 0.1);
+  border-left: 3px solid var(--color-in-progress);
+  color: var(--color-in-progress);
 }
 
 .due-completed {
-  background-color: #1e3a1f;
-  border-left: 3px solid #66BB6A;
-  color: #66BB6A;
+  background-color: rgba(102, 187, 106, 0.1);
+  border-left: 3px solid var(--color-completed);
+  color: var(--color-completed);
 }
 
 .task-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--spacing-md);
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #4D4D4D;
+  border-top: 1px solid var(--color-border);
 }
 
 .task-date {
   font-size: 0.85rem;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .task-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 @media (max-width: 768px) {

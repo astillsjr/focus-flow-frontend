@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="isOpen" class="modal-overlay" @click.self="handleCancel">
+    <div v-if="isOpen" class="modal-overlay" :style="cssVars" @click.self="handleCancel">
       <div class="modal-content">
         <div class="modal-header">
           <h3>{{ headerTitle }}</h3>
@@ -51,6 +51,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/constants'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 const props = withDefaults(defineProps<{
   isOpen: boolean
@@ -143,7 +146,7 @@ const getEmotionIcon = (emotion: Emotion): string => {
 /* Modal Transitions */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-slow);
 }
 
 .modal-enter-from,
@@ -153,7 +156,7 @@ const getEmotionIcon = (emotion: Emotion): string => {
 
 .modal-enter-active .modal-content,
 .modal-leave-active .modal-content {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform var(--transition-slow), opacity var(--transition-slow);
 }
 
 .modal-enter-from .modal-content {
@@ -172,38 +175,38 @@ const getEmotionIcon = (emotion: Emotion): string => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: var(--z-modal);
 }
 
 .modal-content {
-  background: #1E1E1E;
-  border-radius: 12px;
-  padding: 2rem;
+  background: var(--color-surface-variant);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-xl);
 }
 
 .modal-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .modal-header h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  color: #FFFFFF;
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-xxl);
+  color: var(--color-text);
   word-break: break-word;
 }
 
 .modal-subtitle {
   margin: 0;
-  color: #B3B3B3;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
@@ -211,31 +214,31 @@ const getEmotionIcon = (emotion: Emotion): string => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .emotion-button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  border: 2px solid #4D4D4D;
-  border-radius: 8px;
-  background: #1E1E1E;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-variant);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .emotion-button:hover {
-  border-color: #BB86FC;
+  border-color: var(--color-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .emotion-button.selected {
-  border-color: #BB86FC;
-  background-color: #3700B3;
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-dark);
   transform: translateY(-2px);
 }
 
@@ -246,63 +249,63 @@ const getEmotionIcon = (emotion: Emotion): string => {
 
 .emotion-label {
   font-size: 0.9rem;
-  font-weight: 500;
-  color: #FFFFFF;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
   text-align: center;
 }
 
 .error-message {
-  color: #CF6679;
+  color: var(--color-error);
   padding: 0.75rem;
   background-color: rgba(207, 102, 121, 0.1);
   border: 1px solid rgba(207, 102, 121, 0.3);
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
   font-size: 0.9rem;
 }
 
 .modal-actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-md);
   justify-content: flex-end;
 }
 
 .button-primary,
 .button-secondary {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem var(--spacing-lg);
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .button-primary {
-  background-color: #BB86FC;
-  color: #000000;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .button-primary:hover:not(:disabled) {
-  background-color: #C693FC;
+  background-color: var(--color-primary-hover);
 }
 
 .button-primary:disabled {
-  background-color: #4D4D4D;
-  color: #808080;
+  background-color: var(--color-border);
+  color: var(--color-text-muted);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .button-secondary {
   background-color: transparent;
-  color: #B3B3B3;
-  border: 1px solid #4D4D4D;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
 }
 
 .button-secondary:hover:not(:disabled) {
-  background-color: #1E1E1E;
-  color: #FFFFFF;
+  background-color: var(--color-surface-variant);
+  color: var(--color-text);
 }
 
 .button-secondary:disabled {

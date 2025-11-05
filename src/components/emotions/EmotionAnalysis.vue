@@ -1,5 +1,5 @@
 <template>
-  <div class="emotion-analysis">
+  <div class="emotion-analysis" :style="cssVars">
     <div class="analysis-header">
       <h2>AI Emotional Analysis</h2>
       <BaseButton 
@@ -64,6 +64,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useEmotionStore } from '@/stores/emotionStore'
 import { BaseButton, BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Store
 const emotionStore = useEmotionStore()
@@ -140,16 +143,16 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 3rem 2rem;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xxxl) var(--spacing-xl);
   text-align: center;
-  border-radius: 8px;
-  background-color: #1E1E1E;
-  border: 1px solid #4D4D4D;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-variant);
+  border: 1px solid var(--color-border);
 }
 
 .loading-state p {
-  color: #B3B3B3;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -162,9 +165,9 @@ onMounted(async () => {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #4D4D4D;
-  border-top: 4px solid #42A5F5;
-  border-radius: 50%;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-in-progress);
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 }
 
@@ -174,31 +177,31 @@ onMounted(async () => {
 }
 
 .error-state {
-  background-color: #3d1a1a;
+  background-color: rgba(207, 102, 121, 0.1);
 }
 
 .error-message {
-  color: #CF6679;
-  margin: 0 0 1rem 0;
+  color: var(--color-error);
+  margin: 0 0 var(--spacing-md) 0;
 }
 
 .empty-state h3,
 .no-analysis-state h3 {
-  margin: 0 0 1rem 0;
-  color: #FFFFFF;
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text);
 }
 
 .empty-state p,
 .no-analysis-state p {
-  color: #B3B3B3;
-  line-height: 1.6;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
   max-width: 500px;
-  margin: 0.5rem auto;
+  margin: var(--spacing-sm) auto;
 }
 
 /* Analysis Content */
 .analysis-content {
-  animation: fadeIn 0.4s ease-in;
+  animation: fadeIn var(--transition-slow);
 }
 
 @keyframes fadeIn {
@@ -213,11 +216,11 @@ onMounted(async () => {
 }
 
 .analysis-card {
-  background: linear-gradient(135deg, #BB86FC 0%, #3700B3 100%);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .analysis-icon {
@@ -236,7 +239,7 @@ onMounted(async () => {
 .analysis-text p {
   margin: 0;
   font-size: 1.1rem;
-  color: #FFFFFF;
+  color: var(--color-text);
   white-space: pre-wrap;
   word-wrap: break-word;
 }
@@ -245,16 +248,16 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #1E1E1E;
-  border-radius: 8px;
-  border: 1px solid #4D4D4D;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-surface-variant);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .meta-info {
-  font-size: 0.875rem;
-  color: #B3B3B3;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 0.25rem;

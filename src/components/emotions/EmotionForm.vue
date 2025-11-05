@@ -1,5 +1,5 @@
 <template>
-  <div class="emotion-form">
+  <div class="emotion-form" :style="cssVars">
     <h3>{{ title }}</h3>
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
@@ -43,6 +43,9 @@ import { ref, computed } from 'vue'
 import { useEmotionStore } from '@/stores/emotionStore'
 import { VALID_EMOTIONS, EMOTION_LABELS, type Emotion } from '@/constants'
 import { BaseButton } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Props
 const props = defineProps<{
@@ -102,36 +105,36 @@ const handleSubmit = async () => {
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
 }
 
 label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 select {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #4D4D4D;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: #1E1E1E;
-  color: #FFFFFF;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  background-color: var(--color-surface-variant);
+  color: var(--color-text);
 }
 
 select:disabled {
-  background-color: #0F0F0F;
+  background-color: var(--color-background-muted);
   cursor: not-allowed;
 }
 
 .error {
-  color: #CF6679;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background-color: #3d1a1a;
-  border: 1px solid #CF6679;
-  border-radius: 4px;
+  color: var(--color-error);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: rgba(207, 102, 121, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
 }
 </style>

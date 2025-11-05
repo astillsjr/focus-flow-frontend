@@ -1,5 +1,5 @@
 <template>
-  <div class="task-list">
+  <div class="task-list" :style="cssVars">
     <div class="task-list-header">
       <h2>Your Tasks</h2>
       <BaseButton 
@@ -96,6 +96,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
 import TaskItem from './TaskItem.vue'
 import { BaseButton, BaseConfirmModal } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Get task store
 const taskStore = useTaskStore()
@@ -194,7 +197,7 @@ defineExpose({
 /* Task List Transitions */
 .task-list-enter-active,
 .task-list-leave-active {
-  transition: all 0.4s ease;
+  transition: all var(--transition-slow);
 }
 
 .task-list-enter-from {
@@ -208,36 +211,36 @@ defineExpose({
 }
 
 .task-list-move {
-  transition: transform 0.4s ease;
+  transition: transform var(--transition-slow);
 }
 
 .task-list {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: var(--spacing-md);
 }
 
 .task-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #4D4D4D;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .task-list-header h2 {
   margin: 0;
-  font-size: 1.75rem;
-  color: #FFFFFF;
+  font-size: var(--font-size-xxxl);
+  color: var(--color-text);
 }
 
 .loading-state,
 .error-state,
 .empty-state {
   text-align: center;
-  padding: 3rem 1rem;
-  color: #808080;
+  padding: var(--spacing-xxxl) var(--spacing-md);
+  color: var(--color-text-muted);
 }
 
 .loading-state p,
@@ -250,8 +253,8 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  color: #CF6679;
+  gap: var(--spacing-md);
+  color: var(--color-error);
 }
 
 .error-state p {
@@ -262,35 +265,35 @@ defineExpose({
 .task-groups {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--spacing-xl);
 }
 
 .task-group {
-  background-color: #1E1E1E;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #4D4D4D;
+  background-color: var(--color-surface-variant);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .group-title {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  color: #FFFFFF;
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .task-count {
   font-size: 0.9rem;
-  color: #808080;
-  font-weight: normal;
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-normal);
 }
 
 .task-items {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 /* Responsive Design */

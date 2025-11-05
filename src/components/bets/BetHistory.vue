@@ -1,5 +1,5 @@
 <template>
-  <div class="bet-history">
+  <div class="bet-history" :style="cssVars">
     <!-- History Header -->
     <div class="history-header">
       <h2>Bet History</h2>
@@ -85,6 +85,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useBetStore } from '../../stores/betStore'
 import { BaseButton } from '../base'
 import BetItem from './BetItem.vue'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Get bet store
 const betStore = useBetStore()
@@ -194,34 +197,34 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #4D4D4D;
-  padding-bottom: 0.5rem;
+  margin-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-sm);
 }
 
 .history-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  color: #FFFFFF;
+  font-size: var(--font-size-xxl);
+  color: var(--color-text);
 }
 
 .history-controls {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .total-count {
-  color: #757575;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 
 .filter-controls {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: #1E1E1E;
-  border-radius: 8px;
-  border: 1px solid #4D4D4D;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--color-surface-variant);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .filter-group {
@@ -231,43 +234,43 @@ onMounted(async () => {
 }
 
 .filter-group label {
-  color: #FFFFFF;
+  color: var(--color-text);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .filter-select {
-  padding: 0.5rem;
-  background-color: #2D2D2D;
-  border: 1px solid #4D4D4D;
-  border-radius: 4px;
-  color: #FFFFFF;
+  padding: var(--spacing-sm);
+  background-color: var(--color-surface-container-high);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
   font-size: 0.9rem;
   min-width: 120px;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #42A5F5;
+  border-color: var(--color-in-progress);
 }
 
 .loading-state,
 .error-state {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: var(--spacing-xxxl) var(--spacing-md);
 }
 
 .loading-state p {
   font-size: 1.1rem;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  color: #CF6679;
+  gap: var(--spacing-md);
+  color: var(--color-error);
 }
 
 .error-state p {
@@ -277,23 +280,23 @@ onMounted(async () => {
 
 .empty-message {
   text-align: center;
-  padding: 2rem;
-  color: #808080;
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 .bet-group {
-  background-color: #1E1E1E;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #4D4D4D;
-  margin-bottom: 1rem;
+  background-color: var(--color-surface-variant);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-md);
 }
 
 .bet-items {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 /* Pagination */
@@ -301,16 +304,16 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
 }
 
 .page-info {
-  color: #666666;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Responsive Design */

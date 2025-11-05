@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout>
-    <div class="flow-container">
+    <div class="flow-container" :style="cssVars">
       <Transition name="fade-slide" mode="out-in">
         <!-- Step 1: Create Task -->
         <div v-if="currentStep === 'task'" key="task">
@@ -120,6 +120,9 @@ import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskForm from './TaskForm.vue'
 import BetForm from '../bets/BetForm.vue'
 import { BaseButton, BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 type FlowStep = 'task' | 'bet-prompt' | 'bet-form' | 'complete'
 
@@ -238,18 +241,20 @@ onMounted(() => {
 }
 
 h1 {
-  margin: 0 0 1rem 0;
-  font-size: 1.5rem;
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xxl);
+  color: var(--color-text);
 }
 
 p {
-  margin: 0.5rem 0;
+  margin: var(--spacing-sm) 0;
+  color: var(--color-text);
 }
 
 /* Fade + Slide Transition */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 .fade-slide-enter-from {
@@ -263,30 +268,30 @@ p {
 }
 
 .warning-message {
-  padding: 1rem;
-  margin: 1rem 0;
-  background-color: #3d2a1a;
-  border: 1px solid #FFB74D;
-  border-radius: 4px;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  background-color: rgba(255, 183, 77, 0.1);
+  border: 1px solid var(--color-pending);
+  border-radius: var(--radius-sm);
 }
 
 .warning-message p {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .error-message {
-  padding: 1rem;
-  margin: 1rem 0;
-  background-color: #3d1a1a;
-  border: 1px solid #CF6679;
-  border-radius: 8px;
-  color: #CF6679;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  background-color: rgba(207, 102, 121, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
 }
 
 .button-group {
   display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
 }
 
 @media (max-width: 768px) {
@@ -329,7 +334,7 @@ p {
 }
 
 .lead {
-  color: #cfcfcf;
+  color: var(--color-text-secondary);
   margin-top: 0.25rem;
 }
 
@@ -338,33 +343,33 @@ p {
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.75rem;
-  border: 1px solid #2f2f2f;
-  border-radius: 8px;
-  background: #121212;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
 }
 
 .task-summary__label {
   font-size: 0.8rem;
-  color: #9aa3ab;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 
 .task-summary__title {
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
 }
 
 .benefits-list {
   margin: 0.25rem 0 0 1rem;
   padding: 0;
   list-style: disc;
-  color: #d7d7d7;
+  color: var(--color-text-secondary);
 }
 
 .footnote {
   font-size: 0.85rem;
-  color: #98a2ab;
+  color: var(--color-text-muted);
 }
 
 /* Completion step styles */
@@ -382,31 +387,31 @@ p {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 999px;
+  padding: 0.25rem var(--spacing-sm);
+  border-radius: var(--radius-full);
   font-size: 0.85rem;
-  border: 1px solid #2f2f2f;
+  border: 1px solid var(--color-border);
 }
 
 .status-badge--success {
-  background: #0f2a16;
-  color: #6ee7b7;
-  border-color: #14532d;
+  background: rgba(102, 187, 106, 0.1);
+  color: var(--color-completed);
+  border-color: var(--color-completed);
 }
 
 .status-badge--neutral {
-  background: #1f2937;
-  color: #cbd5e1;
-  border-color: #334155;
+  background: var(--color-surface-container-high);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
 }
 
 .task-title {
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
 }
 
 .completion-lead {
-  color: #cfcfcf;
+  color: var(--color-text-secondary);
 }
 </style>
 

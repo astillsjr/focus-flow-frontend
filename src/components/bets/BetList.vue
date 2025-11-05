@@ -1,5 +1,5 @@
 <template>
-  <div class="bet-list">
+  <div class="bet-list" :style="cssVars">
     <div class="bet-list-header">
       <h2>Active Bets</h2>
     </div>
@@ -59,6 +59,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useBetStore } from '../../stores/betStore'
 import { BaseButton, BaseCard } from '../base'
 import BetItem from './BetItem.vue'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Get bet store
 const betStore = useBetStore()
@@ -131,55 +134,56 @@ defineExpose({})
 }
 
 .bet-list {
-  padding: 1rem;
+  padding: var(--spacing-md);
 }
 
 .bet-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #4D4D4D;
-  padding-bottom: 0.5rem;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-sm);
 }
 
 .bet-list-header h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
 }
 
 .loading-state,
 .error-state,
 .empty-state {
   text-align: center;
-  padding: 2rem 1rem;
+  padding: var(--spacing-xl) var(--spacing-md);
 }
 
 .error-state p {
-  color: #CF6679;
-  margin-bottom: 1rem;
+  color: var(--color-error);
+  margin-bottom: var(--spacing-md);
 }
 
 .empty-state p {
-  color: #B3B3B3;
-  line-height: 1.6;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
 }
 
 .bet-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .bet-group h3 {
   margin: 0 0 0.75rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #FFFFFF;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
 }
 
 .bet-items {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   margin-bottom: 0.75rem;
 }
 </style>

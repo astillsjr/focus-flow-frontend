@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <!-- Header with username -->
-    <div class="dashboard-header">
+    <div class="dashboard-header" :style="cssVars">
       <h1>Your Bets</h1>
     </div>
 
@@ -64,6 +64,9 @@ import BetStats from './BetStats.vue'
 import BetList from './BetList.vue'
 import BetHistory from './BetHistory.vue'
 import { BaseButton, BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Get stores
 const betStore = useBetStore()
@@ -132,29 +135,29 @@ watch(showHistory, async () => {
 <style scoped>
 /* Header */
 .dashboard-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .dashboard-header h1 {
   margin: 0;
-  font-size: 2rem;
-  color: #FFFFFF;
+  font-size: var(--font-size-display);
+  color: var(--color-text);
 }
 
 /* View Toggle Section */
 .view-toggle-section {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .error-message {
-  color: #CF6679;
-  margin-bottom: 1rem;
+  color: var(--color-error);
+  margin-bottom: var(--spacing-md);
 }
 
 /* View switch transition */
 .view-switch-enter-active,
 .view-switch-leave-active {
-  transition: all 0.25s ease;
+  transition: all var(--transition-normal);
 }
 
 .view-switch-enter-from {

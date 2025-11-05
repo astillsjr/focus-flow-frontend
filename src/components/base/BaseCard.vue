@@ -1,10 +1,16 @@
 <template>
-  <div :class="['base-card', `padding-${padding}`, { hoverable, clickable }]" @click="handleClick">
+  <div 
+    :class="['base-card', `padding-${padding}`, { hoverable, clickable }]" 
+    :style="cssVars"
+    @click="handleClick"
+  >
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
 interface Props {
   padding?: 'none' | 'sm' | 'md' | 'lg'
   hoverable?: boolean
@@ -26,14 +32,16 @@ function handleClick(event: MouseEvent) {
     emit('click', event)
   }
 }
+
+const { cssVars } = useDesignTokens()
 </script>
 
 <style scoped>
 .base-card {
-  background-color: #1E1E1E;
-  border: 1px solid #4D4D4D;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  background-color: var(--color-surface-variant);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
 }
 
 /* Padding variants */
@@ -46,17 +54,17 @@ function handleClick(event: MouseEvent) {
 }
 
 .padding-md {
-  padding: 1rem;
+  padding: var(--spacing-md);
 }
 
 .padding-lg {
-  padding: 1.5rem;
+  padding: var(--spacing-lg);
 }
 
 /* Hoverable */
 .hoverable:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  background-color: #2A2A2A;
+  box-shadow: var(--shadow-md);
+  background-color: var(--color-surface-container-high);
 }
 
 /* Clickable */
@@ -65,9 +73,9 @@ function handleClick(event: MouseEvent) {
 }
 
 .clickable:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border-color: #666666;
-  background-color: #2A2A2A;
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-dark);
+  background-color: var(--color-surface-container-high);
 }
 
 .clickable:active {

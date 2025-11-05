@@ -1,9 +1,9 @@
 <template>
   <DashboardLayout>
     <!-- Header with title and greeting -->
-    <div class="dashboard-header">
+    <div class="dashboard-header" :style="cssVars">
       <h1>Your Tasks</h1>
-      <p style="margin: 0.25rem 0 0; color: #B3B3B3;">Welcome, {{ displayUsername }}</p>
+      <p class="welcome-text">Welcome, {{ displayUsername }}</p>
     </div>
 
     <!-- Create Task Section -->
@@ -152,6 +152,9 @@ import { useAuthStore } from '../../stores/authStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import TaskItem from './TaskItem.vue'
 import { BaseButton, BaseConfirmModal } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Get stores and router
 const router = useRouter()
@@ -299,37 +302,42 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
+.welcome-text {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-secondary);
+}
+
 .dashboard-header h1 {
   margin: 0;
-  font-size: 2rem;
-  color: #FFFFFF;
+  font-size: var(--font-size-display);
+  color: var(--color-text);
 }
 
 /* Create Task Section */
 .create-task-section {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 /* Loading and Error States */
 .loading-state,
 .error-state {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: var(--spacing-xxxl) var(--spacing-md);
 }
 
 .loading-state p {
   font-size: 1.1rem;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  color: #CF6679;
+  gap: var(--spacing-md);
+  color: var(--color-error);
 }
 
 .error-state p {
@@ -341,54 +349,54 @@ onMounted(async () => {
 .task-list-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--spacing-xl);
 }
 
 .active-tasks {
-  animation: fadeIn 0.3s ease-in;
+  animation: fadeIn var(--transition-normal);
 }
 
 .active-tasks h2,
 .history-section h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1.5rem;
-  color: #FFFFFF;
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xxl);
+  color: var(--color-text);
 }
 
 .empty-message {
   text-align: center;
-  padding: 2rem;
-  color: #808080;
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 .task-group {
-  background-color: #1E1E1E;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #4D4D4D;
-  margin-bottom: 1rem;
+  background-color: var(--color-surface-variant);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-md);
 }
 
 .group-title {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  color: #FFFFFF;
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .task-count {
   font-size: 0.9rem;
-  color: #808080;
-  font-weight: normal;
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-normal);
 }
 
 .task-items {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 /* History Section */
@@ -416,10 +424,11 @@ onMounted(async () => {
 
 .history-header h2 {
   margin: 0;
+  color: var(--color-text);
 }
 
 .total-count {
-  color: #757575;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 
@@ -428,16 +437,16 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
 }
 
 .page-info {
-  color: #666666;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Responsive Design */

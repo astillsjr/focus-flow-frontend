@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout>
-    <div class="account-settings">
+    <div class="account-settings" :style="cssVars">
       <BaseCard padding="lg" class="section">
       <h2>Change Password</h2>
 
@@ -78,6 +78,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import { BaseButton, BaseCard, BaseInput, BaseConfirmModal } from '@/components/base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -150,30 +153,31 @@ function onCancelDelete() {
 <style scoped>
 .account-settings {
   max-width: 520px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: var(--spacing-xl) auto;
+  padding: 0 var(--spacing-md);
   display: grid;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
 }
 .section h2 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text);
 }
 .form {
   display: grid;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 .success {
-  color: #7bd88f;
+  color: var(--color-completed);
   margin: 0.25rem 0 0;
   font-size: 0.9rem;
 }
 .section.danger {
-  border: 1px solid #5a2a2a;
-  background: #241a1a;
+  border: 1px solid var(--color-error);
+  background: rgba(207, 102, 121, 0.1);
 }
 .danger-text {
-  color: #ffb3b3;
-  margin: 0 0 1rem 0;
+  color: var(--color-error);
+  margin: 0 0 var(--spacing-md) 0;
 }
 </style>
 

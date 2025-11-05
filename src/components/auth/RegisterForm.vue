@@ -1,5 +1,5 @@
 <template>
-  <div class="register-form">
+  <div class="register-form" :style="cssVars">
     <BaseCard padding="lg">
       <div class="app-title">Focus Flow</div>
       <h2>Register</h2>
@@ -57,6 +57,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { BaseButton, BaseCard, BaseInput } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Get router and auth store
 const router = useRouter()
@@ -115,41 +118,42 @@ async function handleRegister() {
 <style scoped>
 .register-form {
   max-width: 400px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: var(--spacing-xl) auto;
+  padding: 0 var(--spacing-md);
 }
 
 .app-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   text-align: center;
-  margin-bottom: 0.5rem;
-  color: #E0E0E0;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
 }
 
 h2 {
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 var(--spacing-lg) 0;
   text-align: center;
+  color: var(--color-text);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
 }
 
 .login-link {
   text-align: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #4D4D4D;
-  color: #B3B3B3;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
 }
 
 .login-link a {
-  color: #BB86FC;
-  font-weight: 500;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
 }
 </style>
 

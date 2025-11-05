@@ -1,5 +1,5 @@
 <template>
-  <div v-if="stats" class="bet-stats">
+  <div v-if="stats" class="bet-stats" :style="cssVars">
     <BaseCard padding="md" class="stat-card">
       <span class="stat-label">Points</span>
       <span class="stat-value">{{ stats.points }}</span>
@@ -19,6 +19,9 @@
 import { computed } from 'vue'
 import { useBetStore } from '../../stores/betStore'
 import { BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 const betStore = useBetStore()
 
@@ -30,8 +33,8 @@ const totalWagered = computed(() => betStore.totalWagered)
 .bet-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 .stat-card {
@@ -41,14 +44,14 @@ const totalWagered = computed(() => betStore.totalWagered)
 .stat-label {
   display: block;
   font-size: 0.85rem;
-  color: #B3B3B3;
+  color: var(--color-text-secondary);
   margin-bottom: 0.25rem;
 }
 
 .stat-value {
   display: block;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #FFFFFF;
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
 }
 </style>

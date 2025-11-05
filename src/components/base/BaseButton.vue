@@ -3,6 +3,7 @@
     :type="type"
     :disabled="disabled || loading"
     :class="['base-button', `variant-${variant}`, `size-${size}`, { 'is-loading': loading, 'full-width': fullWidth }]"
+    :style="cssVars"
   >
     <span v-if="loading" class="spinner"></span>
     <span :class="{ 'button-content': loading }">
@@ -12,6 +13,8 @@
 </template>
 
 <script setup lang="ts">
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
 interface Props {
   type?: 'button' | 'submit' | 'reset'
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
@@ -29,6 +32,8 @@ withDefaults(defineProps<Props>(), {
   loading: false,
   fullWidth: false
 })
+
+const { cssVars } = useDesignTokens()
 </script>
 
 <style scoped>
@@ -36,18 +41,18 @@ withDefaults(defineProps<Props>(), {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   border: none;
-  border-radius: 8px;
-  font-family: inherit;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   white-space: nowrap;
 }
 
 .base-button:focus {
-  outline: 2px solid #BB86FC;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -58,57 +63,57 @@ withDefaults(defineProps<Props>(), {
 
 /* Sizes */
 .size-sm {
-  padding: 0.5rem 0.875rem;
-  font-size: 0.875rem;
+  padding: var(--spacing-sm) 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .size-md {
   padding: 0.625rem 1.25rem;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .size-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.125rem;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-lg);
 }
 
 /* Variants */
 .variant-primary {
-  background-color: #BB86FC;
-  color: #000000;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .variant-primary:hover:not(:disabled) {
-  background-color: #C693FC;
+  background-color: var(--color-primary-hover);
 }
 
 .variant-secondary {
-  background-color: #03DAC6;
-  color: #000000;
+  background-color: var(--color-secondary);
+  color: var(--color-on-secondary);
 }
 
 .variant-secondary:hover:not(:disabled) {
-  background-color: #26E0D1;
+  background-color: var(--color-secondary-hover);
 }
 
 .variant-danger {
-  background-color: #dc3545;
-  color: #ffffff;
+  background-color: var(--color-error);
+  color: var(--color-text);
 }
 
 .variant-danger:hover:not(:disabled) {
-  background-color: #c82333;
+  background-color: var(--color-error-hover);
 }
 
 .variant-ghost {
   background-color: transparent;
-  color: #B3B3B3;
-  border: 1px solid #4D4D4D;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
 }
 
 .variant-ghost:hover:not(:disabled) {
-  background-color: #1E1E1E;
-  color: #FFFFFF;
+  background-color: var(--color-surface-variant);
+  color: var(--color-text);
 }
 
 /* Loading state */
@@ -122,13 +127,13 @@ withDefaults(defineProps<Props>(), {
   height: 1rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 0.6s linear infinite;
 }
 
 .variant-ghost .spinner {
   border-color: rgba(255, 255, 255, 0.1);
-  border-top-color: #B3B3B3;
+  border-top-color: var(--color-text-secondary);
 }
 
 .button-content {

@@ -1,5 +1,5 @@
 <template>
-  <div class="task-form">
+  <div class="task-form" :style="cssVars">
     <h2 v-if="showTitle">Create New Task</h2>
     
     <form @submit.prevent="handleSubmit" class="form">
@@ -53,6 +53,9 @@
 import { ref, computed } from 'vue'
 import { useTaskStore } from '../../stores/taskStore'
 import { BaseButton, BaseInput } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Props
 const props = withDefaults(defineProps<{
@@ -147,24 +150,25 @@ async function handleSubmit() {
 .task-form {
   max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--spacing-xl);
 }
 
 h2 {
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 var(--spacing-lg) 0;
   text-align: center;
+  color: var(--color-text);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
 }
 
 .form-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
 }
 
 @media (max-width: 768px) {

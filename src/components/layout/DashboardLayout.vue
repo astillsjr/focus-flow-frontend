@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-layout">
+  <div class="dashboard-layout" :style="cssVars">
     <AppNavigation />
     <main class="dashboard-main">
       <slot />
@@ -9,23 +9,26 @@
 
 <script setup lang="ts">
 import AppNavigation from './AppNavigation.vue'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 </script>
 
 <style scoped>
 .dashboard-layout {
   min-height: 100vh;
-  background-color: #121212;
+  background-color: var(--color-background);
 }
 
 .dashboard-main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: var(--spacing-xl) var(--spacing-md);
 }
 
 @media (max-width: 768px) {
   .dashboard-main {
-    padding: 1rem 0.5rem;
+    padding: var(--spacing-md) var(--spacing-sm);
   }
 }
 </style>

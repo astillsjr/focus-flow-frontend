@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="cssVars">
     <div class="nudge-container">
       <TransitionGroup name="nudge" tag="div" class="nudge-list">
         <div
@@ -63,9 +63,12 @@ import { ref } from 'vue'
 import { useNudgeStore } from '../../stores/nudgeStore'
 import { useTaskStore } from '../../stores/taskStore'
 import { useEmotionStore } from '../../stores/emotionStore'
-import type { Emotion } from '@/stores/emotionStore'
+import type { Emotion } from '@/constants'
 import { BaseButton } from '../base'
 import EmotionPromptModal from '../emotions/EmotionPromptModal.vue'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 const nudgeStore = useNudgeStore()
 const taskStore = useTaskStore()
@@ -140,13 +143,13 @@ function handleStartEmotionCancel() {
 }
 
 .nudge-card {
-  background: #1E1E1E;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  padding: 16px;
-  border-left: 4px solid #BB86FC;
+  background: var(--color-surface-variant);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-md);
+  border-left: 4px solid var(--color-primary);
   pointer-events: auto;
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn var(--transition-normal);
 }
 
 @keyframes slideIn {
@@ -169,16 +172,16 @@ function handleStartEmotionCancel() {
 
 .nudge-title {
   flex: 1;
-  font-weight: 600;
-  color: #FFFFFF;
-  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
 }
 
 .nudge-close {
   background: none;
   border: none;
   font-size: 28px;
-  color: #808080;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0;
   width: 24px;
@@ -187,29 +190,29 @@ function handleStartEmotionCancel() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
+  transition: color var(--transition-normal);
 }
 
 .nudge-close:hover {
-  color: #FFFFFF;
+  color: var(--color-text);
 }
 
 .nudge-body {
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
 }
 
 .task-title {
   margin: 0 0 8px 0;
-  color: #BB86FC;
+  color: var(--color-primary);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .nudge-message {
   margin: 0;
-  color: #B3B3B3;
-  line-height: 1.5;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  font-size: var(--font-size-sm);
 }
 
 .nudge-actions {
@@ -220,7 +223,7 @@ function handleStartEmotionCancel() {
 /* Transition animations */
 .nudge-enter-active,
 .nudge-leave-active {
-  transition: all 0.3s ease;
+  transition: all var(--transition-slow);
 }
 
 .nudge-enter-from {
@@ -240,13 +243,13 @@ function handleStartEmotionCancel() {
 /* Queue badge styling */
 .queue-badge {
   display: inline-block;
-  background: #42A5F5;
-  color: white;
+  background: var(--color-in-progress);
+  color: var(--color-text);
   font-size: 11px;
   padding: 2px 6px;
   border-radius: 10px;
   margin-left: 8px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   vertical-align: middle;
 }
 

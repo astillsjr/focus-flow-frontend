@@ -1,5 +1,5 @@
 <template>
-  <BaseCard padding="lg" class="bet-form">
+  <BaseCard padding="lg" class="bet-form" :style="cssVars">
     <h3>Place a Bet on This Task</h3>
     
     <div v-if="betStore.hasProfile" class="profile-info">
@@ -82,6 +82,9 @@
 import { ref, computed } from 'vue'
 import { useBetStore } from '../../stores/betStore'
 import { BaseButton, BaseCard, BaseInput } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 // Props
 const props = defineProps<{
@@ -221,57 +224,57 @@ async function handleSubmit() {
 }
 
 h3 {
-  margin-bottom: 1rem;
-  color: #FFFFFF;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .profile-info {
   display: flex;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
   padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  background-color: #0d2540;
-  border-radius: 8px;
+  margin-bottom: var(--spacing-sm);
+  background-color: rgba(66, 165, 245, 0.1);
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
 }
 
 .points-display,
 .streak-display {
-  color: #42A5F5;
+  color: var(--color-in-progress);
 }
 
 .warning-message {
   padding: 0.75rem;
-  background-color: #3d2a1a;
-  border: 1px solid #FFB74D;
-  border-radius: 8px;
-  color: #FFB74D;
+  background-color: rgba(255, 183, 77, 0.1);
+  border: 1px solid var(--color-pending);
+  border-radius: var(--radius-md);
+  color: var(--color-pending);
   font-size: 0.9rem;
 }
 
 .error-message {
   padding: 0.75rem;
-  background-color: #3d1a1a;
-  border: 1px solid #CF6679;
-  border-radius: 8px;
-  color: #CF6679;
+  background-color: rgba(207, 102, 121, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
   font-size: 0.9rem;
 }
 
 .bet-summary {
-  border-left: 4px solid #42A5F5;
+  border-left: 4px solid var(--color-in-progress);
 }
 
 .bet-summary h4 {
   margin: 0 0 0.75rem 0;
   font-size: 0.95rem;
-  color: #B3B3B3;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -279,7 +282,7 @@ h3 {
 .summary-item {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
   font-size: 0.95rem;
 }
 
@@ -289,7 +292,7 @@ h3 {
 
 .form-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
 }
 </style>

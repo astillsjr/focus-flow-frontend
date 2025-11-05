@@ -1,5 +1,5 @@
 <template>
-  <BaseCard padding="md" class="bet-item">
+  <BaseCard padding="md" class="bet-item" :style="cssVars">
     <div class="bet-info">
       <div class="bet-row">
         <strong>Wager:</strong> {{ bet.wager }} pts
@@ -30,6 +30,9 @@
 import { computed } from 'vue'
 import type { Bet } from '../../stores/betStore'
 import { BaseCard } from '../base'
+import { useDesignTokens } from '@/composables/useDesignTokens'
+
+const { cssVars } = useDesignTokens()
 
 const props = defineProps<{ bet: Bet }>()
 
@@ -68,7 +71,7 @@ const timeRemaining = computed(() => {
 
 <style scoped>
 .bet-item {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
 .bet-row {
@@ -77,36 +80,36 @@ const timeRemaining = computed(() => {
 }
 
 .status {
-  margin-left: 1rem;
+  margin-left: var(--spacing-md);
   font-size: 0.85rem;
-  font-weight: 500;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
+  font-weight: var(--font-weight-medium);
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-sm);
 }
 
 .status.active {
-  color: #42A5F5;
-  background-color: #0d2540;
+  color: var(--color-in-progress);
+  background-color: rgba(66, 165, 245, 0.1);
 }
 
 .status.expired {
-  color: #FFB74D;
-  background-color: #3d2a1a;
+  color: var(--color-pending);
+  background-color: rgba(255, 183, 77, 0.1);
 }
 
 .status.won {
-  color: #66BB6A;
-  background-color: #1e3a1f;
+  color: var(--color-completed);
+  background-color: rgba(102, 187, 106, 0.1);
 }
 
 .status.lost {
-  color: #CF6679;
-  background-color: #3d1a1a;
+  color: var(--color-error);
+  background-color: rgba(207, 102, 121, 0.1);
 }
 
 .time-remaining {
-  margin-left: 0.5rem;
-  color: #B3B3B3;
+  margin-left: var(--spacing-sm);
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
 }
 </style>
