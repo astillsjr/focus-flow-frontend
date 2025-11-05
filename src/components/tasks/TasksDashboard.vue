@@ -52,8 +52,6 @@
                 v-for="task in pendingTasks"
                 :key="task._id"
                 :task="task"
-                @toggle-start="handleToggleStart"
-                @toggle-complete="handleToggleComplete"
                 @delete-task="handleDeleteTask"
               />
             </div>
@@ -69,8 +67,6 @@
                 v-for="task in inProgressTasks"
                 :key="task._id"
                 :task="task"
-                @toggle-start="handleToggleStart"
-                @toggle-complete="handleToggleComplete"
                 @delete-task="handleDeleteTask"
               />
             </div>
@@ -96,8 +92,6 @@
                 v-for="task in paginatedCompletedTasks"
                 :key="task._id"
                 :task="task"
-                @toggle-start="handleToggleStart"
-                @toggle-complete="handleToggleComplete"
                 @delete-task="handleDeleteTask"
               />
             </div>
@@ -224,30 +218,7 @@ function nextPage() {
  * Refresh tasks
  */
 async function handleRefresh() {
-  try {
-    await taskStore.fetchTasks()
-  } catch (err) {
-  }
-}
-
-/**
- * Handle toggle start event
- */
-async function handleToggleStart(taskId: string) {
-  try {
-    await taskStore.markStarted(taskId)
-  } catch (err) {
-  }
-}
-
-/**
- * Handle toggle complete event
- */
-async function handleToggleComplete(taskId: string) {
-  try {
-    await taskStore.markCompleted(taskId)
-  } catch (err) {
-  }
+  await taskStore.fetchTasks()
 }
 
 /**

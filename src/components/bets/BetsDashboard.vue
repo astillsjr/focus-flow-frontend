@@ -43,12 +43,12 @@
         <!-- Active Bets View -->
         <div v-if="!showHistory" key="active">
           <BetStats />
-          <BetList ref="betListRef" />
+          <BetList />
         </div>
 
         <!-- Bet History View -->
         <div v-else key="history">
-          <BetHistory ref="betHistoryRef" />
+          <BetHistory />
         </div>
       </Transition>
     </div>
@@ -58,7 +58,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useBetStore } from '../../stores/betStore'
-import { useAuthStore } from '../../stores/authStore'
 import DashboardLayout from '../layout/DashboardLayout.vue'
 import BetStats from './BetStats.vue'
 import BetList from './BetList.vue'
@@ -70,19 +69,15 @@ const { cssVars } = useDesignTokens()
 
 // Get stores
 const betStore = useBetStore()
-const authStore = useAuthStore()
 
 // Local state
 const isInitializing = ref(false)
 const showHistory = ref(false)
-const betListRef = ref<InstanceType<typeof BetList> | null>(null)
-const betHistoryRef = ref<InstanceType<typeof BetHistory> | null>(null)
 
 // Computed properties from store
 const isInitialized = computed(() => betStore.isInitialized)
 const isLoading = computed(() => betStore.isLoading)
 const error = computed(() => betStore.error)
-const displayUsername = computed(() => authStore.username || 'User')
 
 /**
  * Toggle between active bets and history view
@@ -98,7 +93,6 @@ async function handleInitialize() {
   try {
     isInitializing.value = true
     await betStore.initializeBettor()
-  } catch (err) {
   } finally {
     isInitializing.value = false
   }
@@ -108,10 +102,7 @@ async function handleInitialize() {
  * Refresh betting data
  */
 async function handleRefresh() {
-  try {
-    await betStore.initialize()
-  } catch (err) {
-  }
+  await betStore.initialize()
 }
 
 // Initialize on mount

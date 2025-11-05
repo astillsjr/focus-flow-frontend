@@ -87,8 +87,6 @@ const refreshAnalysis = async () => {
     lastUpdated.value = new Date()
   } catch (err) {
     // Error is already handled in the store
-    // Just log it here for debugging
-    
   }
 }
 

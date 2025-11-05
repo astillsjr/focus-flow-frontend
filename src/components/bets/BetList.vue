@@ -97,7 +97,6 @@ async function resolveExpiredBets() {
   try {
     isResolving.value = true
     await betStore.refreshActiveBets()  // Just refresh, backend handles resolution
-  } catch (err) {
   } finally {
     isResolving.value = false
   }
@@ -107,9 +106,6 @@ async function resolveExpiredBets() {
 onMounted(async () => {
   await refreshBets()
 })
-
-// Expose refresh method so parent components can trigger refresh
-defineExpose({})
 </script>
 
 <style scoped>

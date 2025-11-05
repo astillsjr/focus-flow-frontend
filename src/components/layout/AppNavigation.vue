@@ -48,11 +48,8 @@ const authStore = useAuthStore()
 const { cssVars } = useDesignTokens()
 
 const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch (err) {
-  }
+  await authStore.logout()
+  router.push('/login')
 }
 
 const goToAccount = () => {

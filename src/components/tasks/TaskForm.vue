@@ -121,8 +121,6 @@ async function handleSubmit() {
     // Call task store to create task
     const taskId = await taskStore.addTask(taskPayload)
 
-    
-
     // Emit success event with the new task ID
     emit('submit-task', taskId)
 

@@ -135,7 +135,6 @@ async function refreshBets() {
   try {
     isRefreshing.value = true
     await betStore.fetchAllBets()
-  } catch (err) {
   } finally {
     isRefreshing.value = false
   }

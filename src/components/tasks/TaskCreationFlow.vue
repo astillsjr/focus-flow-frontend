@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBetStore } from '../../stores/betStore'
 import { useTaskStore } from '../../stores/taskStore'
@@ -225,12 +225,7 @@ function goToDashboard() {
   router.push('/tasks')
 }
 
-// Initialize on mount
-onMounted(() => {
-  // Ensure bet store is initialized
-  if (!betStore.isInitialized && betStore.hasProfile === false) {
-  }
-})
+
 </script>
 
 <style scoped>
@@ -294,12 +289,6 @@ p {
   margin-top: var(--spacing-lg);
 }
 
-@media (max-width: 768px) {
-  .button-group {
-    flex-direction: column;
-  }
-}
-
 /* Remove fancy styling from child components */
 :deep(.task-form) {
   padding: 0;
@@ -319,10 +308,6 @@ p {
 @media (max-width: 768px) {
   .button-group {
     flex-direction: column;
-  }
-  
-  button {
-    width: 100%;
   }
 }
 

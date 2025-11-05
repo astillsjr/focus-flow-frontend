@@ -125,20 +125,8 @@ async function refreshTasks() {
   try {
     isRefreshing.value = true
     await taskStore.fetchTasks()
-  } catch (err) {
   } finally {
     isRefreshing.value = false
-  }
-}
-
-/**
- * Handle toggle complete event from TaskItem (legacy - not used with emotion flow)
- */
-async function handleToggleComplete(taskId: string) {
-  try {
-    await taskStore.markCompleted(taskId)
-  } catch (err) {
-    // Optionally show error notification
   }
 }
 
@@ -185,11 +173,6 @@ function cancelDelete() {
 // Initialize tasks on component mount
 onMounted(async () => {
   await refreshTasks()
-})
-
-// Expose refresh method so parent components can trigger refresh
-defineExpose({
-  refreshTasks
 })
 </script>
 
